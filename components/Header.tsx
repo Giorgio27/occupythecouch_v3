@@ -11,128 +11,95 @@ const Header: React.FC = () => {
   const { data: session, status } = useSession();
 
   let left = (
-    <div className="left">
-      <Link href="/" data-active={isActive("/")}>
+    <div className="flex items-center space-x-4">
+      <Link
+        href="/"
+        className={`text-base font-medium transition-colors duration-200 hover:text-gray-600 ${
+          isActive("/") ? "text-gray-400" : "text-gray-900"
+        }`}
+      >
         Feed
       </Link>
-      <style jsx>{`
-        .bold {
-          font-weight: bold;
-        }
-        a {
-          text-decoration: none;
-          color: var(--geist-foreground);
-          display: inline-block;
-        }
-        .left a[data-active="true"] {
-          color: gray;
-        }
-        a + a {
-          margin-left: 1rem;
-        }
-      `}</style>
     </div>
   );
 
   let right = null;
 
   if (status === "loading") {
-    right = <p>Validating session ...</p>;
+    right = (
+      <p className="ml-auto text-sm text-gray-500">Validating session ...</p>
+    );
   }
 
   if (!session) {
     right = (
-      <div className="right">
-        <Link href="/auth/signin" data-active={isActive("/auth/signin")}>
+      <div className="flex items-center ml-auto space-x-4">
+        <Link
+          href="/auth/signin"
+          className={`px-4 py-2 rounded border border-gray-400 text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 ${
+            isActive("/auth/signin") ? "text-gray-400" : "text-gray-900"
+          }`}
+        >
           Log in
         </Link>
-        <Link href="/auth/signup" data-active={isActive("/auth/signup")}>
+        <Link
+          href="/auth/signup"
+          className={`px-4 py-2 rounded border border-gray-400 text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 ${
+            isActive("/auth/signup") ? "text-gray-400" : "text-gray-900"
+          }`}
+        >
           Sign up
         </Link>
-        <style jsx>{`
-          .right {
-            margin-left: auto;
-          }
-          a {
-            text-decoration: none;
-            color: var(--geist-foreground);
-            display: inline-block;
-            border: 1px solid var(--geist-foreground);
-            padding: 0.5rem 1rem;
-            border-radius: 3px;
-          }
-          a + a {
-            margin-left: 1rem;
-          }
-        `}</style>
       </div>
     );
   }
 
   if (session) {
     left = (
-      <div className="left">
-        <Link href="/" data-active={isActive("/")}>
+      <div className="flex items-center space-x-4">
+        <Link
+          href="/"
+          className={`text-base font-medium transition-colors duration-200 hover:text-gray-600 ${
+            isActive("/") ? "text-gray-400" : "text-gray-900"
+          }`}
+        >
           Feed
         </Link>
-        <Link href="/drafts" data-active={isActive("/drafts")}>
+        <Link
+          href="/drafts"
+          className={`text-base font-medium transition-colors duration-200 hover:text-gray-600 ${
+            isActive("/drafts") ? "text-gray-400" : "text-gray-900"
+          }`}
+        >
           My drafts
         </Link>
-        <style jsx>{`
-          a {
-            text-decoration: none;
-            color: var(--geist-foreground);
-            display: inline-block;
-          }
-          .left a[data-active="true"] {
-            color: gray;
-          }
-          a + a {
-            margin-left: 1rem;
-          }
-        `}</style>
       </div>
     );
     right = (
-      <div className="right">
-        <p>
+      <div className="flex items-center ml-auto space-x-4">
+        <p className="text-sm text-gray-700">
           {session.user?.name} ({session.user?.email})
         </p>
-        <Link href="/create">New post</Link>
-        <button onClick={() => signOut()}>Log out</button>
-        <style jsx>{`
-          p {
-            display: inline-block;
-            font-size: 13px;
-            padding-right: 1rem;
-          }
-          .right {
-            margin-left: auto;
-          }
-          button {
-            margin-left: 1rem;
-            border: 1px solid var(--geist-foreground);
-            padding: 0.5rem 1rem;
-            border-radius: 3px;
-            background: none;
-            cursor: pointer;
-          }
-        `}</style>
+        <Link
+          href="/create"
+          className="px-4 py-2 rounded border border-gray-400 text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
+        >
+          New post
+        </Link>
+        <button
+          onClick={() => signOut()}
+          className="px-4 py-2 rounded border border-gray-400 bg-white text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 cursor-pointer"
+        >
+          Log out
+        </button>
       </div>
     );
   }
 
   return (
-    <nav>
+    <nav className="flex items-center px-8 py-6 bg-white border-b border-gray-200 shadow-sm">
       {left}
       {right}
-      <style jsx>{`
-        nav {
-          display: flex;
-          padding: 2rem;
-          align-items: center;
-        }
-      `}</style>
     </nav>
   );
 };
