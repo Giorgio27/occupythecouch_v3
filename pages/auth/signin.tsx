@@ -1,8 +1,8 @@
-// pages/auth/signin.tsx
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -17,16 +17,13 @@ export default function SignInPage() {
     const res = await signIn("credentials", {
       email,
       password,
-      redirect: false, // gestiamo noi il redirect
+      redirect: false,
     });
     setSubmitting(false);
 
-    if (!res) return; // safety
+    if (!res) return;
     if (res.ok) {
-      router.push("/"); // vai dove vuoi
-    } else {
-      // NextAuth aggiunge error in query se redirect:true, qui mostriamo noi
-      // puoi settare uno state per un messaggio custom
+      router.push("/");
     }
   }
 
@@ -38,46 +35,46 @@ export default function SignInPage() {
       : undefined;
 
   return (
-    <div style={{ maxWidth: 420, margin: "40px auto" }}>
-      <h1>Accedi</h1>
+    <div className="max-w-md mx-auto mt-12 p-6 border rounded-lg shadow-sm">
+      <h1 className="text-2xl font-bold mb-4">Accedi</h1>
+
       {errorMessage && (
-        <p style={{ color: "crimson", marginTop: 8 }}>{errorMessage}</p>
+        <p className="text-red-600 text-sm mb-2">{errorMessage}</p>
       )}
-      <form
-        onSubmit={onSubmit}
-        style={{ display: "grid", gap: 12, marginTop: 16 }}
-      >
-        <label>
-          Email
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: "100%", padding: 8 }}
+            className="w-full border rounded px-3 py-2 text-sm"
           />
-        </label>
-        <label>
-          Password
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: "100%", padding: 8 }}
+            className="w-full border rounded px-3 py-2 text-sm"
           />
-        </label>
-        <button
-          type="submit"
-          disabled={submitting}
-          style={{ padding: "10px 14px" }}
-        >
+        </div>
+
+        <Button type="submit" disabled={submitting} className="w-full">
           {submitting ? "Accesso in corso..." : "Accedi"}
-        </button>
+        </Button>
       </form>
 
-      <p style={{ marginTop: 16 }}>
-        Non hai un account? <Link href="/auth/signup">Registrati</Link>
+      <p className="mt-4 text-sm">
+        Non hai un account?{" "}
+        <Link href="/auth/signup" className="text-blue-600 hover:underline">
+          Registrati
+        </Link>
       </p>
     </div>
   );

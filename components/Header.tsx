@@ -2,104 +2,60 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button"; // <-- import dal pacchetto shadcn
 
 const Header: React.FC = () => {
   const router = useRouter();
-  const isActive: (pathname: string) => boolean = (pathname) =>
-    router.pathname === pathname;
-
+  const isActive = (pathname: string) => router.pathname === pathname;
   const { data: session, status } = useSession();
 
-  let left = (
-    <div className="flex items-center space-x-4">
-      <Link
-        href="/"
-        className={`text-base font-medium transition-colors duration-200 hover:text-gray-600 ${
-          isActive("/") ? "text-gray-400" : "text-gray-900"
-        }`}
-      >
-        Feed
-      </Link>
-    </div>
-  );
-
-  let right = null;
-
-  if (status === "loading") {
-    right = (
-      <p className="ml-auto text-sm text-gray-500">Validating session ...</p>
-    );
-  }
-
-  if (!session) {
-    right = (
-      <div className="flex items-center ml-auto space-x-4">
-        <Link
-          href="/auth/signin"
-          className={`px-4 py-2 rounded border border-gray-400 text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 ${
-            isActive("/auth/signin") ? "text-gray-400" : "text-gray-900"
-          }`}
-        >
-          Log in
-        </Link>
-        <Link
-          href="/auth/signup"
-          className={`px-4 py-2 rounded border border-gray-400 text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 ${
-            isActive("/auth/signup") ? "text-gray-400" : "text-gray-900"
-          }`}
-        >
-          Sign up
-        </Link>
-      </div>
-    );
-  }
-
-  if (session) {
-    left = (
-      <div className="flex items-center space-x-4">
+  return (
+    <nav className="flex items-center p-6 border-b">
+      <div className="flex gap-4">
         <Link
           href="/"
-          className={`text-base font-medium transition-colors duration-200 hover:text-gray-600 ${
-            isActive("/") ? "text-gray-400" : "text-gray-900"
-          }`}
+          className={`font-semibold ${isActive("/") ? "text-gray-400" : ""}`}
         >
           Feed
         </Link>
-        <Link
-          href="/drafts"
-          className={`text-base font-medium transition-colors duration-200 hover:text-gray-600 ${
-            isActive("/drafts") ? "text-gray-400" : "text-gray-900"
-          }`}
-        >
-          My drafts
-        </Link>
+        {session && (
+          <Link
+            href="/drafts"
+            className={isActive("/drafts") ? "text-gray-400" : ""}
+          >
+            My drafts
+          </Link>
+        )}
       </div>
-    );
-    right = (
-      <div className="flex items-center ml-auto space-x-4">
-        <p className="text-sm text-gray-700">
-          {session.user?.name} ({session.user?.email})
-        </p>
-        <Link
-          href="/create"
-          className="px-4 py-2 rounded border border-gray-400 text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
-        >
-          New post
-        </Link>
-        <button
-          onClick={() => signOut()}
-          className="px-4 py-2 rounded border border-gray-400 bg-white text-base font-medium transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 cursor-pointer"
-        >
-          Log out
-        </button>
-      </div>
-    );
-  }
 
-  return (
-    <nav className="flex items-center px-8 py-6 bg-white border-b border-gray-200 shadow-sm">
-      {left}
-      {right}
+      <div className="ml-auto flex items-center gap-3">
+        {status === "loading" && <p>Validating session...</p>}
+
+        {!session && (
+          <>
+            <Link href="/auth/signin">
+              <Button variant="outline">Log in</Button>
+            </Link>
+            <Link href="/auth/signup">
+              <Button>Sign up</Button>
+            </Link>
+          </>
+        )}
+
+        {session && (
+          <>
+            <p className="text-sm">
+              {session.user?.name} ({session.user?.email})
+            </p>
+            <Link href="/create">
+              <Button>New post</Button>
+            </Link>
+            <Button variant="outline" onClick={() => signOut()}>
+              Log out
+            </Button>
+          </>
+        )}
+      </div>
     </nav>
   );
 };
