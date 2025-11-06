@@ -1,5 +1,6 @@
-// schema.prisma
-
+// =====================
+//  Prisma base
+// =====================
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,31 +10,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Post {
-  id        String     @default(cuid()) @id
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  String?
-}
- 
+// =====================
+//  NextAuth / Core
+// =====================
+
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String    @unique
   emailVerified DateTime?
   image         String?
   passwordHash  String?
 
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
- 
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+
+  // --- cineforum relations ---
+  memberships        Membership[] // User <-> Cineforum (via Membership)
+  cineforumsOwned    Cineforum[]         @relation("CineforumOwner") // back to Cineforum.owner
+  teamMemberships    TeamUser[] // User <-> Team (via TeamUser)
+  proposals          Proposal[]          @relation("ProposalOwnerUser") // back to Proposal.ownerUser
+  proposalVotes      ProposalVote[]
+  movieVotes         MovieVote[]
+  chosenRounds       Round[]             @relation("RoundChooser") // back to Round.chooser
+  rankings           UserRanking[]
+  movieRoundRankings MovieRoundRanking[] @relation("MRR_User") // back to MovieRoundRanking.user
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -46,29 +53,339 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
+}
+
+// =====================
+//  Cineforum domain
+// =====================
+
+enum CineforumRole {
+  MEMBER
+  ADMIN
+  OWNER
+}
+
+// Logical container: everything (rounds, teams, proposals, votes, rankings) is scoped by cineforum.
+// Movies remain global.
+model Cineforum {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  // Owner (optional). Balanced by User.cineforumsOwned
+  ownerId String?
+  owner   User?   @relation("CineforumOwner", fields: [ownerId], references: [id])
+
+  memberships Membership[]
+  rounds      Round[]
+  teams       Team[]
+  proposals   Proposal[] // redundant vs. round->proposals but handy for direct lookups
+  rankings    UserRanking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // @@unique([name]) // enable if you want global unique name
+
+  @@index([ownerId])
+}
+
+// User <-> Cineforum with role
+model Membership {
+  id          String        @id @default(cuid())
+  userId      String
+  cineforumId String
+  role        CineforumRole @default(MEMBER)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cineforum Cineforum @relation(fields: [cineforumId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, cineforumId])
+  @@index([cineforumId, role])
+}
+
+// Global movies (not scoped by cineforum)
+model Movie {
+  id               String    @id @default(cuid())
+  title            String
+  imdbId           String?   @unique
+  year             Int?
+  runtime          Int?
+  overview         String?
+  originalLanguage String?
+  poster           String?
+  image            String?
+  imageMedium      String?
+  adult            Boolean?  @default(false)
+  tmdbId           Int?
+  popularity       Float?
+  voteAverage      Float? // TMDB /10
+  imdbRating       Float? // IMDB /10
+  tomatometer      Float? // Rotten Tomatoes /10 normalized to /10
+  metascore        Float? // Metacritic /10 normalized
+  budget           Int?
+  revenue          Int?
+  releaseDate      DateTime?
+
+  // JSONB fields
+  actors              Json?
+  genres              Json?
+  productionCompanies Json?
+  productionCountries Json?
+  spokenLanguages     Json?
+  director            String?
+  homepage            String?
+
+  // inverse relations
+  movieVotes         MovieVote[]
+  proposalMovies     ProposalMovie[]
+  winningProposals   Proposal[]          @relation("ProposalWinner") // back from Proposal.winner
+  movieRoundRankings MovieRoundRanking[] @relation("MRR_Movie") // back from MovieRoundRanking.movie
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A round inside a cineforum
+model Round {
+  id        String    @id @default(cuid())
+  name      String
+  closed    Boolean   @default(false)
+  date      DateTime?
+  oscarable Boolean   @default(false)
+
+  cineforumId String
+  cineforum   Cineforum @relation(fields: [cineforumId], references: [id], onDelete: Cascade)
+
+  chooserId String?
+  chooser   User?   @relation("RoundChooser", fields: [chooserId], references: [id])
+
+  proposals Proposal[]
+  teams     Team[]
+  votes     MovieVote[]
+  rankings  MovieRoundRanking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cineforumId])
+  @@index([chooserId])
+  @@index([date])
+}
+
+// Team lives in a cineforum, optionally attached to a round.
+model Team {
+  id   String @id @default(cuid())
+  name String
+
+  cineforumId String
+  cineforum   Cineforum @relation(fields: [cineforumId], references: [id], onDelete: Cascade)
+
+  roundId String?
+  round   Round?  @relation(fields: [roundId], references: [id])
+
+  users     TeamUser[]
+  proposals Proposal[]          @relation("ProposalOwnerTeam") // back from Proposal.ownerTeam
+  rankings  MovieRoundRanking[] @relation("MRR_Team") // back from MovieRoundRanking.team
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cineforumId, name]) // unique name per cineforum
+  @@index([roundId])
+}
+
+// User <-> Team join model
+model TeamUser {
+  id     String @id @default(cuid())
+  teamId String
+  userId String
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+// A set of movies proposed for a round, by a user or a team
+model Proposal {
+  id          String    @id @default(cuid())
+  date        DateTime?
+  closed      Boolean   @default(false)
+  description String?
+  title       String
+  showResults Boolean   @default(false)
+
+  // scoping
+  cineforumId String
+  cineforum   Cineforum @relation(fields: [cineforumId], references: [id], onDelete: Cascade)
+
+  roundId String
+  round   Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  // owner: either user or team
+  ownerUserId String?
+  ownerUser   User?   @relation("ProposalOwnerUser", fields: [ownerUserId], references: [id])
+  ownerTeamId String?
+  ownerTeam   Team?   @relation("ProposalOwnerTeam", fields: [ownerTeamId], references: [id])
+
+  // winner (optional)
+  winnerId String?
+  winner   Movie?  @relation("ProposalWinner", fields: [winnerId], references: [id])
+
+  votes  ProposalVote[]
+  movies ProposalMovie[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cineforumId])
+  @@index([roundId])
+  @@index([ownerUserId])
+  @@index([ownerTeamId])
+  @@index([date])
+}
+
+// HABTM: Proposal <-> Movie
+model ProposalMovie {
+  proposalId String
+  movieId    String
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  movie    Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@id([proposalId, movieId])
+  @@index([movieId])
+}
+
+// Preference vote on a proposal (movieSelection keeps the same shape as in Ruby via JSONB)
+model ProposalVote {
+  id             String @id @default(cuid())
+  proposalId     String
+  userId         String
+  movieSelection Json? // e.g. {"1": ["mid1"], "2": ["mid2","mid3"]}
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([proposalId, userId]) // one vote per user per proposal
+  @@index([userId])
+}
+
+// Numeric votes per movie and round
+model MovieVote {
+  id     String @id @default(cuid())
+  rating Float
+
+  roundId             String
+  userId              String
+  movieId             String
+  movieRoundRankingId String?
+
+  round             Round              @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie             Movie              @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieRoundRanking MovieRoundRanking? @relation(fields: [movieRoundRankingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roundId, movieId, userId])
+  @@index([userId])
+  @@index([movieId])
+  @@index([roundId])
+}
+
+// Aggregation for (round + movie) and optionally by owner (user/team)
+model MovieRoundRanking {
+  id            String  @id @default(cuid())
+  averageRating Float?
+  roundWinner   Boolean @default(false)
+
+  roundId String
+  movieId String
+  userId  String?
+  teamId  String?
+
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  movie Movie @relation("MRR_Movie", fields: [movieId], references: [id])
+  user  User? @relation("MRR_User", fields: [userId], references: [id])
+  team  Team? @relation("MRR_Team", fields: [teamId], references: [id])
+
+  movieVotes   MovieVote[]
+  userRankings UserRankingMovieRoundRanking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roundId, movieId, userId, teamId]) // single row per combination
+  @@index([roundId, movieId])
+  @@index([userId])
+  @@index([teamId])
+}
+
+// Per-user averages inside a given cineforum
+model UserRanking {
+  id          String @id @default(cuid())
+  userId      String
+  cineforumId String
+
+  averageRating     Float?
+  averageImdbRating Float?
+  averageTmdbRating Float?
+  averageRotoRating Float?
+  averageMetaRating Float?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cineforum Cineforum @relation(fields: [cineforumId], references: [id], onDelete: Cascade)
+
+  movieRoundRankings UserRankingMovieRoundRanking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, cineforumId])
+  @@index([cineforumId])
+}
+
+// HABTM: UserRanking <-> MovieRoundRanking
+model UserRankingMovieRoundRanking {
+  userRankingId       String
+  movieRoundRankingId String
+
+  userRanking       UserRanking       @relation(fields: [userRankingId], references: [id], onDelete: Cascade)
+  movieRoundRanking MovieRoundRanking @relation(fields: [movieRoundRankingId], references: [id], onDelete: Cascade)
+
+  @@id([userRankingId, movieRoundRankingId])
 }

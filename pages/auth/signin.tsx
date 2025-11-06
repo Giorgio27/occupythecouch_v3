@@ -1,81 +1,120 @@
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/router";
+import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignInPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const error = router.query.error as string | undefined;
+  const callbackUrl = (router.query.callbackUrl as string) || "/";
+  const errorQuery = router.query.error as string | undefined;
+
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [showPw, setShowPw] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!errorQuery) return;
+    setError(
+      errorQuery === "CredentialsSignin" ? "Credenziali non valide" : errorQuery
+    );
+  }, [errorQuery]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    setError(null);
     const res = await signIn("credentials", {
       email,
       password,
       redirect: false,
+      callbackUrl,
     });
     setSubmitting(false);
 
     if (!res) return;
-    if (res.ok) {
-      router.push("/");
-    }
+    if (res.ok) router.push(callbackUrl);
+    else setError("Credenziali non valide");
   }
 
-  const errorMessage =
-    error === "CredentialsSignin"
-      ? "Credenziali non valide"
-      : error
-      ? error
-      : undefined;
-
   return (
-    <div className="max-w-md mx-auto mt-12 p-6 border rounded-lg shadow-sm">
-      <h1 className="text-2xl font-bold mb-4">Accedi</h1>
+    <div className="mx-auto grid min-h-dvh w-full max-w-md place-items-center px-4 py-8">
+      <Card className="w-full">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Accedi</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Entra per vedere i tuoi cineforum o crearne di nuovi.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <p className="mb-3 text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          )}
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="tu@esempio.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-      {errorMessage && (
-        <p className="text-red-600 text-sm mb-2">{errorMessage}</p>
-      )}
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPw ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  aria-label={showPw ? "Nascondi password" : "Mostra password"}
+                  onClick={() => setShowPw((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                >
+                  {showPw ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full border rounded px-3 py-2 text-sm"
-          />
-        </div>
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Accesso in corso…" : "Accedi"}
+            </Button>
+          </form>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full border rounded px-3 py-2 text-sm"
-          />
-        </div>
-
-        <Button type="submit" disabled={submitting} className="w-full">
-          {submitting ? "Accesso in corso..." : "Accedi"}
-        </Button>
-      </form>
-
-      <p className="mt-4 text-sm">
-        Non hai un account?{" "}
-        <Link href="/auth/signup" className="text-blue-600 hover:underline">
-          Registrati
-        </Link>
-      </p>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Non hai un account?{" "}
+            <Link
+              href="/auth/signup"
+              className="font-medium underline underline-offset-4"
+            >
+              Registrati
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
