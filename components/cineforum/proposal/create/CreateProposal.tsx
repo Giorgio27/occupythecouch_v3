@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,8 @@ export default function CreateProposal({
 }: {
   cineforumId: string;
 }) {
+  const { data: session } = useSession();
+
   const [results, setResults] = React.useState<any[]>([]);
   const [selected, setSelected] = React.useState<any[]>([]);
   const [title, setTitle] = React.useState("");
@@ -23,10 +26,12 @@ export default function CreateProposal({
   } | null>(null);
   const [creating, setCreating] = React.useState(false);
 
+  // 🔑 use the real logged user id as default owner (user)
   React.useEffect(() => {
-    // TODO: wire /api/cineforum/users/:id/candidates with session user
-    setOwner({ id: "__ME__", type: "User" });
-  }, []);
+    if (session?.user && "id" in session.user && session.user.id) {
+      setOwner({ id: session.user.id as string, type: "User" });
+    }
+  }, [session]);
 
   function toggleMovie(m: any) {
     setSelected((prev) =>
@@ -133,7 +138,7 @@ export default function CreateProposal({
         <div className="pt-2">
           <Button
             onClick={submitCreate}
-            disabled={creating || selected.length === 0}
+            disabled={creating || selected.length === 0 || !owner}
           >
             {creating ? "Creating…" : "Create"}
           </Button>
