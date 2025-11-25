@@ -160,6 +160,7 @@ model Movie {
   productionCompanies Json?
   productionCountries Json?
   spokenLanguages     Json?
+  tagline             String?
   director            String?
   homepage            String?
 
