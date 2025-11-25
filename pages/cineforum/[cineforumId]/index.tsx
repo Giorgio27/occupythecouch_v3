@@ -8,6 +8,7 @@ import { CineforumHeader } from "@/components/cineforum/header";
 import { CreateProposal } from "@/components/cineforum/proposal/create";
 import { OpenProposal } from "@/components/cineforum/proposal/open";
 import { ClosedProposal } from "@/components/cineforum/proposal/closed";
+import Layout from "@/components/Layout";
 
 type ProposalLite = {
   id: string;
@@ -77,22 +78,24 @@ export default function CineforumHome({
   last,
 }: Props) {
   return (
-    <div className="space-y-6">
-      <CineforumHeader
-        title={cineforumName}
-        subtitle="Vote, see results, or create a new proposal — all in one place."
-      />
+    <Layout>
+      <div className="space-y-6">
+        <CineforumHeader
+          title={cineforumName}
+          subtitle="Vote, see results, or create a new proposal — all in one place."
+        />
 
-      {!last && <CreateProposal cineforumId={cineforumId} />}
+        {!last && <CreateProposal cineforumId={cineforumId} />}
 
-      {last && last.closed && (
-        <>
-          <ClosedProposal last={last} />
-          <CreateProposal cineforumId={cineforumId} />
-        </>
-      )}
+        {last && last.closed && (
+          <>
+            <ClosedProposal last={last} />
+            <CreateProposal cineforumId={cineforumId} />
+          </>
+        )}
 
-      {last && !last.closed && <OpenProposal proposalId={last.id} />}
-    </div>
+        {last && !last.closed && <OpenProposal proposalId={last.id} />}
+      </div>
+    </Layout>
   );
 }
