@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import MovieRankRow from "./MovieRankRow";
 import ResultsPanel from "./ResultsPanel";
 import LoadingCard from "../../common/LoadingCard";
+import { fetchProposal, fetchRanking, voteProposal } from "@/lib/api/cineforum";
 
 /** Open proposal block: loads detail, handles vote, optionally shows ranking */
 export default function OpenProposal({ proposalId }: { proposalId: string }) {
@@ -18,9 +19,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
     (async () => {
       setLoading(true);
       try {
-        const p = await fetch(`/api/cineforum/proposals/${proposalId}`).then(
-          (r) => r.json()
-        );
+        const p = await fetchProposal(proposalId);
         if (cancelled) return;
         setProposal(p);
 
@@ -46,9 +45,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
         }
 
         if (p.no_votes_left || p.show_results) {
-          const r = await fetch(
-            `/api/cineforum/proposals/ranking/${proposalId}`
-          ).then((x) => x.json());
+          const r = await fetchRanking(proposalId);
           setRanking(r);
         } else {
           setRanking(null);
@@ -92,14 +89,8 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
             <div className="pt-2">
               <Button
                 onClick={async () => {
-                  await fetch("/api/cineforum/proposals/votes", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ proposalId, lists }),
-                  });
-                  const r = await fetch(
-                    `/api/cineforum/proposals/ranking/${proposalId}`
-                  ).then((x) => x.json());
+                  await voteProposal(proposalId, lists);
+                  const r = await fetchRanking(proposalId);
                   setRanking(r);
                   alert("Vote registered!");
                 }}

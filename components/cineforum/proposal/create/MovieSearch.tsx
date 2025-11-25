@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { imdbSearch } from "@/lib/api/cineforum/proposals";
 
 export default function MovieSearch({
   onResults,
@@ -14,10 +15,7 @@ export default function MovieSearch({
     if (!query || query.length < 2) return;
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/cineforum/proposals/movies/input/${encodeURIComponent(query)}`
-      );
-      const data = await res.json();
+      const data = await imdbSearch(query);
       onResults(data);
     } finally {
       setLoading(false);

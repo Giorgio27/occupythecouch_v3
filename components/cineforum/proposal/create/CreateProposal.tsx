@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MovieSearch from "./MovieSearch";
 import SelectedMovies from "./SelectedMovies";
+import { createProposal } from "@/lib/api/cineforum";
 
 /** Create Proposal block (IMDb search + simple selection + submit) */
 export default function CreateProposal({
@@ -48,19 +49,14 @@ export default function CreateProposal({
     }
     setCreating(true);
     try {
-      const res = await fetch("/api/cineforum/proposals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cineforumId,
-          date,
-          candidate: owner,
-          title,
-          description,
-          proposal: selected,
-        }),
+      await createProposal({
+        cineforumId,
+        date,
+        candidate: owner,
+        title,
+        description,
+        proposal: selected,
       });
-      if (!res.ok) throw new Error();
       location.reload();
     } catch {
       alert("Creation failed");
