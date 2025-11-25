@@ -1,43 +1,41 @@
-import Link from "next/link";
+// components/Header.tsx
+import * as React from "react";
 import { useRouter } from "next/router";
-import { signOut, useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
+
+import PublicHeader from "@/components/header/PublicHeader";
+import AppHeader from "@/components/header/AppHeader";
+import CineforumHeaderNav from "@/components/header/CineforumHeaderNav";
 
 export default function Header() {
+  const router = useRouter();
   const { data: session, status } = useSession();
-  const isLoading = status === "loading";
 
-  return (
-    <header className="w-full border-b">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/" className="font-semibold tracking-tight">
-          CineFriends
-        </Link>
+  const cineforumId = router.query.cineforumId as string | undefined;
+  const inCineforum = router.pathname.startsWith("/cineforum/[cineforumId]");
 
-        <div className="flex items-center gap-2">
-          {isLoading ? (
-            <span className="text-sm text-muted-foreground">Checking…</span>
-          ) : session ? (
-            <>
-              <span className="hidden text-sm text-muted-foreground sm:inline">
-                {session.user?.name || session.user?.email}
-              </span>
-              <Button variant="outline" onClick={() => signOut()}>
-                Log out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link href="/auth/signin">
-                <Button variant="outline">Log in</Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button>Sign up</Button>
-              </Link>
-            </>
-          )}
+  // Loading state: per non far lampeggiare troppo la UI
+  if (status === "loading") {
+    return (
+      <header className="w-full border-b bg-background">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 text-sm text-muted-foreground">
+          <span>CineFriends</span>
+          <span>Checking session…</span>
         </div>
-      </nav>
-    </header>
-  );
+      </header>
+    );
+  }
+
+  if (!session) {
+    // Not authenticated
+    return <PublicHeader />;
+  }
+
+  if (session && inCineforum && cineforumId) {
+    // Authenticated inside a specific cineforum
+    return <CineforumHeaderNav />;
+  }
+
+  // Authenticated, but not in a cineforum route
+  return <AppHeader />;
 }
