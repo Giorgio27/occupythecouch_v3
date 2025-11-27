@@ -1,8 +1,11 @@
-export async function fetchLastRound(cineforumId?: string) {
+import { jsonFetch } from "@/lib/cineforum-api";
+import { RoundSummaryDTO } from "@/lib/types";
+
+export async function fetchLastRound(
+  cineforumId?: string
+): Promise<RoundSummaryDTO | null> {
   const qs = cineforumId
     ? `?cineforumId=${encodeURIComponent(cineforumId)}`
     : "";
-  const res = await fetch(`/api/cineforum/rounds/last${qs}`);
-  if (!res.ok) throw new Error("Failed to load last round");
-  return res.json();
+  return jsonFetch<RoundSummaryDTO | null>(`/api/cineforum/rounds/last${qs}`);
 }

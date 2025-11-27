@@ -1,49 +1,56 @@
-export async function fetchProposal(proposalId: string) {
-  const res = await fetch(`/api/cineforum/proposals/${proposalId}`);
-  if (!res.ok) throw new Error("Failed to load proposal");
-  return res.json();
+import { jsonFetch } from "@/lib/cineforum-api";
+import {
+  ImdbSuggestionDTO,
+  ProposalDetailDTO,
+  ProposalRankingDTO,
+} from "@/lib/types";
+
+export async function fetchProposal(
+  proposalId: string
+): Promise<ProposalDetailDTO> {
+  return jsonFetch<ProposalDetailDTO>(`/api/cineforum/proposals/${proposalId}`);
 }
 
-export async function fetchRanking(proposalId: string) {
-  const res = await fetch(`/api/cineforum/proposals/ranking/${proposalId}`);
-  if (!res.ok) throw new Error("Failed to load ranking");
-  return res.json();
+export async function fetchRanking(
+  proposalId: string
+): Promise<ProposalRankingDTO> {
+  return jsonFetch<ProposalRankingDTO>(
+    `/api/cineforum/proposals/ranking/${proposalId}`
+  );
 }
 
-export async function voteProposal(
+export async function voteProposal<TReturn = { ok: boolean }>(
   proposalId: string,
   lists: Record<string, any[]>
-) {
-  const res = await fetch(`/api/cineforum/proposals/votes`, {
+): Promise<TReturn> {
+  return jsonFetch<TReturn>(`/api/cineforum/proposals/votes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ proposalId, lists }),
   });
-  if (!res.ok) throw new Error("Failed to vote");
-  return res.json();
 }
 
-export async function createProposal(payload: {
+export type CreateProposalPayload = {
   cineforumId: string;
   date: string;
   candidate: { id: string; type: "User" | "Team" };
   title: string;
   description: string;
-  proposal: any[];
-}) {
-  const res = await fetch(`/api/cineforum/proposals`, {
+  proposal: ImdbSuggestionDTO[];
+};
+
+export async function createProposal<TReturn = { id: string; title: string }>(
+  payload: CreateProposalPayload
+): Promise<TReturn> {
+  return jsonFetch<TReturn>(`/api/cineforum/proposals`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to create");
-  return res.json();
 }
 
-export async function imdbSearch(query: string) {
-  const res = await fetch(
+export async function imdbSearch(query: string): Promise<ImdbSuggestionDTO[]> {
+  return jsonFetch<ImdbSuggestionDTO[]>(
     `/api/cineforum/proposals/movies/input/${encodeURIComponent(query)}`
   );
-  if (!res.ok) throw new Error("Search failed");
-  return res.json();
 }
