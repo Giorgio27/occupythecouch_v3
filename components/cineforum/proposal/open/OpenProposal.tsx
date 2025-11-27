@@ -5,7 +5,11 @@ import { Label } from "@/components/ui/label";
 import MovieRankRow from "./MovieRankRow";
 import ResultsPanel from "./ResultsPanel";
 import LoadingCard from "../../common/LoadingCard";
-import { fetchProposal, fetchRanking, voteProposal } from "@/lib/api/cineforum";
+import {
+  fetchProposal,
+  fetchRanking,
+  voteProposal,
+} from "@/lib/client/cineforum";
 
 /** Open proposal block: loads detail, handles vote, optionally shows ranking */
 export default function OpenProposal({ proposalId }: { proposalId: string }) {

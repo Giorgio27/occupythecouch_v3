@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MovieSearch from "./MovieSearch";
 import SelectedMovies from "./SelectedMovies";
-import { createProposal } from "@/lib/api/cineforum";
+import { createProposal } from "@/lib/client/cineforum";
 
 /** Create Proposal block (IMDb search + simple selection + submit) */
 export default function CreateProposal({

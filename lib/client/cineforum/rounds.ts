@@ -1,5 +1,5 @@
-import { jsonFetch } from "@/lib/cineforum-api";
-import { RoundSummaryDTO } from "@/lib/types";
+import { jsonFetch } from "@/lib/client/https";
+import { RoundSummaryDTO } from "@/lib/shared/types";
 
 export async function fetchLastRound(
   cineforumId?: string

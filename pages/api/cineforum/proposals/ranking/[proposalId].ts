@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
-import { buildBallotsFromMovieSelection, schulze } from "@/lib/ranking/schulze";
+import {
+  buildBallotsFromMovieSelection,
+  schulze,
+} from "@/lib/server/ranking/schulze";
 
 export default async function handler(
   req: NextApiRequest,

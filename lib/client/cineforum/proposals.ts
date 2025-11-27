@@ -1,9 +1,9 @@
-import { jsonFetch } from "@/lib/cineforum-api";
+import { jsonFetch } from "@/lib/client/https";
 import {
   ImdbSuggestionDTO,
   ProposalDetailDTO,
   ProposalRankingDTO,
-} from "@/lib/types";
+} from "@/lib/shared/types";
 
 export async function fetchProposal(
   proposalId: string
