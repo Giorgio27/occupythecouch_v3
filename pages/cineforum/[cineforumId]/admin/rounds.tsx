@@ -14,14 +14,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { RoundSummaryDTO } from "@/lib/shared/types";
+import {
+  closeRound,
+  createRound,
+  fetchRoundsPage,
+  PAGE_SIZE,
+} from "@/lib/client/cineforum/rounds";
 
 type ListResponse = {
   status: "completed" | "progress";
   total: number;
   rounds: RoundSummaryDTO[];
 };
-
-const PAGE_SIZE = 10;
 
 export default function CineforumRoundsAdminPage() {
   const router = useRouter();
@@ -66,10 +70,7 @@ export default function CineforumRoundsAdminPage() {
         offset: String(pageToLoad * PAGE_SIZE),
         limit: String(PAGE_SIZE),
       });
-      const res = await fetch(`/api/cineforum/rounds?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch rounds");
-      const data: ListResponse = await res.json();
-
+      const data = await fetchRoundsPage(cineforumId, pageToLoad);
       setStatus(data.status);
       setPage(pageToLoad);
       setRounds((prev) => (reset ? data.rounds : [...prev, ...data.rounds]));
@@ -91,21 +92,15 @@ export default function CineforumRoundsAdminPage() {
     setCreating(true);
     setError(null);
     try {
-      const res = await fetch("/api/cineforum/rounds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cineforumId,
-          name,
-          date,
-          // chooserUserId: optional, default to current user
-          chooserUserId:
-            session?.user && "id" in session.user
-              ? (session.user.id as string)
-              : undefined,
-        }),
+      await createRound({
+        cineforumId,
+        name,
+        date,
+        chooserUserId:
+          session?.user && "id" in session.user
+            ? (session.user.id as string)
+            : undefined,
       });
-      if (!res.ok) throw new Error("Failed to create round");
       setName("");
       setDate("");
       // reload from first page to see newest rounds
@@ -123,23 +118,15 @@ export default function CineforumRoundsAdminPage() {
     setClosingId(roundId);
     setError(null);
     try {
-      const res = await fetch(`/api/cineforum/rounds/${roundId}/close`, {
-        method: "POST",
-      });
+      const result = await closeRound(cineforumId, roundId);
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        if (res.status === 400 && body?.details) {
-          // Human friendly message based on details
+      if (result.ok === false) {
+        if (result.status === 400 && result.details) {
           const {
             openProposals,
             proposalsWithoutWinner,
             proposalsWithoutVotes,
-          } = body.details as {
-            openProposals?: { id: string; title: string }[];
-            proposalsWithoutWinner?: { id: string; title: string }[];
-            proposalsWithoutVotes?: { id: string; title: string }[];
-          };
+          } = result.details;
 
           const parts: string[] = [];
           if (openProposals?.length) {
@@ -163,10 +150,11 @@ export default function CineforumRoundsAdminPage() {
           }
 
           setError(
-            body.error || "Round cannot be closed. " + (parts.join(" · ") || "")
+            result.error ||
+              "Round cannot be closed. " + (parts.join(" · ") || "")
           );
         } else {
-          throw new Error(body?.error || "Failed to close round");
+          throw new Error(result.error);
         }
         return;
       }

@@ -60,7 +60,6 @@ export type RoundSummaryDTO = {
   } | null;
 };
 
-// IMDb suggestion (semplificato) — quello che ti torna dal suggest
 export type ImdbSuggestionDTO = {
   id: string; // imdb id
   l: string; // title
@@ -68,4 +67,23 @@ export type ImdbSuggestionDTO = {
   s?: string; // subtitle (actors...)
   q?: string; // kind ("feature", "TV episode", ...)
   i?: string[]; // [smallImg, largeImg]
+};
+
+export type RoundsListResponseDTO = {
+  status: "completed" | "progress";
+  total: number;
+  rounds: RoundSummaryDTO[];
+};
+
+export type CloseRoundErrorDetails = {
+  openProposals?: { id: string; title: string }[];
+  proposalsWithoutWinner?: { id: string; title: string }[];
+  proposalsWithoutVotes?: { id: string; title: string }[];
+};
+
+export type CineforumSummaryDTO = {
+  id: string;
+  name: string;
+  description: string | null;
+  _count?: { memberships: number; rounds: number };
 };
