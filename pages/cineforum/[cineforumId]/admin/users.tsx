@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,11 +14,12 @@ import {
   toggleUserDisabled,
 } from "@/lib/client/cineforum/users";
 import { UserPlus, Shield, User, Ban, Crown, UserCheck } from "lucide-react";
+import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
 
 export default function CineforumUsersAdminPage() {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
   const cineforumId = router.query.cineforumId as string | undefined;
+  const { isAdmin, isLoading, session } = useAdminAccess(cineforumId);
 
   const [users, setUsers] = React.useState<CineforumUserDTO[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -35,14 +35,11 @@ export default function CineforumUsersAdminPage() {
   const [password, setPassword] = React.useState("");
   const [role, setRole] = React.useState<"ADMIN" | "MEMBER">("MEMBER");
 
-  const canManage =
-    sessionStatus === "authenticated" && !!session?.user && !!cineforumId;
-
   React.useEffect(() => {
-    if (!cineforumId || !canManage) return;
+    if (!cineforumId || !isAdmin) return;
     void loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cineforumId, canManage]);
+  }, [cineforumId, isAdmin]);
 
   async function loadUsers() {
     if (!cineforumId) return;
@@ -122,7 +119,7 @@ export default function CineforumUsersAdminPage() {
     }
   }
 
-  if (sessionStatus === "loading" || !cineforumId) {
+  if (isLoading) {
     return (
       <Layout>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
@@ -132,14 +129,9 @@ export default function CineforumUsersAdminPage() {
     );
   }
 
-  if (!canManage) {
-    return (
-      <Layout>
-        <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
-          You must be logged in to manage users.
-        </div>
-      </Layout>
-    );
+  // If not admin, the hook will redirect, but show nothing while redirecting
+  if (!isAdmin) {
+    return null;
   }
 
   return (

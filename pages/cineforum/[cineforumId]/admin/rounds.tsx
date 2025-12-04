@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import {
   fetchRoundsPage,
   PAGE_SIZE,
 } from "@/lib/client/cineforum/rounds";
+import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
 
 type ListResponse = {
   status: "completed" | "progress";
@@ -29,8 +29,8 @@ type ListResponse = {
 
 export default function CineforumRoundsAdminPage() {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
   const cineforumId = router.query.cineforumId as string | undefined;
+  const { isAdmin, isLoading, session } = useAdminAccess(cineforumId);
 
   const [rounds, setRounds] = React.useState<RoundSummaryDTO[]>([]);
   const [status, setStatus] = React.useState<"completed" | "progress" | null>(
@@ -50,15 +50,12 @@ export default function CineforumRoundsAdminPage() {
   const hasOpenRound = openRounds.length > 0;
   const isCreateDisabled = creating || !name || !date || hasOpenRound;
 
-  const canManage =
-    sessionStatus === "authenticated" && !!session?.user && !!cineforumId;
-
   React.useEffect(() => {
-    if (!cineforumId || !canManage) return;
+    if (!cineforumId || !isAdmin) return;
     // load first page
     void loadPage(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cineforumId, canManage]);
+  }, [cineforumId, isAdmin]);
 
   async function loadPage(pageToLoad: number, reset = false) {
     if (!cineforumId) return;
@@ -169,7 +166,7 @@ export default function CineforumRoundsAdminPage() {
     }
   }
 
-  if (sessionStatus === "loading" || !cineforumId) {
+  if (isLoading) {
     return (
       <Layout>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
@@ -179,14 +176,9 @@ export default function CineforumRoundsAdminPage() {
     );
   }
 
-  if (!canManage) {
-    return (
-      <Layout>
-        <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
-          You must be logged in to manage rounds.
-        </div>
-      </Layout>
-    );
+  // If not admin, the hook will redirect, but show nothing while redirecting
+  if (!isAdmin) {
+    return null;
   }
 
   return (
