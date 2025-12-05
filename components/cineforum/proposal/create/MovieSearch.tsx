@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { imdbSearch } from "@/lib/api/cineforum/proposals";
+import { imdbSearch } from "@/lib/client/cineforum/proposals";
 
 export default function MovieSearch({
   onResults,

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { createCineforum } from "@/lib/client/cineforum";
 
 type CineforumDTO = {
   id: string;
@@ -86,20 +87,12 @@ function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function createCineforum(e: React.FormEvent) {
+  async function onCreateCineforum(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/cineforums/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error || "Creation failed");
-      }
+      await createCineforum({ name });
       window.location.reload();
     } catch (err: any) {
       setError(err.message);
@@ -124,7 +117,7 @@ function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
         </CardHeader>
         <CardContent>
           <form
-            onSubmit={createCineforum}
+            onSubmit={onCreateCineforum}
             className="flex flex-col gap-2 sm:flex-row"
           >
             <Input

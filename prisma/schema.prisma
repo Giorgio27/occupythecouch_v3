@@ -120,6 +120,7 @@ model Membership {
   userId      String
   cineforumId String
   role        CineforumRole @default(MEMBER)
+  disabled    Boolean       @default(false)
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   cineforum Cineforum @relation(fields: [cineforumId], references: [id], onDelete: Cascade)
@@ -129,6 +130,7 @@ model Membership {
 
   @@unique([userId, cineforumId])
   @@index([cineforumId, role])
+  @@index([disabled])
 }
 
 // Global movies (not scoped by cineforum)

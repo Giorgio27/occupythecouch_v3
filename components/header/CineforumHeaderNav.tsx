@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 
 export default function CineforumHeaderNav() {
   const router = useRouter();
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
   // which desktop dropdown is open
   const [openMenu, setOpenMenu] = React.useState<
@@ -44,21 +46,34 @@ export default function CineforumHeaderNav() {
       ]
     : [];
 
-  // TODO: limit to admins when you have roles
-  const adminLinks = hasCineNav
-    ? [
-        { label: "Rounds", href: `/cineforum/${cineforumId}/admin/rounds` },
-        { label: "Teams", href: `/cineforum/${cineforumId}/admin/teams` },
-        {
-          label: "Proposals",
-          href: `/cineforum/${cineforumId}/admin/proposals`,
-        },
-        {
-          label: "Dashboard",
-          href: `/cineforum/${cineforumId}/admin/dashboard`,
-        },
-      ]
-    : [];
+  // Check if user is admin
+  React.useEffect(() => {
+    if (!cineforumId || !session?.user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    fetchCurrentMembership(cineforumId)
+      .then((membership) => {
+        setIsAdmin(membership.isAdmin && !membership.disabled);
+      })
+      .catch(() => {
+        setIsAdmin(false);
+      });
+  }, [cineforumId, session]);
+
+  const adminLinks =
+    hasCineNav && isAdmin
+      ? [
+          { label: "Rounds", href: `/cineforum/${cineforumId}/admin/rounds` },
+          { label: "Teams", href: `/cineforum/${cineforumId}/admin/teams` },
+          {
+            label: "Proposals",
+            href: `/cineforum/${cineforumId}/admin/proposals`,
+          },
+          { label: "Users", href: `/cineforum/${cineforumId}/admin/users` },
+        ]
+      : [];
 
   return (
     <header className="w-full border-b bg-background">

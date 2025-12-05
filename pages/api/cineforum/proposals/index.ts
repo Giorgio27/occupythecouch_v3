@@ -4,7 +4,7 @@ import {
   tmdbFindAndDetails,
   omdbEnrichMovie,
   telegramNotify,
-} from "@/lib/api/external";
+} from "@/lib/server/external";
 
 export default async function handler(
   req: NextApiRequest,

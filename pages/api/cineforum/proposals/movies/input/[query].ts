@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { imdbSuggest } from "@/lib/api/external";
+import { imdbSuggest } from "@/lib/server/external";
 
 export default async function handler(
   req: NextApiRequest,

@@ -9,7 +9,18 @@ Collaborative movie selection and voting platform for cineforum communities.
 - **Database:** PostgreSQL
 - **ORM:** Prisma
 
----
+## Project Structure Overview
+
+This project uses a Next.js structure, showing indications of both Pages Router conventions (due to the presence of the `pages/` directory) and modern tooling.
+
+- **`components/`**: Contains reusable UI components. Aliases in `components.json` point to `@/components` and `@/components/ui`, suggesting a separation between custom large components and smaller shared UI elements.
+- **`pages/`**: Defines application routes and API endpoints using the Next.js Pages Router structure.
+  - API routes are defined under `pages/api/` (e.g., `pages/api/auth/[...nextauth].ts`).
+- **`lib/`**: Contains reusable code, utilities, and server-side logic.
+  - **`lib/server/`**: Contains server-specific modules, like external API wrappers (e.g., `imdb.ts`, `tmdb.ts`) and core domain logic (e.g., `rounds/`, `ranking/`).
+  - **`lib/shared/`**: Contains types and definitions shared across the application layers.
+  - **`lib/client/`**: Contains client libs for logic and fetch calls
+- **`prisma/`**: Stores the database schema definition in `prisma/schema.prisma`.
 
 ## Getting Started
 
