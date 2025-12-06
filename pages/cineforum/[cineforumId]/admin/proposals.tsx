@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
+import Layout from "@/components/Layout";
 import { ProposalDetailDTO } from "@/lib/shared/types/cineforum";
 import { adminProposalsClient } from "@/lib/client/cineforum/admin-proposals";
 import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
@@ -25,19 +26,13 @@ export default function AdminProposalsPage({
 }: AdminProposalsPageProps) {
   const router = useRouter();
   const { cineforumId } = router.query;
-  const { isAdmin } = useAdminAccess(cineforumId as string);
+  const { isAdmin, isLoading } = useAdminAccess(cineforumId as string);
 
   const [proposal, setProposal] = useState<ProposalDetailDTO | null>(
     initialProposal
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      router.push(`/cineforum/${cineforumId}`);
-    }
-  }, [isAdmin, cineforumId, router]);
 
   const handleRefreshProposal = async () => {
     if (!cineforumId) return;
@@ -100,126 +95,202 @@ export default function AdminProposalsPage({
     }
   };
 
-  if (!isAdmin) return null;
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
+          Loading...
+        </div>
+      </Layout>
+    );
+  }
+
+  // If not admin, the hook will redirect, but show nothing while redirecting
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Proposals</h1>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-          {error}
+    <Layout>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Proposals admin
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage the last proposal for this cineforum: close it, toggle
+            results visibility.
+          </p>
         </div>
-      )}
 
-      <div className="flex space-x-4 mb-4">
-        <Button onClick={handleRefreshProposal} disabled={loading}>
-          Refresh Proposal
-        </Button>
-      </div>
+        {/* Error banner */}
+        {error && (
+          <div className="rounded-md border border-red-500/40 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-      {proposal ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{proposal.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p>
-                  <strong>Date:</strong> {proposal.date}
-                </p>
-                <p>
-                  <strong>Description:</strong> {proposal.description}
-                </p>
-                <p>
-                  <strong>Status:</strong> {proposal.closed ? "Closed" : "Open"}
-                </p>
-                <p>
-                  <strong>Round:</strong> {proposal.round}
-                </p>
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button
+            onClick={handleRefreshProposal}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+          >
+            {loading ? "Refreshing..." : "Refresh Proposal"}
+          </Button>
+        </div>
+
+        {/* Proposal details */}
+        {proposal ? (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">{proposal.title}</CardTitle>
+                <span
+                  className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    proposal.closed
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                      : "bg-amber-50 text-amber-700 border border-amber-100"
+                  }`}
+                >
+                  {proposal.closed ? "Closed" : "Open"}
+                </span>
               </div>
-              <div>
-                <p>
-                  <strong>Owner:</strong> {proposal.owner?.type} -{" "}
-                  {proposal.owner?.id}
-                </p>
-                <p>
-                  <strong>Show Results:</strong>{" "}
-                  {proposal.show_results ? "Yes" : "No"}
-                </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Proposal info */}
+              <div className="grid gap-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Date:</span>
+                  <span className="font-medium">
+                    {proposal.date
+                      ? new Date(proposal.date).toLocaleDateString()
+                      : "No date"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Round:</span>
+                  <span className="font-medium">{proposal.round || "N/A"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Owner:</span>
+                  <span className="font-medium">
+                    {proposal.owner?.type} - {proposal.owner?.id}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Show Results:</span>
+                  <span className="font-medium">
+                    {proposal.show_results ? "Yes" : "No"}
+                  </span>
+                </div>
                 {proposal.winner && (
-                  <p>
-                    <strong>Winner:</strong> {proposal.winner.title}
-                  </p>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Winner:</span>
+                    <span className="font-medium">{proposal.winner.title}</span>
+                  </div>
                 )}
               </div>
-            </div>
 
-            <div className="mt-4 flex space-x-4">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={handleCloseProposal}
-                      disabled={loading || proposal.closed}
-                      variant={proposal.closed ? "outline" : "default"}
-                    >
-                      Close Proposal
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {proposal.closed
-                      ? "Proposal is already closed"
-                      : "Close the proposal and select a winner"}
-                  </TooltipContent>
-                </Tooltip>
+              {proposal.description && (
+                <div className="rounded-md border bg-muted/50 p-3 text-sm">
+                  <p className="text-muted-foreground">
+                    {proposal.description}
+                  </p>
+                </div>
+              )}
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={handleToggleResults}
-                      disabled={loading}
-                      variant={
-                        proposal.show_results ? "destructive" : "default"
-                      }
-                    >
-                      {proposal.show_results ? "Hide Results" : "Show Results"}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Toggle visibility of proposal results
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        className={proposal.closed ? "cursor-not-allowed" : ""}
+                      >
+                        <Button
+                          onClick={handleCloseProposal}
+                          disabled={loading || proposal.closed}
+                          variant={proposal.closed ? "outline" : "default"}
+                          size="sm"
+                        >
+                          {loading ? "Closing..." : "Close Proposal"}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {proposal.closed
+                        ? "Proposal is already closed"
+                        : "Close the proposal and select a winner"}
+                    </TooltipContent>
+                  </Tooltip>
 
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2">Movies</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {proposal.movies.map((movie) => (
-                  <div key={movie.id} className="border p-2 rounded">
-                    <p>
-                      <strong>{movie.title}</strong>
-                    </p>
-                    <p>Year: {movie.year}</p>
-                    {movie.image && (
-                      <img
-                        src={movie.image}
-                        alt={movie.title}
-                        className="w-full h-auto mt-2"
-                      />
-                    )}
-                  </div>
-                ))}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleToggleResults}
+                        disabled={loading}
+                        variant={
+                          proposal.show_results ? "secondary" : "default"
+                        }
+                        size="sm"
+                      >
+                        {loading
+                          ? "Updating..."
+                          : proposal.show_results
+                          ? "Hide Results"
+                          : "Show Results"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Toggle visibility of proposal results
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <p>No active proposal found.</p>
-      )}
-    </div>
+
+              {/* Movies */}
+              <div className="space-y-2 pt-2">
+                <h3 className="text-sm font-semibold">Movies</h3>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                  {proposal.movies.map((movie) => (
+                    <div
+                      key={movie.id}
+                      className="flex flex-col gap-2 rounded-md border bg-card p-3"
+                    >
+                      {movie.image && (
+                        <img
+                          src={movie.imageMedium}
+                          alt={movie.title}
+                          className="h-auto w-full rounded object-cover"
+                        />
+                      )}
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium">{movie.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Year: {movie.year}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No active proposal found.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </Layout>
   );
 }
 
@@ -295,6 +366,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
               title: pm.movie.title,
               year: pm.movie.year,
               image: pm.movie.image,
+              imageMedium: pm.movie.imageMedium,
             })),
             votes: [], // Not used in this view
             created_at: lastProposal.createdAt.toISOString(),
