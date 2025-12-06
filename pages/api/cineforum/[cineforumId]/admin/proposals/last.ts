@@ -7,6 +7,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
+    return res.status(405).end();
+  }
+
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -36,21 +41,6 @@ export default async function handler(
     });
   }
 
-  // Handle different HTTP methods
-  switch (req.method) {
-    case "GET":
-      return handleGetLastProposal(req, res, cineforumId);
-    default:
-      res.setHeader("Allow", ["GET"]);
-      return res.status(405).end();
-  }
-}
-
-async function handleGetLastProposal(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  cineforumId: string
-) {
   try {
     const proposal = await prisma.proposal.findFirst({
       where: { cineforumId },
@@ -65,31 +55,40 @@ async function handleGetLastProposal(
     });
 
     if (!proposal) {
-      return res.status(404).json({ error: "No proposals found" });
+      return res.status(200).json(null);
     }
 
-    // Transform proposal to match Ruby serialization
+    // Transform proposal to match ProposalDetailDTO
     const serializedProposal = {
       id: proposal.id,
-      date: proposal.date,
+      date: proposal.date?.toISOString() || null,
       title: proposal.title,
       description: proposal.description,
       closed: proposal.closed,
       show_results: proposal.showResults,
-      round_id: proposal.roundId,
-      winner: proposal.winner,
-      owner: proposal.ownerUserId
+      round: proposal.round?.name || null,
+      winner: proposal.winner
         ? {
-            id: proposal.ownerUserId,
-            type: "User",
-            name: proposal.ownerUser?.name,
+            id: proposal.winner.id,
+            title: proposal.winner.title,
+            year: proposal.winner.year,
+            image: proposal.winner.image,
           }
-        : {
-            id: proposal.ownerTeamId,
-            type: "Team",
-            name: proposal.ownerTeam?.name,
-          },
-      movies: proposal.movies.map((pm) => pm.movie),
+        : null,
+      owner: proposal.ownerUserId
+        ? { id: proposal.ownerUserId, type: "User" }
+        : { id: proposal.ownerTeamId!, type: "Team" },
+      movies: proposal.movies.map((pm) => ({
+        id: pm.movie.id,
+        title: pm.movie.title,
+        year: pm.movie.year,
+        image: pm.movie.image,
+        imageMedium: pm.movie.imageMedium,
+      })),
+      votes: [],
+      created_at: proposal.createdAt.toISOString(),
+      missing_users: [],
+      no_votes_left: false,
     };
 
     return res.status(200).json(serializedProposal);

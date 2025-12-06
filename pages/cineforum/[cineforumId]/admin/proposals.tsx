@@ -16,6 +16,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface AdminProposalsPageProps {
   initialProposal: ProposalDetailDTO | null;
@@ -33,6 +41,8 @@ export default function AdminProposalsPage({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [selectedWinnerId, setSelectedWinnerId] = useState<string | null>(null);
 
   const handleRefreshProposal = async () => {
     if (!cineforumId) return;
@@ -52,11 +62,13 @@ export default function AdminProposalsPage({
     }
   };
 
-  const handleCloseProposal = async () => {
-    if (!proposal || !cineforumId) return;
+  const handleOpenCloseDialog = () => {
+    setShowCloseDialog(true);
+    setSelectedWinnerId(null);
+  };
 
-    const winnerId = window.prompt("Enter the winner movie ID:");
-    if (!winnerId) return;
+  const handleCloseProposal = async () => {
+    if (!proposal || !cineforumId || !selectedWinnerId) return;
 
     setLoading(true);
     setError(null);
@@ -64,9 +76,11 @@ export default function AdminProposalsPage({
       const closedProposal = await adminProposalsClient.closeProposal(
         cineforumId as string,
         proposal.id,
-        winnerId
+        selectedWinnerId
       );
       setProposal(closedProposal);
+      setShowCloseDialog(false);
+      setSelectedWinnerId(null);
     } catch (err) {
       setError("Failed to close proposal");
       console.error(err);
@@ -212,12 +226,12 @@ export default function AdminProposalsPage({
                         className={proposal.closed ? "cursor-not-allowed" : ""}
                       >
                         <Button
-                          onClick={handleCloseProposal}
+                          onClick={handleOpenCloseDialog}
                           disabled={loading || proposal.closed}
                           variant={proposal.closed ? "outline" : "default"}
                           size="sm"
                         >
-                          {loading ? "Closing..." : "Close Proposal"}
+                          Close Proposal
                         </Button>
                       </span>
                     </TooltipTrigger>
@@ -289,6 +303,77 @@ export default function AdminProposalsPage({
             </CardContent>
           </Card>
         )}
+
+        {/* Close Proposal Dialog */}
+        <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Close Proposal</DialogTitle>
+              <DialogDescription>
+                Select the winning movie to close this proposal.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-2 py-4">
+              {proposal?.movies.map((movie) => (
+                <button
+                  key={movie.id}
+                  onClick={() => setSelectedWinnerId(movie.id)}
+                  className={`flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent ${
+                    selectedWinnerId === movie.id
+                      ? "border-primary bg-accent"
+                      : "border-border"
+                  }`}
+                >
+                  {movie.image && (
+                    <img
+                      src={movie.imageMedium}
+                      alt={movie.title}
+                      className="h-16 w-12 rounded object-cover"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium">{movie.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {movie.year}
+                    </p>
+                  </div>
+                  {selectedWinnerId === movie.id && (
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+                      <svg
+                        className="h-3 w-3 text-primary-foreground"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowCloseDialog(false)}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCloseProposal}
+                disabled={loading || !selectedWinnerId}
+              >
+                {loading ? "Closing..." : "Close Proposal"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
