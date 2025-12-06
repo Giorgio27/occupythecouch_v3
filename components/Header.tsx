@@ -1,6 +1,6 @@
-// components/Header.tsx
-import * as React from "react";
-import { useRouter } from "next/router";
+"use client";
+
+import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import PublicHeader from "@/components/header/PublicHeader";
@@ -9,17 +9,17 @@ import CineforumHeaderNav from "@/components/header/CineforumHeaderNav";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
 
-  const cineforumId = router.query.cineforumId as string | undefined;
-  const inCineforum = router.pathname.startsWith("/cineforum/[cineforumId]");
+  const cineforumId = pathname?.split("/cineforum/")[1]?.split("/")[0];
+  const inCineforum = pathname?.includes("/cineforum/");
 
-  // Loading state: per non far lampeggiare troppo la UI
   if (status === "loading") {
     return (
-      <header className="w-full border-b bg-background">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 text-sm text-muted-foreground">
-          <span>CineFriends</span>
+      <header className="w-full border-b border-border bg-gradient-to-r from-cine-bg via-cine-bg-soft to-cine-bg">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 text-sm text-muted-foreground">
+          <span className="font-black text-foreground">CineFriends</span>
           <span>Checking session…</span>
         </div>
       </header>
@@ -27,15 +27,12 @@ export default function Header() {
   }
 
   if (!session) {
-    // Not authenticated
     return <PublicHeader />;
   }
 
   if (session && inCineforum && cineforumId) {
-    // Authenticated inside a specific cineforum
     return <CineforumHeaderNav />;
   }
 
-  // Authenticated, but not in a cineforum route
   return <AppHeader />;
 }

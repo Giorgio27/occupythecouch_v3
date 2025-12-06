@@ -1,5 +1,12 @@
 // src/types/cineforum.ts
 
+export type CineforumDTO = {
+  id: string;
+  name: string;
+  description: string | null;
+  _count?: { memberships: number; rounds: number };
+};
+
 // Movie as returned inside proposal detail.
 export type ProposalMovieDTO = {
   id: string;
