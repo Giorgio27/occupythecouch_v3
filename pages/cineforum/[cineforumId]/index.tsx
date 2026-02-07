@@ -79,7 +79,7 @@ export default function CineforumHome({
 }: Props) {
   return (
     <Layout>
-      <div className="space-y-6">
+      <div>
         <CineforumHeader
           title={cineforumName}
           subtitle="Vote, see results, or create a new proposal — all in one place."

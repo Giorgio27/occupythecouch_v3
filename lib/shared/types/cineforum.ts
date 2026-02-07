@@ -39,6 +39,7 @@ export type ProposalDetailDTO = {
   description: string | null;
   title: string;
   round: string | null;
+  roundId?: string;
   missing_users: string[];
   no_votes_left: boolean;
   show_results: boolean;
@@ -93,4 +94,55 @@ export type CineforumSummaryDTO = {
   name: string;
   description: string | null;
   _count?: { memberships: number; rounds: number };
+};
+
+export type ProposalsListResponseDTO = {
+  proposals: ProposalDetailDTO[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
+};
+
+// Oscars types
+export type MovieWinnerDTO = {
+  id: string;
+  title: string;
+  year: number | null;
+  actors: string;
+  image: string | null;
+  imageMedium: string | null;
+  poster: string | null;
+  overview: string | null;
+  roundRating: number | null;
+  userRating: number | null;
+  proposer: string;
+  roundVotes: Array<{
+    user: string;
+    userName: string | null;
+    rating: number;
+  }>;
+};
+
+export type RoundBestDTO = {
+  id: string;
+  title: string;
+  proposer: string;
+  roundRating: number | null;
+};
+
+export type OscarsRoundDTO = {
+  id: string;
+  name: string;
+  closed: boolean;
+  date: string | null;
+  createdAt: string;
+  chooser: {
+    id: string;
+    name: string | null;
+  } | null;
+  winners: MovieWinnerDTO[];
+  bests: RoundBestDTO[];
 };

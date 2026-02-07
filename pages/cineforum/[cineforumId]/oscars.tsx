@@ -5,46 +5,7 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import Layout from "@/components/Layout";
 import OscarsRoundCard from "@/components/cineforum/oscars/OscarsRoundCard";
-
-interface MovieWinner {
-  id: string;
-  title: string;
-  year: number | null;
-  actors: string;
-  image: string | null;
-  imageMedium: string | null;
-  poster: string | null;
-  overview: string | null;
-  roundRating: number | null;
-  userRating: number | null;
-  proposer: string;
-  roundVotes: Array<{
-    user: string;
-    userName: string | null;
-    rating: number;
-  }>;
-}
-
-interface RoundBest {
-  id: string;
-  title: string;
-  proposer: string;
-  roundRating: number | null;
-}
-
-interface OscarsRound {
-  id: string;
-  name: string;
-  closed: boolean;
-  date: string | null;
-  createdAt: string;
-  chooser: {
-    id: string;
-    name: string | null;
-  } | null;
-  winners: MovieWinner[];
-  bests: RoundBest[];
-}
+import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 
 interface OscarsPageProps {
   cineforumId: string;
@@ -97,7 +58,7 @@ export default function OscarsPage({
   cineforumName,
 }: OscarsPageProps) {
   const router = useRouter();
-  const [rounds, setRounds] = React.useState<OscarsRound[]>([]);
+  const [rounds, setRounds] = React.useState<OscarsRoundDTO[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -188,47 +149,45 @@ export default function OscarsPage({
 
   return (
     <Layout>
-      <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Oscars</h1>
-          <p className="text-muted-foreground">{cineforumName}</p>
-        </div>
-
-        {error && (
-          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
-
-        {loading && rounds.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            Loading rounds...
-          </div>
-        )}
-
-        {rounds.length === 0 && !loading && (
-          <div className="text-center py-12 text-muted-foreground">
-            No oscarable rounds found.
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {rounds.map((round, index) => (
-            <OscarsRoundCard
-              key={round.id}
-              round={round}
-              isFirst={index === 0}
-              onVote={handleVote}
-            />
-          ))}
-        </div>
-
-        {loading && rounds.length > 0 && (
-          <div className="text-center py-4 text-sm text-muted-foreground">
-            Loading more rounds...
-          </div>
-        )}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Oscars</h1>
+        <p className="text-muted-foreground">{cineforumName}</p>
       </div>
+
+      {error && (
+        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-4">
+          {error}
+        </div>
+      )}
+
+      {loading && rounds.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          Loading rounds...
+        </div>
+      )}
+
+      {rounds.length === 0 && !loading && (
+        <div className="text-center py-12 text-muted-foreground">
+          No oscarable rounds found.
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {rounds.map((round, index) => (
+          <OscarsRoundCard
+            key={round.id}
+            round={round}
+            isFirst={index === 0}
+            onVote={handleVote}
+          />
+        ))}
+      </div>
+
+      {loading && rounds.length > 0 && (
+        <div className="text-center py-4 text-sm text-muted-foreground">
+          Loading more rounds...
+        </div>
+      )}
     </Layout>
   );
 }
