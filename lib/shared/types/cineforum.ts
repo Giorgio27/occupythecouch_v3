@@ -1,5 +1,15 @@
 // src/types/cineforum.ts
 
+// IMDb suggestion from search (raw format)
+export type ImdbMovieData = {
+  id: string; // imdb id
+  l: string; // title
+  y?: number; // year
+  s?: string; // subtitle (actors...)
+  q?: string; // kind ("feature", "TV episode", ...)
+  i?: string[]; // [smallImg, largeImg]
+};
+
 export type CineforumDTO = {
   id: string;
   name: string;
@@ -68,14 +78,8 @@ export type RoundSummaryDTO = {
   } | null;
 };
 
-export type ImdbSuggestionDTO = {
-  id: string; // imdb id
-  l: string; // title
-  y?: number; // year
-  s?: string; // subtitle (actors...)
-  q?: string; // kind ("feature", "TV episode", ...)
-  i?: string[]; // [smallImg, largeImg]
-};
+// Alias for backward compatibility
+export type ImdbSuggestionDTO = ImdbMovieData;
 
 export type RoundsListResponseDTO = {
   status: "completed" | "progress";
