@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user) {
@@ -125,8 +125,16 @@ export default async function handler(
       description: updatedProposal.description,
       closed: updatedProposal.closed,
       show_results: updatedProposal.showResults,
-      round_id: updatedProposal.roundId,
-      winner: updatedProposal.winner,
+      round: updatedProposal.round?.name || null,
+      roundId: updatedProposal.roundId,
+      winner: updatedProposal.winner
+        ? {
+            id: updatedProposal.winner.id,
+            title: updatedProposal.winner.title,
+            year: updatedProposal.winner.year,
+            image: updatedProposal.winner.image,
+          }
+        : null,
       owner: updatedProposal.ownerUserId
         ? {
             id: updatedProposal.ownerUserId,
@@ -138,7 +146,13 @@ export default async function handler(
             type: "Team" as const,
             name: updatedProposal.ownerTeam?.name,
           },
-      movies: updatedProposal.movies.map((pm) => pm.movie),
+      movies: updatedProposal.movies.map((pm) => ({
+        id: pm.movie.id,
+        title: pm.movie.title,
+        year: pm.movie.year,
+        image: pm.movie.image,
+        imageMedium: pm.movie.imageMedium,
+      })),
     };
 
     return res.status(200).json(serializedProposal);

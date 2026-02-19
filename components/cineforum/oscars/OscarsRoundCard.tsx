@@ -96,19 +96,18 @@ export default function OscarsRoundCard({
                 className="flex gap-4 p-4 border rounded-lg hover:bg-accent/20 transition-colors"
               >
                 {/* Movie Image */}
-                {/* <div className="flex-shrink-0 w-24 h-36 relative bg-muted rounded overflow-hidden">
+                <div className="flex-shrink-0 w-24 h-36 relative bg-muted rounded overflow-hidden">
                   {(movie.imageMedium || movie.image || movie.poster) && (
-                    <Image
+                    <img
                       src={
                         movie.imageMedium || movie.image || movie.poster || ""
                       }
                       alt={movie.title}
-                      fill
                       className="object-cover"
                       sizes="96px"
                     />
                   )}
-                </div> */}
+                </div>
 
                 {/* Movie Info */}
                 <div className="flex-1 min-w-0">

@@ -55,9 +55,11 @@ export default function MovieRankRow({
               className="h-14 w-10 rounded-md border border-border/60 object-cover"
             />
           ) : (
-            <div className="flex h-14 w-10 items-center justify-center rounded-md border border-border/60 bg-secondary">
-              <Film className="h-4 w-4 text-primary/70" />
-            </div>
+            <img
+              alt=""
+              src={movie.image}
+              className="h-14 w-10 rounded-md border border-border/60 object-cover"
+            />
           )}
         </div>
 

@@ -13,6 +13,7 @@ import Layout from "@/components/Layout";
 type ProposalLite = {
   id: string;
   date: string | null;
+  rawDate: string | null; // ISO date string for comparison
   title: string;
   closed: boolean;
   winner?: { id: string; title: string } | null;
@@ -58,6 +59,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
           date: last.date
             ? new Date(last.date).toLocaleDateString("it-IT")
             : null,
+          rawDate: last.date ? last.date.toISOString() : null,
           title: last.title,
           closed: last.closed,
           winner: last.winner
@@ -77,6 +79,24 @@ export default function CineforumHome({
   cineforumName,
   last,
 }: Props) {
+  // Determine if the screening date is in the future
+  const isScreeningInFuture = React.useMemo(() => {
+    if (!last?.rawDate) return false;
+    const screeningDate = new Date(last.rawDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for fair comparison
+    return screeningDate >= today;
+  }, [last?.rawDate]);
+
+  // Logic:
+  // 1. If there's a closed proposal with a future screening date -> show it (no create option)
+  // 2. If there's no proposal OR closed proposal with past screening date -> show create option
+  // 3. If there's an open proposal -> show voting interface
+
+  const showClosedProposal = last && last.closed && isScreeningInFuture;
+  const showCreateProposal = !last || (last.closed && !isScreeningInFuture);
+  const showOpenProposal = last && !last.closed;
+
   return (
     <Layout>
       <div>
@@ -85,16 +105,11 @@ export default function CineforumHome({
           subtitle="Vote, see results, or create a new proposal — all in one place."
         />
 
-        {!last && <CreateProposal cineforumId={cineforumId} />}
+        {showClosedProposal && <ClosedProposal last={last} />}
 
-        {last && last.closed && (
-          <>
-            <ClosedProposal last={last} />
-            <CreateProposal cineforumId={cineforumId} />
-          </>
-        )}
+        {showCreateProposal && <CreateProposal cineforumId={cineforumId} />}
 
-        {last && !last.closed && <OpenProposal proposalId={last.id} />}
+        {showOpenProposal && <OpenProposal proposalId={last.id} />}
       </div>
     </Layout>
   );
