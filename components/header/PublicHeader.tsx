@@ -22,7 +22,7 @@ export default function PublicHeader() {
             className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-105"
           />
           <span className="font-black text-base sm:text-lg tracking-tight text-foreground hover:text-primary transition-colors duration-300">
-            CineForum
+            OccupySilvano
           </span>
         </Link>
 
