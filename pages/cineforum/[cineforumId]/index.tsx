@@ -96,7 +96,7 @@ export default function CineforumHome({
   const showOpenProposal = last && !last.closed;
 
   return (
-    <Layout>
+    <Layout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div>
         {showClosedProposal && <ClosedProposal last={last} />}
 

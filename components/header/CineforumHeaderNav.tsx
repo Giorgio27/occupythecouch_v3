@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
+import { useCineforum } from "@/lib/client/contexts/CineforumContext";
 
 export default function CineforumHeaderNav() {
-  const router = useRouter();
+  const { cineforumId, cineforumName } = useCineforum();
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -20,7 +20,6 @@ export default function CineforumHeaderNav() {
     "cinema" | "history" | "admin" | null
   >(null);
 
-  const cineforumId = router.query.cineforumId as string;
   const hasCineNav = !!cineforumId;
 
   const cinemaLinks = hasCineNav
@@ -92,7 +91,7 @@ export default function CineforumHeaderNav() {
               className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-105"
             />
             <span className="font-black text-base sm:text-lg tracking-tight text-foreground hover:text-primary transition-colors duration-300">
-              OccupySilvano
+              OccupySilvano - {cineforumName}
             </span>
           </Link>
 
