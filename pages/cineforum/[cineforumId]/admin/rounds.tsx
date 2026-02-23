@@ -1,6 +1,7 @@
 import * as React from "react";
-import { useRouter } from "next/router";
-import Layout from "@/components/Layout";
+import { GetServerSideProps } from "next";
+import CineforumLayout from "@/components/CineforumLayout";
+import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,14 +28,33 @@ type ListResponse = {
   rounds: RoundSummaryDTO[];
 };
 
-export default function CineforumRoundsAdminPage() {
-  const router = useRouter();
-  const cineforumId = router.query.cineforumId as string | undefined;
+interface RoundsAdminPageProps {
+  cineforumId: string;
+  cineforumName: string;
+}
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const cineforumProps = await getCineforumLayoutProps(ctx);
+  if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
+    return cineforumProps;
+  }
+
+  return {
+    props: {
+      ...cineforumProps.props,
+    },
+  };
+};
+
+export default function CineforumRoundsAdminPage({
+  cineforumId,
+  cineforumName,
+}: RoundsAdminPageProps) {
   const { isAdmin, isLoading, session } = useAdminAccess(cineforumId);
 
   const [rounds, setRounds] = React.useState<RoundSummaryDTO[]>([]);
   const [status, setStatus] = React.useState<"completed" | "progress" | null>(
-    null
+    null,
   );
   const [page, setPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
@@ -128,27 +148,27 @@ export default function CineforumRoundsAdminPage() {
           const parts: string[] = [];
           if (openProposals?.length) {
             parts.push(
-              `Open proposals: ${openProposals.map((p) => p.title).join(", ")}`
+              `Open proposals: ${openProposals.map((p) => p.title).join(", ")}`,
             );
           }
           if (proposalsWithoutWinner?.length) {
             parts.push(
               `Proposals without winner: ${proposalsWithoutWinner
                 .map((p) => p.title)
-                .join(", ")}`
+                .join(", ")}`,
             );
           }
           if (proposalsWithoutVotes?.length) {
             parts.push(
               `Proposals without votes: ${proposalsWithoutVotes
                 .map((p) => p.title)
-                .join(", ")}`
+                .join(", ")}`,
             );
           }
 
           setError(
             result.error ||
-              "Round cannot be closed. " + (parts.join(" · ") || "")
+              "Round cannot be closed. " + (parts.join(" · ") || ""),
           );
         } else {
           throw new Error(result.error);
@@ -168,11 +188,11 @@ export default function CineforumRoundsAdminPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
           Loading...
         </div>
-      </Layout>
+      </CineforumLayout>
     );
   }
 
@@ -182,7 +202,7 @@ export default function CineforumRoundsAdminPage() {
   }
 
   return (
-    <Layout>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
         {/* Header */}
         <div className="space-y-1">
@@ -296,7 +316,7 @@ export default function CineforumRoundsAdminPage() {
                             "inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium",
                             round.closed
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                              : "bg-amber-50 text-amber-700 border border-amber-100"
+                              : "bg-amber-50 text-amber-700 border border-amber-100",
                           )}
                         >
                           {round.closed ? "Closed" : "Open"}
@@ -349,6 +369,6 @@ export default function CineforumRoundsAdminPage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </CineforumLayout>
   );
 }

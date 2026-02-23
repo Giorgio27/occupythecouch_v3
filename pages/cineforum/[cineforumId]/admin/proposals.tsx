@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
-import Layout from "@/components/Layout";
+import CineforumLayout from "@/components/CineforumLayout";
 import {
   ProposalDetailDTO,
   ProposalsListResponseDTO,
@@ -44,19 +44,20 @@ import {
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { InfiniteScroll } from "@/components/ui/infinite-scroll";
 import { Calendar, Film, Trash2, Plus, Search } from "lucide-react";
+import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
 interface AdminProposalsPageProps {
+  cineforumId: string;
+  cineforumName: string;
   initialData: ProposalsListResponseDTO;
 }
 
 export default function AdminProposalsPage({
+  cineforumId,
+  cineforumName,
   initialData,
 }: AdminProposalsPageProps) {
-  const router = useRouter();
-  const { cineforumId } = router.query;
-  const { isAdmin, isLoading: isLoadingAccess } = useAdminAccess(
-    cineforumId as string,
-  );
+  const { isAdmin, isLoading: isLoadingAccess } = useAdminAccess(cineforumId);
 
   const [proposals, setProposals] = useState<ProposalDetailDTO[]>(
     initialData.proposals,
@@ -270,11 +271,11 @@ export default function AdminProposalsPage({
 
   if (isLoadingAccess) {
     return (
-      <Layout>
+      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
           Loading...
         </div>
-      </Layout>
+      </CineforumLayout>
     );
   }
 
@@ -283,7 +284,7 @@ export default function AdminProposalsPage({
   }
 
   return (
-    <Layout>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="flex w-full flex-col gap-6">
         {/* Header */}
         <div className="space-y-1">
@@ -768,22 +769,21 @@ export default function AdminProposalsPage({
           </DialogContent>
         </Dialog>
       </div>
-    </Layout>
+    </CineforumLayout>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  const cineforumId = context.params?.cineforumId as string;
-
-  if (!session?.user) {
-    return {
-      redirect: {
-        destination: "/auth/signin",
-        permanent: false,
-      },
-    };
+  const cineforumProps = await getCineforumLayoutProps(context);
+  if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
+    return cineforumProps;
   }
+
+  const { cineforumId } = cineforumProps.props as {
+    cineforumId: string;
+    cineforumName: string;
+  };
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   // Check if user is admin or owner of this cineforum
   const membership = await prisma.membership.findUnique({
@@ -825,6 +825,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
+      ...cineforumProps.props,
       initialData: {
         proposals: proposals.map((proposal) => ({
           id: proposal.id,

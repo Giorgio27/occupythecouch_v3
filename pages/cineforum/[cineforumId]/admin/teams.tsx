@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
-import { GetServerSideProps } from "next";
 import prisma from "@/lib/prisma";
-import Layout from "@/components/Layout";
+import CineforumLayout from "@/components/CineforumLayout";
+import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import { Team } from "@/lib/client/cineforum/admin-teams";
 import { adminTeamsClient } from "@/lib/client/cineforum/admin-teams";
 import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
@@ -14,19 +15,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface AdminTeamsPageProps {
+  cineforumId: string;
+  cineforumName: string;
   initialTeams: Team[];
   initialStatus: "progress" | "completed";
   users: { id: string; name?: string; email?: string }[];
 }
 
 export default function AdminTeamsPage({
+  cineforumId,
+  cineforumName,
   initialTeams,
   initialStatus,
   users,
 }: AdminTeamsPageProps) {
-  const router = useRouter();
-  const { cineforumId } = router.query;
-  const { isAdmin, isLoading } = useAdminAccess(cineforumId as string);
+  const { isAdmin, isLoading } = useAdminAccess(cineforumId);
 
   const [teams, setTeams] = useState<Team[]>(initialTeams);
   const [status, setStatus] = useState<"progress" | "completed">(initialStatus);
@@ -90,11 +93,11 @@ export default function AdminTeamsPage({
 
   if (isLoading) {
     return (
-      <Layout>
+      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
           Loading...
         </div>
-      </Layout>
+      </CineforumLayout>
     );
   }
 
@@ -104,7 +107,7 @@ export default function AdminTeamsPage({
   }
 
   return (
-    <Layout>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
         {/* Header */}
         <div className="space-y-1">
@@ -158,7 +161,7 @@ export default function AdminTeamsPage({
                             ]);
                           } else {
                             setSelectedTeamUsers(
-                              selectedTeamUsers.filter((id) => id !== user.id)
+                              selectedTeamUsers.filter((id) => id !== user.id),
                             );
                           }
                         }}
@@ -246,22 +249,21 @@ export default function AdminTeamsPage({
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </CineforumLayout>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  const cineforumId = context.params?.cineforumId as string;
-
-  if (!session?.user) {
-    return {
-      redirect: {
-        destination: "/auth/signin",
-        permanent: false,
-      },
-    };
+  const cineforumProps = await getCineforumLayoutProps(context);
+  if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
+    return cineforumProps;
   }
+
+  const { cineforumId } = cineforumProps.props as {
+    cineforumId: string;
+    cineforumName: string;
+  };
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   // Check if user is admin or owner of this cineforum
   const membership = await prisma.membership.findUnique({
@@ -327,6 +329,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
+      ...cineforumProps.props,
       initialTeams: initialTeams.map((team) => ({
         id: team.id,
         name: team.name,

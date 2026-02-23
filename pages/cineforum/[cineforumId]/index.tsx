@@ -1,12 +1,11 @@
 import * as React from "react";
 import type { GetServerSideProps } from "next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import { CreateProposal } from "@/components/cineforum/proposal/create";
 import { OpenProposal } from "@/components/cineforum/proposal/open";
 import { ClosedProposal } from "@/components/cineforum/proposal/closed";
-import Layout from "@/components/Layout";
+import CineforumLayout from "@/components/CineforumLayout";
+import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
 type ProposalLite = {
   id: string;
@@ -26,21 +25,15 @@ type Props = {
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getServerSession(ctx.req, ctx.res, authOptions);
-  if (!session?.user?.id)
-    return { redirect: { destination: "/auth/signin", permanent: false } };
+  const cineforumProps = await getCineforumLayoutProps(ctx);
+  if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
+    return cineforumProps;
+  }
 
-  const cineforumId = ctx.params?.cineforumId as string;
-
-  const member = await prisma.membership.findFirst({
-    where: { cineforumId, userId: session.user.id },
-  });
-  if (!member) return { notFound: true };
-
-  const cf = await prisma.cineforum.findUnique({
-    where: { id: cineforumId },
-    select: { name: true },
-  });
+  const { cineforumId, cineforumName } = cineforumProps.props as {
+    cineforumId: string;
+    cineforumName: string;
+  };
 
   const last = await prisma.proposal.findFirst({
     where: { cineforumId },
@@ -50,7 +43,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const props: Props = {
     cineforumId,
-    cineforumName: cf?.name ?? "Cineforum",
+    cineforumName,
     last: last
       ? {
           id: last.id,
@@ -96,7 +89,7 @@ export default function CineforumHome({
   const showOpenProposal = last && !last.closed;
 
   return (
-    <Layout cineforumId={cineforumId} cineforumName={cineforumName}>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div>
         {showClosedProposal && <ClosedProposal last={last} />}
 
@@ -104,6 +97,6 @@ export default function CineforumHome({
 
         {showOpenProposal && <OpenProposal proposalId={last.id} />}
       </div>
-    </Layout>
+    </CineforumLayout>
   );
 }
