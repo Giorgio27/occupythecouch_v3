@@ -1,69 +1,39 @@
-import * as React from "react";
-import { useRouter } from "next/router";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
-import prisma from "@/lib/prisma";
-import Layout from "@/components/Layout";
+import { useState, useEffect } from "react";
+import { GetServerSideProps } from "next";
+import CineforumLayout from "@/components/CineforumLayout";
+import { Trophy, Loader2 } from "lucide-react";
 import OscarsRoundCard from "@/components/cineforum/oscars/OscarsRoundCard";
 import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
+import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
 interface OscarsPageProps {
   cineforumId: string;
   cineforumName: string;
 }
 
-export async function getServerSideProps(ctx: any) {
-  const session = await getServerSession(ctx.req, ctx.res, authOptions);
-  if (!session?.user?.id) {
-    return {
-      redirect: { destination: "/auth/signin", permanent: false },
-    };
-  }
-
-  const { cineforumId } = ctx.query;
-
-  // Check membership
-  const membership = await prisma.membership.findUnique({
-    where: {
-      userId_cineforumId: {
-        userId: session.user.id,
-        cineforumId,
-      },
-    },
-    include: {
-      cineforum: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
-
-  if (!membership || membership.disabled) {
-    return {
-      redirect: { destination: "/", permanent: false },
-    };
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const cineforumProps = await getCineforumLayoutProps(ctx);
+  if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
+    return cineforumProps;
   }
 
   return {
     props: {
-      cineforumId,
-      cineforumName: membership.cineforum.name,
+      ...cineforumProps.props,
     },
   };
-}
+};
 
 export default function OscarsPage({
   cineforumId,
   cineforumName,
 }: OscarsPageProps) {
-  const router = useRouter();
-  const [rounds, setRounds] = React.useState<OscarsRoundDTO[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [rounds, setRounds] = useState<OscarsRoundDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load rounds progressively (like Rails polling)
-  React.useEffect(() => {
+  useEffect(() => {
     let offset = 0;
     const limit = 1;
     let isMounted = true;
@@ -148,31 +118,61 @@ export default function OscarsPage({
   };
 
   return (
-    <Layout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Oscars</h1>
-        <p className="text-muted-foreground">{cineforumName}</p>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+      {/* Header Section */}
+      <div className="mb-8 animate-fade-in-down">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-500/30">
+            <Trophy className="w-6 h-6 text-yellow-600 dark:text-yellow-500" />
+          </div>
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+              Oscars
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
+              {cineforumName}
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground max-w-2xl">
+          Vota i film dei round passati e scopri i vincitori di ogni ciclo
+        </p>
       </div>
 
+      {/* Error State */}
       {error && (
-        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-4">
-          {error}
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl mb-6 animate-fade-in">
+          <p className="text-sm font-medium">{error}</p>
         </div>
       )}
 
+      {/* Loading State - Initial */}
       {loading && rounds.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          Loading rounds...
+        <div className="flex flex-col items-center justify-center py-16 sm:py-24 animate-fade-in">
+          <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+          <p className="text-muted-foreground text-sm">
+            Caricamento round in corso...
+          </p>
         </div>
       )}
 
+      {/* Empty State */}
       {rounds.length === 0 && !loading && (
-        <div className="text-center py-12 text-muted-foreground">
-          No oscarable rounds found.
+        <div className="flex flex-col items-center justify-center py-16 sm:py-24 animate-fade-in">
+          <div className="p-4 rounded-full bg-muted/50 mb-4">
+            <Trophy className="w-12 h-12 text-muted-foreground/50" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">
+            Nessun round disponibile
+          </h3>
+          <p className="text-sm text-muted-foreground text-center max-w-md">
+            Non ci sono ancora round chiusi disponibili per gli Oscars
+          </p>
         </div>
       )}
 
-      <div className="space-y-4">
+      {/* Rounds List */}
+      <div className="space-y-4 sm:space-y-5">
         {rounds.map((round, index) => (
           <OscarsRoundCard
             key={round.id}
@@ -183,11 +183,13 @@ export default function OscarsPage({
         ))}
       </div>
 
+      {/* Loading State - Progressive */}
       {loading && rounds.length > 0 && (
-        <div className="text-center py-4 text-sm text-muted-foreground">
-          Loading more rounds...
+        <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground animate-fade-in">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Caricamento altri round...</span>
         </div>
       )}
-    </Layout>
+    </CineforumLayout>
   );
 }

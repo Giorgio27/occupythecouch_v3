@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useRouter } from "next/router";
-import Layout from "@/components/Layout";
+import { GetServerSideProps } from "next";
+import CineforumLayout from "@/components/CineforumLayout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +16,30 @@ import {
 } from "@/lib/client/cineforum/users";
 import { UserPlus, Shield, User, Ban, Crown, UserCheck } from "lucide-react";
 import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
+import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
-export default function CineforumUsersAdminPage() {
-  const router = useRouter();
-  const cineforumId = router.query.cineforumId as string | undefined;
+interface UsersAdminPageProps {
+  cineforumId: string;
+  cineforumName: string;
+}
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const cineforumProps = await getCineforumLayoutProps(ctx);
+  if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
+    return cineforumProps;
+  }
+
+  return {
+    props: {
+      ...cineforumProps.props,
+    },
+  };
+};
+
+export default function CineforumUsersAdminPage({
+  cineforumId,
+  cineforumName,
+}: UsersAdminPageProps) {
   const { isAdmin, isLoading, session } = useAdminAccess(cineforumId);
 
   const [users, setUsers] = React.useState<CineforumUserDTO[]>([]);
@@ -26,7 +47,7 @@ export default function CineforumUsersAdminPage() {
   const [inviting, setInviting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [actioningUserId, setActioningUserId] = React.useState<string | null>(
-    null
+    null,
   );
 
   // form state
@@ -121,11 +142,11 @@ export default function CineforumUsersAdminPage() {
 
   if (isLoading) {
     return (
-      <Layout>
+      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
           Loading...
         </div>
-      </Layout>
+      </CineforumLayout>
     );
   }
 
@@ -135,7 +156,7 @@ export default function CineforumUsersAdminPage() {
   }
 
   return (
-    <Layout>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
         {/* Header */}
         <div className="space-y-1">
@@ -257,7 +278,7 @@ export default function CineforumUsersAdminPage() {
                     key={user.id}
                     className={cn(
                       "flex flex-col gap-3 rounded-md border bg-card p-3 text-sm md:flex-row md:items-center",
-                      user.disabled && "opacity-60"
+                      user.disabled && "opacity-60",
                     )}
                   >
                     <div className="flex-1 space-y-1">
@@ -277,7 +298,7 @@ export default function CineforumUsersAdminPage() {
                               "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium",
                               user.role === "ADMIN"
                                 ? "border-blue-100 bg-blue-50 text-blue-700"
-                                : "border-gray-100 bg-gray-50 text-gray-700"
+                                : "border-gray-100 bg-gray-50 text-gray-700",
                             )}
                           >
                             {user.role === "ADMIN" ? (
@@ -313,7 +334,7 @@ export default function CineforumUsersAdminPage() {
                                   year: "numeric",
                                   month: "short",
                                   day: "numeric",
-                                }
+                                },
                               )}
                             </span>
                           </>
@@ -354,7 +375,7 @@ export default function CineforumUsersAdminPage() {
                             className={cn(
                               user.disabled
                                 ? "text-green-600 hover:bg-green-50 hover:text-green-700"
-                                : "text-red-600 hover:bg-red-50 hover:text-red-700"
+                                : "text-red-600 hover:bg-red-50 hover:text-red-700",
                             )}
                           >
                             {user.disabled ? (
@@ -379,6 +400,6 @@ export default function CineforumUsersAdminPage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </CineforumLayout>
   );
 }
