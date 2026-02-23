@@ -86,8 +86,16 @@ export default async function handler(
           }
         : null,
       owner: proposal.ownerUserId
-        ? { id: proposal.ownerUserId, type: "User" as const }
-        : { id: proposal.ownerTeamId!, type: "Team" as const },
+        ? {
+            id: proposal.ownerUserId,
+            type: "User" as const,
+            name: proposal.ownerUser?.name ?? null,
+          }
+        : {
+            id: proposal.ownerTeamId!,
+            type: "Team" as const,
+            name: proposal.ownerTeam?.name ?? null,
+          },
       movies: proposal.movies.map((pm) => ({
         id: pm.movie.id,
         title: pm.movie.title,

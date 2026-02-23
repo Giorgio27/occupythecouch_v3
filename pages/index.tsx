@@ -21,7 +21,9 @@ export async function getServerSideProps(ctx: any) {
   }
 
   const cineforums = await prisma.cineforum.findMany({
-    where: { memberships: { some: { userId: session.user.id } } },
+    where: {
+      memberships: { some: { userId: session.user.id, disabled: false } },
+    },
     select: {
       id: true,
       name: true,

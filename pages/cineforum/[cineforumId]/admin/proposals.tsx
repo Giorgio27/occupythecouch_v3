@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
@@ -8,14 +8,14 @@ import CineforumLayout from "@/components/CineforumLayout";
 import {
   ProposalDetailDTO,
   ProposalsListResponseDTO,
-  ProposalMovieDTO,
   ImdbMovieData,
+  ProposalRankingDTO,
 } from "@/lib/shared/types/cineforum";
 import {
   adminProposalsClient,
   MovieUpdateData,
 } from "@/lib/client/cineforum/admin-proposals";
-import { imdbSearch } from "@/lib/client/cineforum/proposals";
+import { imdbSearch, fetchRanking } from "@/lib/client/cineforum/proposals";
 import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +43,17 @@ import {
 } from "@/components/ui/accordion";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { InfiniteScroll } from "@/components/ui/infinite-scroll";
-import { Calendar, Film, Trash2, Plus, Search } from "lucide-react";
+import {
+  Calendar,
+  Film,
+  Trash2,
+  Plus,
+  Search,
+  Trophy,
+  Medal,
+  ChevronDown,
+  Sparkles,
+} from "lucide-react";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
 interface AdminProposalsPageProps {
@@ -85,6 +95,14 @@ export default function AdminProposalsPage({
   );
   const [searchingMovies, setSearchingMovies] = useState(false);
 
+  // Ranking state
+  const [rankings, setRankings] = useState<Record<string, ProposalRankingDTO>>(
+    {},
+  );
+  const [loadingRankings, setLoadingRankings] = useState<
+    Record<string, boolean>
+  >({});
+
   // Group proposals by round
   const proposalsByRound = useMemo(() => {
     const grouped = new Map<string, ProposalDetailDTO[]>();
@@ -102,6 +120,20 @@ export default function AdminProposalsPage({
       proposals: items,
     }));
   }, [proposals]);
+
+  // Load ranking for first proposal of each round (the ones that open by default)
+  useEffect(() => {
+    proposalsByRound.forEach((group) => {
+      const firstProposal = group.proposals[0];
+      if (
+        firstProposal &&
+        firstProposal.votes &&
+        firstProposal.votes.length > 0
+      ) {
+        loadRanking(firstProposal.id);
+      }
+    });
+  }, [proposalsByRound]);
 
   const handleLoadMore = async () => {
     if (!cineforumId || loading || !pagination.hasMore) return;
@@ -269,6 +301,20 @@ export default function AdminProposalsPage({
     setMovieSearchQuery("");
   };
 
+  const loadRanking = async (proposalId: string) => {
+    if (rankings[proposalId] || loadingRankings[proposalId]) return;
+
+    setLoadingRankings((prev) => ({ ...prev, [proposalId]: true }));
+    try {
+      const ranking = await fetchRanking(proposalId);
+      setRankings((prev) => ({ ...prev, [proposalId]: ranking }));
+    } catch (err) {
+      console.error("Failed to load ranking", err);
+    } finally {
+      setLoadingRankings((prev) => ({ ...prev, [proposalId]: false }));
+    }
+  };
+
   if (isLoadingAccess) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
@@ -323,7 +369,12 @@ export default function AdminProposalsPage({
                 </div>
 
                 {/* Proposals in accordion */}
-                <Accordion type="single" collapsible className="space-y-2">
+                <Accordion
+                  type="single"
+                  collapsible
+                  className="space-y-2"
+                  defaultValue={group.proposals[0]?.id}
+                >
                   {group.proposals.map((proposal) => {
                     const isEditing = editingProposalId === proposal.id;
                     const displayMovies = isEditing
@@ -337,7 +388,10 @@ export default function AdminProposalsPage({
                         value={proposal.id}
                         className="rounded-lg border bg-card"
                       >
-                        <AccordionTrigger className="px-4 hover:no-underline">
+                        <AccordionTrigger
+                          className="px-4 hover:no-underline"
+                          onClick={() => loadRanking(proposal.id)}
+                        >
                           <div className="flex w-full items-center justify-between gap-4 pr-2">
                             <div className="flex items-center gap-3">
                               <Film className="h-4 w-4 text-muted-foreground" />
@@ -406,7 +460,7 @@ export default function AdminProposalsPage({
                               )}
                             </div>
 
-                            {/* Movies */}
+                            {/* Movies Section - Always visible with ranking-style cards */}
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
                                 <Label className="text-xs font-semibold text-muted-foreground">
@@ -486,41 +540,90 @@ export default function AdminProposalsPage({
                                 </Card>
                               )}
 
-                              {/* Movie List */}
-                              <div className="grid gap-3 sm:grid-cols-2">
+                              {/* Movie List - Ranking style cards */}
+                              <div className="space-y-2">
                                 {displayMovies.map((movie) => {
                                   const movieImage =
                                     movie.imageMedium || movie.i?.[0];
                                   const movieTitle = movie.title || movie.l;
                                   const movieYear = movie.year || movie.y;
 
+                                  // Get ranking info if available and not editing
+                                  const rankedMovie =
+                                    !isEditing && rankings[proposal.id]
+                                      ? rankings[
+                                          proposal.id
+                                        ].sorted_movies.find(
+                                          (m) => m.id === movie.id,
+                                        )
+                                      : null;
+                                  const isWinner =
+                                    rankedMovie?.proposal_rank === 1;
+                                  const winnersCount = rankings[proposal.id]
+                                    ? rankings[
+                                        proposal.id
+                                      ].sorted_movies.filter(
+                                        (m) => m.proposal_rank === 1,
+                                      ).length
+                                    : 0;
+                                  const isTiedWinner =
+                                    isWinner && winnersCount > 1;
+
                                   return (
                                     <div
                                       key={movie.id}
-                                      className="flex items-center gap-3 rounded-md border p-3"
+                                      className={`flex items-center gap-3 rounded-lg border p-3 ${
+                                        isWinner
+                                          ? "border-primary/50 bg-primary/10"
+                                          : "border-border/70 bg-card/60"
+                                      }`}
                                     >
                                       {movieImage ? (
                                         <img
                                           src={movieImage}
                                           alt={movieTitle}
-                                          className="h-20 w-14 rounded object-cover"
+                                          className="h-24 w-16 rounded object-cover flex-shrink-0"
                                         />
                                       ) : (
-                                        <div className="flex h-20 w-14 items-center justify-center rounded bg-muted text-xs text-muted-foreground">
+                                        <div className="flex h-24 w-16 items-center justify-center rounded bg-muted text-xs text-muted-foreground flex-shrink-0">
                                           No image
                                         </div>
                                       )}
                                       <div className="flex-1 min-w-0">
-                                        <p
-                                          className="truncate font-medium"
-                                          title={movieTitle}
-                                        >
-                                          {movieTitle}
-                                        </p>
-                                        {movieYear && (
-                                          <p className="text-sm text-muted-foreground">
-                                            {movieYear}
-                                          </p>
+                                        <div className="flex items-start gap-2">
+                                          <div className="flex-1 min-w-0">
+                                            {!isEditing && isWinner && (
+                                              <p className="text-xs text-primary font-semibold mb-1">
+                                                {isTiedWinner
+                                                  ? `Winner (tied with ${winnersCount - 1} other${winnersCount > 2 ? "s" : ""})`
+                                                  : "Winner"}
+                                              </p>
+                                            )}
+                                            <p
+                                              className="font-semibold truncate"
+                                              title={movieTitle}
+                                            >
+                                              {movieTitle}
+                                            </p>
+                                            {movieYear && (
+                                              <p className="text-sm text-muted-foreground">
+                                                {movieYear}
+                                              </p>
+                                            )}
+                                          </div>
+                                          {!isEditing && isWinner && (
+                                            <Trophy className="h-5 w-5 text-primary flex-shrink-0" />
+                                          )}
+                                        </div>
+                                        {!isEditing && rankedMovie && (
+                                          <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs">
+                                            <span className="font-semibold">
+                                              rank
+                                            </span>
+                                            <span className="text-primary">
+                                              {rankedMovie.proposal_rank}
+                                            </span>
+                                          </div>
                                         )}
                                       </div>
                                       {isEditing && (
@@ -528,7 +631,7 @@ export default function AdminProposalsPage({
                                           size="sm"
                                           variant="ghost"
                                           onClick={() => removeMovie(movie.id)}
-                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                                         >
                                           <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -539,6 +642,106 @@ export default function AdminProposalsPage({
                               </div>
                             </div>
 
+                            {/* Voting Results Section - Individual Votes */}
+                            {!isEditing &&
+                              proposal.votes &&
+                              proposal.votes.length > 0 && (
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-semibold text-muted-foreground">
+                                      Voting Results ({proposal.votes.length}{" "}
+                                      votes)
+                                    </Label>
+                                  </div>
+
+                                  <details className="rounded-lg border border-border/70 bg-card/50 p-3">
+                                    <summary className="cursor-pointer list-none">
+                                      <div className="flex items-center justify-between">
+                                        <div className="inline-flex items-center gap-2">
+                                          <Sparkles className="h-4 w-4 text-primary" />
+                                          <span className="text-sm font-semibold">
+                                            Individual Votes
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">
+                                            ({proposal.votes.length})
+                                          </span>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                    </summary>
+
+                                    <div className="mt-3 space-y-2">
+                                      {proposal.votes.map((vote) => (
+                                        <div
+                                          key={vote.id}
+                                          className="rounded-md border border-border/70 bg-secondary/20 p-3"
+                                        >
+                                          <div className="mb-2 flex items-center justify-between gap-2">
+                                            <div className="text-sm font-semibold">
+                                              {vote.user.name ||
+                                                `User ${vote.user.id.slice(0, 8)}`}
+                                            </div>
+                                            <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground">
+                                              {
+                                                Object.keys(
+                                                  vote.movie_selection,
+                                                ).length
+                                              }{" "}
+                                              ranks
+                                            </span>
+                                          </div>
+
+                                          <div className="space-y-2">
+                                            {Object.keys(vote.movie_selection)
+                                              .sort(
+                                                (a, b) =>
+                                                  parseInt(a) - parseInt(b),
+                                              )
+                                              .map((rank) => {
+                                                const movieIds = vote
+                                                  .movie_selection[
+                                                  rank
+                                                ] as string[];
+                                                const movieTitles = movieIds
+                                                  .map(
+                                                    (id) =>
+                                                      proposal.movies.find(
+                                                        (m) => m.id === id,
+                                                      )?.title,
+                                                  )
+                                                  .filter(Boolean);
+
+                                                return (
+                                                  <div
+                                                    key={rank}
+                                                    className="flex items-start gap-2"
+                                                  >
+                                                    <div className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                                                      {rank}°
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-1">
+                                                      {movieTitles.map(
+                                                        (title, i) => (
+                                                          <div
+                                                            key={i}
+                                                            className="rounded-full border border-border/60 bg-secondary/50 px-2 py-0.5 text-xs"
+                                                          >
+                                                            {title}
+                                                          </div>
+                                                        ),
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                </div>
+                              )}
+
                             {/* Additional Info */}
                             <div className="grid gap-2 text-sm">
                               <div className="flex justify-between">
@@ -547,7 +750,8 @@ export default function AdminProposalsPage({
                                 </span>
                                 <span className="font-medium">
                                   {proposal.owner?.type} -{" "}
-                                  {proposal.owner?.id.slice(0, 8)}
+                                  {proposal.owner?.name ??
+                                    proposal.owner?.id.slice(0, 8)}
                                 </span>
                               </div>
                               <div className="flex justify-between">
@@ -594,74 +798,101 @@ export default function AdminProposalsPage({
                                 </>
                               ) : (
                                 <>
-                                  <Button
-                                    onClick={() => startEditing(proposal)}
-                                    disabled={loading || proposal.closed}
-                                    variant="outline"
-                                    size="sm"
-                                  >
-                                    Edit
-                                  </Button>
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span
                                           className={
-                                            proposal.closed
+                                            proposal.closed ||
+                                            (proposal.votes &&
+                                              proposal.votes.length > 0)
                                               ? "cursor-not-allowed"
                                               : ""
                                           }
                                         >
                                           <Button
                                             onClick={() =>
-                                              handleOpenCloseDialog(proposal)
+                                              startEditing(proposal)
                                             }
                                             disabled={
-                                              loading || proposal.closed
+                                              loading ||
+                                              proposal.closed ||
+                                              (proposal.votes &&
+                                                proposal.votes.length > 0)
                                             }
-                                            variant={
-                                              proposal.closed
-                                                ? "outline"
-                                                : "default"
-                                            }
+                                            variant="outline"
                                             size="sm"
                                           >
-                                            Close
+                                            Edit
                                           </Button>
                                         </span>
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         {proposal.closed
-                                          ? "Already closed"
-                                          : "Close and select winner"}
-                                      </TooltipContent>
-                                    </Tooltip>
-
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          onClick={() =>
-                                            handleToggleResults(proposal)
-                                          }
-                                          disabled={loading}
-                                          variant={
-                                            proposal.show_results
-                                              ? "secondary"
-                                              : "outline"
-                                          }
-                                          size="sm"
-                                        >
-                                          {proposal.show_results
-                                            ? "Hide"
-                                            : "Show"}{" "}
-                                          Results
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        Toggle results visibility
+                                          ? "Cannot edit closed proposal"
+                                          : proposal.votes &&
+                                              proposal.votes.length > 0
+                                            ? "Cannot edit proposal with votes"
+                                            : "Edit proposal"}
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span
+                                        className={
+                                          proposal.closed
+                                            ? "cursor-not-allowed"
+                                            : ""
+                                        }
+                                      >
+                                        <Button
+                                          onClick={() =>
+                                            handleOpenCloseDialog(proposal)
+                                          }
+                                          disabled={loading || proposal.closed}
+                                          variant={
+                                            proposal.closed
+                                              ? "outline"
+                                              : "default"
+                                          }
+                                          size="sm"
+                                        >
+                                          Close
+                                        </Button>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {proposal.closed
+                                        ? "Already closed"
+                                        : "Close and select winner"}
+                                    </TooltipContent>
+                                  </Tooltip>
+
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        onClick={() =>
+                                          handleToggleResults(proposal)
+                                        }
+                                        disabled={loading}
+                                        variant={
+                                          proposal.show_results
+                                            ? "secondary"
+                                            : "outline"
+                                        }
+                                        size="sm"
+                                      >
+                                        {proposal.show_results
+                                          ? "Hide"
+                                          : "Show"}{" "}
+                                        Results
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      Toggle results visibility
+                                    </TooltipContent>
+                                  </Tooltip>
                                 </>
                               )}
                             </div>
@@ -677,13 +908,6 @@ export default function AdminProposalsPage({
               <div className="flex justify-center py-8">
                 <div className="text-sm text-muted-foreground">
                   Loading more proposals...
-                </div>
-              </div>
-            }
-            endMessage={
-              <div className="flex justify-center py-8">
-                <div className="text-sm text-muted-foreground">
-                  All proposals loaded
                 </div>
               </div>
             }
@@ -820,6 +1044,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       ownerUser: true,
       ownerTeam: true,
       winner: true,
+      votes: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -845,8 +1079,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
               }
             : null,
           owner: proposal.ownerUserId
-            ? { id: proposal.ownerUserId, type: "User" }
-            : { id: proposal.ownerTeamId!, type: "Team" },
+            ? {
+                id: proposal.ownerUserId,
+                type: "User" as const,
+                name: proposal.ownerUser?.name || null,
+              }
+            : {
+                id: proposal.ownerTeamId!,
+                type: "Team" as const,
+                name: proposal.ownerTeam?.name || null,
+              },
           movies: proposal.movies.map((pm) => ({
             id: pm.movie.id,
             title: pm.movie.title,
@@ -854,7 +1096,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             image: pm.movie.image,
             imageMedium: pm.movie.imageMedium,
           })),
-          votes: [],
+          votes: proposal.votes.map((v) => ({
+            id: v.id,
+            user: {
+              id: v.user.id,
+              name: v.user.name,
+            },
+            movie_selection: v.movieSelection as Record<string, string[]>,
+          })),
           created_at: proposal.createdAt.toISOString(),
           missing_users: [],
           no_votes_left: false,
