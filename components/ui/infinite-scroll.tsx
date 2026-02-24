@@ -74,13 +74,7 @@ export function InfiniteScroll<T>({
 
       {/* End message */}
       {!hasMore && !isLoading && items.length > 0 && (
-        <div className="py-4">
-          {endMessage || (
-            <div className="text-center text-sm text-muted-foreground">
-              No more items to load
-            </div>
-          )}
-        </div>
+        <div className="py-4">{endMessage}</div>
       )}
     </div>
   );

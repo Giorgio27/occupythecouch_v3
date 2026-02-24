@@ -40,7 +40,7 @@ export type ProposalVoteDTO = {
 export type ProposalDetailDTO = {
   id: string;
   date: string | null;
-  owner: { id: string; type: "User" | "Team" } | null;
+  owner: { id: string; type: "User" | "Team"; name?: string | null } | null;
   movies: ProposalMovieDTO[];
   winner: ProposalMovieDTO | null;
   closed: boolean;

@@ -7,7 +7,7 @@ import {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const proposalId = req.query.proposalId as string;
 
@@ -25,7 +25,7 @@ export default async function handler(
     proposal.votes.map((v) => ({
       movieSelection: (v.movieSelection as any) ?? {},
     })),
-    candidates
+    candidates,
   );
   const result = schulze(candidates, ballots);
 
@@ -40,11 +40,19 @@ export default async function handler(
       return a.proposal_rank - b.proposal_rank; // rank 1 is best
     });
 
-  const votes = proposal.votes.map((v) => ({
-    id: v.id,
-    user: { id: v.userId },
-    movie_selection: v.movieSelection as Record<string, string[]>,
-  }));
+  const votes = await Promise.all(
+    proposal.votes.map(async (v) => {
+      const user = await prisma.user.findUnique({
+        where: { id: v.userId },
+        select: { id: true, name: true },
+      });
+      return {
+        id: v.id,
+        user: { id: v.userId, name: user?.name || null },
+        movie_selection: v.movieSelection as Record<string, string[]>,
+      };
+    }),
+  );
 
   return res.status(200).json({ votes, sorted_movies });
 }
