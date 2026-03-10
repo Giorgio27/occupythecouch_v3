@@ -60,7 +60,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
           setLists(init);
         }
 
-        if (p.no_votes_left || p.show_results) {
+        if (p.show_results) {
           const r = await fetchRanking(proposalId);
           setRanking(r);
         } else {
@@ -77,7 +77,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
 
   if (loading || !proposal) return <LoadingCard />;
 
-  const canVote = !(proposal?.no_votes_left || proposal?.show_results);
+  const canVote = !proposal?.closed;
 
   return (
     <div className="space-y-6 animate-fade-in-up">

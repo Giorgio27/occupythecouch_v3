@@ -50,6 +50,7 @@ export type ProposalDetailDTO = {
   title: string;
   round: string | null;
   roundId?: string;
+  roundClosed?: boolean;
   missing_users: string[];
   no_votes_left: boolean;
   show_results: boolean;

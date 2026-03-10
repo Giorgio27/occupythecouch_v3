@@ -93,6 +93,16 @@ export default async function handler(
         ownerTeam: true,
         winner: true,
         round: true,
+        votes: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -176,6 +186,16 @@ export default async function handler(
           ownerTeam: true,
           winner: true,
           round: true,
+          votes: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -195,6 +215,7 @@ export default async function handler(
         show_results: finalProposal.showResults,
         round: finalProposal.round?.name || null,
         roundId: finalProposal.roundId,
+        roundClosed: finalProposal.round?.closed || false,
         winner: finalProposal.winner
           ? {
               id: finalProposal.winner.id,
@@ -204,8 +225,16 @@ export default async function handler(
             }
           : null,
         owner: finalProposal.ownerUserId
-          ? { id: finalProposal.ownerUserId, type: "User" as const }
-          : { id: finalProposal.ownerTeamId!, type: "Team" as const },
+          ? {
+              id: finalProposal.ownerUserId,
+              type: "User" as const,
+              name: finalProposal.ownerUser?.name || null,
+            }
+          : {
+              id: finalProposal.ownerTeamId!,
+              type: "Team" as const,
+              name: finalProposal.ownerTeam?.name || null,
+            },
         movies: finalProposal.movies.map((pm) => ({
           id: pm.movie.id,
           title: pm.movie.title,
@@ -213,7 +242,15 @@ export default async function handler(
           image: pm.movie.image,
           imageMedium: pm.movie.imageMedium,
         })),
-        votes: [],
+        votes:
+          finalProposal.votes?.map((v) => ({
+            id: v.id,
+            user: {
+              id: v.user.id,
+              name: v.user.name,
+            },
+            movie_selection: v.movieSelection as Record<string, string[]>,
+          })) || [],
         created_at: finalProposal.createdAt.toISOString(),
         missing_users: [],
         no_votes_left: false,
@@ -232,6 +269,7 @@ export default async function handler(
       show_results: updatedProposal.showResults,
       round: updatedProposal.round?.name || null,
       roundId: updatedProposal.roundId,
+      roundClosed: updatedProposal.round?.closed || false,
       winner: updatedProposal.winner
         ? {
             id: updatedProposal.winner.id,
@@ -241,8 +279,16 @@ export default async function handler(
           }
         : null,
       owner: updatedProposal.ownerUserId
-        ? { id: updatedProposal.ownerUserId, type: "User" as const }
-        : { id: updatedProposal.ownerTeamId!, type: "Team" as const },
+        ? {
+            id: updatedProposal.ownerUserId,
+            type: "User" as const,
+            name: updatedProposal.ownerUser?.name || null,
+          }
+        : {
+            id: updatedProposal.ownerTeamId!,
+            type: "Team" as const,
+            name: updatedProposal.ownerTeam?.name || null,
+          },
       movies: updatedProposal.movies.map((pm) => ({
         id: pm.movie.id,
         title: pm.movie.title,
@@ -250,7 +296,14 @@ export default async function handler(
         image: pm.movie.image,
         imageMedium: pm.movie.imageMedium,
       })),
-      votes: [],
+      votes: updatedProposal.votes.map((v) => ({
+        id: v.id,
+        user: {
+          id: v.user.id,
+          name: v.user.name,
+        },
+        movie_selection: v.movieSelection as Record<string, string[]>,
+      })),
       created_at: updatedProposal.createdAt.toISOString(),
       missing_users: [],
       no_votes_left: false,

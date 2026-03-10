@@ -48,6 +48,20 @@ export const adminProposalsClient = {
     return response;
   },
 
+  async reopenProposal(
+    cineforumId: string,
+    proposalId: string,
+  ): Promise<ProposalDetailDTO> {
+    const response = await jsonFetch<ProposalDetailDTO>(
+      `/api/cineforum/${cineforumId}/admin/proposals/${proposalId}/reopen`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    return response;
+  },
+
   async updateProposal(
     cineforumId: string,
     proposalId: string,

@@ -5,7 +5,7 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") return res.status(405).end();
 
@@ -17,6 +17,20 @@ export default async function handler(
   const userId = session.user.id;
   if (!proposalId || !lists || !userId)
     return res.status(400).json({ error: "Missing fields" });
+
+  // Check if proposal is still open
+  const proposal = await prisma.proposal.findUnique({
+    where: { id: proposalId },
+    select: { closed: true },
+  });
+
+  if (!proposal) {
+    return res.status(404).json({ error: "Proposal not found" });
+  }
+
+  if (proposal.closed) {
+    return res.status(400).json({ error: "Proposal is closed" });
+  }
 
   const movieSelection: Record<string, string[]> = {};
   for (const k of Object.keys(lists)) {

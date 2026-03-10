@@ -77,6 +77,7 @@ export default async function handler(
       show_results: proposal.showResults,
       round: proposal.round?.name || null,
       roundId: proposal.roundId,
+      roundClosed: proposal.round?.closed || false,
       winner: proposal.winner
         ? {
             id: proposal.winner.id,

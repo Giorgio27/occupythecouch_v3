@@ -115,11 +115,18 @@ export default function AdminProposalsPage({
       grouped.get(roundKey)!.push(proposal);
     });
 
-    return Array.from(grouped.entries()).map(([round, items]) => ({
-      round,
-      proposals: items,
-    }));
+    const groupedArray = Array.from(grouped.entries()).map(
+      ([round, items]) => ({
+        round,
+        proposals: items,
+      }),
+    );
+
+    return groupedArray;
   }, [proposals]);
+
+  // Check if a round is the last (most recent) round
+  const isLastRound = (roundIndex: number) => roundIndex === 0;
 
   // Load ranking for first proposal of each round (the ones that open by default)
   useEffect(() => {
@@ -190,8 +197,35 @@ export default function AdminProposalsPage({
     }
   };
 
+  const handleReopenProposal = async (proposal: ProposalDetailDTO) => {
+    if (!cineforumId) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const reopenedProposal = await adminProposalsClient.reopenProposal(
+        cineforumId as string,
+        proposal.id,
+      );
+
+      setProposals((prev) =>
+        prev.map((p) => (p.id === reopenedProposal.id ? reopenedProposal : p)),
+      );
+    } catch (err: any) {
+      setError(err.message || "Failed to reopen proposal");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleToggleResults = async (proposal: ProposalDetailDTO) => {
     if (!cineforumId) return;
+
+    // Reset editing state before updating
+    if (editingProposalId === proposal.id) {
+      cancelEditing();
+    }
 
     setLoading(true);
     setError(null);
@@ -357,8 +391,8 @@ export default function AdminProposalsPage({
             isLoading={loading}
             onLoadMore={handleLoadMore}
             className="space-y-8"
-            renderItem={(group, index) => (
-              <div key={`${group.round}-${index}`} className="space-y-4">
+            renderItem={(group, groupIndex) => (
+              <div key={`${group.round}-${groupIndex}`} className="space-y-4">
                 {/* Round header */}
                 <div className="flex items-center gap-3">
                   <div className="h-px flex-1 bg-border" />
@@ -375,12 +409,35 @@ export default function AdminProposalsPage({
                   className="space-y-2"
                   defaultValue={group.proposals[0]?.id}
                 >
-                  {group.proposals.map((proposal) => {
+                  {group.proposals.map((proposal, proposalIndex) => {
                     const isEditing = editingProposalId === proposal.id;
+                    console.log(
+                      "Proposal",
+                      proposal.title,
+                      "round closed?",
+                      proposal.roundClosed,
+                      "isEditing?",
+                      isEditing,
+                      "propsals.votes",
+                      proposal.votes,
+                    );
                     const displayMovies = isEditing
                       ? editMovies
                       : proposal.movies;
                     const displayDate = isEditing ? editDate : proposal.date;
+
+                    // Check if this is the last (most recent) proposal in the round
+                    const isLastProposalInRound = proposalIndex === 0;
+                    // Check if this round is the last round
+                    const isThisLastRound = isLastRound(groupIndex);
+                    // Check if round is still open (using roundClosed field)
+                    const isRoundOpen = !proposal.roundClosed;
+                    // Show reopen button only if: proposal is closed, it's the last proposal, it's the last round, and round is open
+                    const canReopen =
+                      proposal.closed &&
+                      isLastProposalInRound &&
+                      isThisLastRound &&
+                      isRoundOpen;
 
                     return (
                       <AccordionItem
@@ -869,30 +926,52 @@ export default function AdminProposalsPage({
                                     </TooltipContent>
                                   </Tooltip>
 
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        onClick={() =>
-                                          handleToggleResults(proposal)
-                                        }
-                                        disabled={loading}
-                                        variant={
-                                          proposal.show_results
-                                            ? "secondary"
-                                            : "outline"
-                                        }
-                                        size="sm"
-                                      >
-                                        {proposal.show_results
-                                          ? "Hide"
-                                          : "Show"}{" "}
-                                        Results
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      Toggle results visibility
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  {canReopen && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          onClick={() =>
+                                            handleReopenProposal(proposal)
+                                          }
+                                          disabled={loading}
+                                          variant="outline"
+                                          size="sm"
+                                        >
+                                          Reopen
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        Reopen this proposal for voting
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+
+                                  {!proposal.closed && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          onClick={() =>
+                                            handleToggleResults(proposal)
+                                          }
+                                          disabled={loading}
+                                          variant={
+                                            proposal.show_results
+                                              ? "secondary"
+                                              : "outline"
+                                          }
+                                          size="sm"
+                                        >
+                                          {proposal.show_results
+                                            ? "Hide"
+                                            : "Show"}{" "}
+                                          Results
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        Toggle results visibility
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
                                 </>
                               )}
                             </div>
@@ -1070,6 +1149,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           show_results: proposal.showResults,
           round: proposal.round?.name || null,
           roundId: proposal.roundId,
+          roundClosed: proposal.round?.closed || false,
           winner: proposal.winner
             ? {
                 id: proposal.winner.id,
