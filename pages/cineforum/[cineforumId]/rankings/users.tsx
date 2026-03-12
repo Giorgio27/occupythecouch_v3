@@ -120,10 +120,33 @@ export default function UsersRankingPage({
             const rating = getRatingForSupplier(ranking);
             const winningRounds = getWinningRounds(ranking);
 
+            // Calculate position with ties
+            let position = 1;
+            if (index > 0) {
+              const currentRating = rating ?? -1;
+              const previousRating =
+                getRatingForSupplier(sortedRankings[index - 1]) ?? -1;
+
+              if (currentRating === previousRating) {
+                // Same rating as previous, find the position of the first item with this rating
+                for (let i = index - 1; i >= 0; i--) {
+                  const iRating = getRatingForSupplier(sortedRankings[i]) ?? -1;
+                  if (iRating === currentRating) {
+                    position = i + 1;
+                  } else {
+                    break;
+                  }
+                }
+              } else {
+                // Different rating, position is index + 1
+                position = index + 1;
+              }
+            }
+
             return (
               <RankingCard
                 key={ranking.id}
-                position={index + 1}
+                position={position}
                 title={ranking.user}
                 rating={rating}
                 isExpanded={isExpanded}
