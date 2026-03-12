@@ -75,9 +75,7 @@ export default function RankingCard({
             {medalColor ? (
               <div className="relative">
                 <Medal className={`w-6 h-6 sm:w-7 sm:h-7 ${medalColor}`} />
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-black text-background">
-                  {position}
-                </span>
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-black text-background"></span>
               </div>
             ) : (
               <span className="text-lg sm:text-xl font-bold text-muted-foreground">
