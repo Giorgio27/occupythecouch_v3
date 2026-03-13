@@ -3,3 +3,4 @@ export * from "./users";
 export * from "./rankings";
 export * from "./directors";
 export * from "./countries";
+export * from "./movies";
