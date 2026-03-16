@@ -233,7 +233,7 @@ export default function CountriesRankingPage({
                       tickLine={false}
                     />
                     <Tooltip
-                      content={<CustomTooltip />}
+                      content={(<CustomTooltip />) as any}
                       cursor={{ fill: "var(--cine-bg-lighter)", opacity: 0.5 }}
                     />
                     <Bar
