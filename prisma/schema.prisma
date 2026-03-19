@@ -166,6 +166,11 @@ model Movie {
   director            String?
   homepage            String?
 
+  // ⭐ TV Episode support (nullable per film normali)
+  showId        Int?
+  seasonNumber  Int?
+  episodeNumber Int?
+
   // inverse relations
   movieVotes         MovieVote[]
   proposalMovies     ProposalMovie[]
