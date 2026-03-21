@@ -39,17 +39,33 @@ export default async function handler(
       return res.status(403).json({ error: "Not a member of this cineforum" });
     }
 
-    // Get total count for pagination status
+    // Get total count for pagination status (only active users)
     const totalCount = await prisma.userRanking.count({
       where: {
         cineforumId,
+        user: {
+          memberships: {
+            some: {
+              cineforumId,
+              disabled: false,
+            },
+          },
+        },
       },
     });
 
-    // Fetch user rankings ordered by average rating
+    // Fetch user rankings ordered by average rating (only active users)
     const rankings = await prisma.userRanking.findMany({
       where: {
         cineforumId,
+        user: {
+          memberships: {
+            some: {
+              cineforumId,
+              disabled: false,
+            },
+          },
+        },
       },
       include: {
         user: {
