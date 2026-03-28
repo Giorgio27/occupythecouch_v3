@@ -195,6 +195,10 @@ API routes follow a deeply nested structure (`pages/api/cineforum/[cineforumId]/
 
 ✅ This separation is logical and follows best practices.
 
+**4. Local development**
+
+- run docker compose with : `docker compose -f docker-compose.postgres.yml`
+
 ### Recommendations
 
 1. **Document server-side code usage**: Add JSDoc comments to `lib/server/` modules indicating whether they're used in API routes, SSR, or both
