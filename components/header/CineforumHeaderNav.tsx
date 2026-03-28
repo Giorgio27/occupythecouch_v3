@@ -5,17 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
+import UserProfileMenu from "./UserProfileMenu";
 
 export default function CineforumHeaderNav() {
   const { cineforumId, cineforumName } = useCineforum();
@@ -123,7 +116,7 @@ export default function CineforumHeaderNav() {
                   Cinema
                 </button>
                 {cinemaLinks.length > 0 && openMenu === "cinema" && (
-                  <div className="absolute left-0 top-full z-20 min-w-[160px] rounded-md border bg-popover p-1 text-sm shadow-lg animate-fade-in">
+                  <div className="absolute left-0 top-full z-20 min-w-40 rounded-md border bg-popover p-1 text-sm shadow-lg animate-fade-in">
                     {cinemaLinks.map((link) => (
                       <Link
                         key={link.href}
@@ -152,7 +145,7 @@ export default function CineforumHeaderNav() {
                   History
                 </button>
                 {historyLinks.length > 0 && openMenu === "history" && (
-                  <div className="absolute left-0 top-full z-20 min-w-[200px] rounded-md border bg-popover p-1 text-sm shadow-lg animate-fade-in">
+                  <div className="absolute left-0 top-full z-20 min-w-50 rounded-md border bg-popover p-1 text-sm shadow-lg animate-fade-in">
                     {historyLinks.map((link) => (
                       <Link
                         key={link.href}
@@ -182,7 +175,7 @@ export default function CineforumHeaderNav() {
                     Admin
                   </button>
                   {openMenu === "admin" && (
-                    <div className="absolute left-0 top-full z-20 min-w-[200px] rounded-md border bg-popover p-1 text-sm shadow-lg animate-fade-in">
+                    <div className="absolute left-0 top-full z-20 min-w-50 rounded-md border bg-popover p-1 text-sm shadow-lg animate-fade-in">
                       {adminLinks.map((link) => (
                         <Link
                           key={link.href}
@@ -204,56 +197,7 @@ export default function CineforumHeaderNav() {
         <div className="flex items-center gap-2 md:gap-3">
           {/* Desktop auth */}
           <div className="hidden items-center gap-2 md:flex">
-            {session && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="cine-btn-ghost h-9 px-3 md:px-4 text-sm bg-transparent"
-                  >
-                    <span className="hidden lg:inline">
-                      {session.user?.name || session.user?.email}
-                    </span>
-                    <span className="lg:hidden">
-                      <User className="h-4 w-4" />
-                    </span>
-                    <ChevronDown className="ml-1 h-4 w-4 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {session.user?.name || "Utente"}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profilo</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    variant="destructive"
-                    onClick={() => {
-                      setOpenMenu(null);
-                      signOut();
-                    }}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <UserProfileMenu />
           </div>
 
           {/* Mobile menu button */}

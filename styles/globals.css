@@ -9,7 +9,7 @@
    ============================================ */
 
 :root {
-  /* ========== CINEMA COLORS ========== */
+  /* ========== CINEMA COLORS (DARK) ========== */
   /* Rosso principale - leggermente più chiaro e vivace */
   --cine-red: #a52a2d;
   --cine-red-soft: #c73b3e;
@@ -31,7 +31,23 @@
   --cine-border: #2a2a2a;
   --cine-border-soft: #3a3a3a;
 
-  /* ========== SEMANTIC TOKENS ========== */
+  /* ========== CINEMA COLORS (LIGHT) ========== */
+  /* Backgrounds light - sfumature di bianco/grigio chiaro */
+  --cine-bg-light: #ffffff;
+  --cine-bg-soft-light: #f8f8f8;
+  --cine-bg-lighter-light: #f0f0f0;
+  --cine-bg-elevated-light: #e8e8e8;
+  
+  /* Testi light */
+  --cine-text-light: #1a1a1a;
+  --cine-text-muted-light: #666666;
+  --cine-text-subtle-light: #999999;
+  
+  /* Bordi light */
+  --cine-border-light: #e0e0e0;
+  --cine-border-soft-light: #d0d0d0;
+
+  /* ========== SEMANTIC TOKENS (DEFAULT: DARK) ========== */
   --background: var(--cine-bg);
   --foreground: var(--cine-text);
   --card: var(--cine-bg-soft);
@@ -52,6 +68,10 @@
   --input: var(--cine-bg-lighter);
   --ring: var(--cine-red);
   
+  /* Hover colors - per light/dark mode */
+  --card-hover: var(--cine-bg-lighter);
+  --secondary-hover: var(--cine-bg-elevated);
+  
   /* Charts */
   --chart-1: var(--cine-red);
   --chart-2: var(--cine-bg-elevated);
@@ -71,6 +91,46 @@
   --sidebar-accent-foreground: var(--cine-text);
   --sidebar-border: var(--cine-border);
   --sidebar-ring: var(--cine-red);
+}
+
+/* Light mode */
+.light {
+  --background: var(--cine-bg-light);
+  --foreground: var(--cine-text-light);
+  --card: var(--cine-bg-soft-light);
+  --card-foreground: var(--cine-text-light);
+  --popover: var(--cine-bg-soft-light);
+  --popover-foreground: var(--cine-text-light);
+  --primary: var(--cine-red);
+  --primary-foreground: #ffffff;
+  --secondary: var(--cine-bg-lighter-light);
+  --secondary-foreground: var(--cine-text-light);
+  --muted: var(--cine-bg-elevated-light);
+  --muted-foreground: var(--cine-text-muted-light);
+  /* Accent in light mode = grigio chiaro per hover states, non rosso */
+  --accent: var(--cine-bg-elevated-light);
+  --accent-foreground: var(--cine-text-light);
+  --destructive: var(--cine-red);
+  --destructive-foreground: #ffffff;
+  --border: var(--cine-border-light);
+  --input: var(--cine-bg-lighter-light);
+  --ring: var(--cine-red);
+  
+  /* Hover colors for light mode */
+  --card-hover: var(--cine-bg-lighter-light);
+  --secondary-hover: var(--cine-bg-elevated-light);
+  
+  --sidebar: var(--cine-bg-soft-light);
+  --sidebar-foreground: var(--cine-text-light);
+  --sidebar-primary: var(--cine-red);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--cine-bg-lighter-light);
+  --sidebar-accent-foreground: var(--cine-text-light);
+  --sidebar-border: var(--cine-border-light);
+  --sidebar-ring: var(--cine-red);
+  
+  /* Override glow per light mode - più sottile */
+  --cine-red-glow: rgba(165, 42, 45, 0.15);
 }
 
 /* Dark mode (stesso tema cinema) */
@@ -94,6 +154,11 @@
   --border: var(--cine-border);
   --input: var(--cine-bg-lighter);
   --ring: var(--cine-red);
+  
+  /* Hover colors for dark mode */
+  --card-hover: var(--cine-bg-lighter);
+  --secondary-hover: var(--cine-bg-elevated);
+  
   --sidebar: var(--cine-bg-soft);
   --sidebar-foreground: var(--cine-text);
   --sidebar-primary: var(--cine-red);
@@ -209,7 +274,7 @@
 
 .cine-card:hover {
   border-color: color-mix(in srgb, var(--primary) 50%, transparent);
-  background-color: var(--cine-bg-lighter);
+  background-color: var(--card-hover);
 }
 
 /* Cinema Button Primary */
@@ -256,6 +321,7 @@
 .cine-btn-ghost:hover {
   background-color: var(--secondary);
   border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  color: var(--foreground);
 }
 
 /* Cinema Section Title */
@@ -264,6 +330,7 @@
   font-weight: 700;
   border-left: 4px solid var(--primary);
   padding-left: 1rem;
+  color: var(--foreground);
 }
 
 @media (min-width: 768px) {
@@ -305,12 +372,17 @@
   color: var(--primary);
 }
 
-/* Cinema Glass Effect */
+/* Cinema Glass Effect - usa semantic tokens */
 .cine-glass {
-  background-color: color-mix(in srgb, var(--cine-bg-soft) 80%, transparent);
+  background-color: color-mix(in srgb, var(--background) 85%, transparent);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border: 1px solid var(--border);
+}
+
+/* Light mode glass effect - più opaco */
+.light .cine-glass {
+  background-color: color-mix(in srgb, var(--background) 92%, transparent);
 }
 
 /* ========== ANIMATION KEYFRAMES ========== */
@@ -540,7 +612,7 @@
   /* ===== BORDER ANIMATIONS ===== */
   @keyframes border-glow {
     0%, 100% {
-      border-color: var(--cine-border);
+      border-color: var(--border);
     }
     50% {
       border-color: var(--cine-red);
@@ -856,8 +928,8 @@
 /* ========== BACKGROUND UTILITIES ========== */
 .bg-grid-pattern {
   background-image: 
-    linear-gradient(to right, var(--cine-border) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--cine-border) 1px, transparent 1px);
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
