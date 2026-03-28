@@ -28,7 +28,12 @@ export async function getServerSideProps(ctx: any) {
       id: true,
       name: true,
       description: true,
-      _count: { select: { memberships: true, rounds: true } },
+      _count: {
+        select: {
+          memberships: { where: { disabled: false } },
+          rounds: true,
+        },
+      },
     },
     orderBy: { updatedAt: "desc" },
   });

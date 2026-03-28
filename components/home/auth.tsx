@@ -6,16 +6,8 @@ import { useRouter } from "next/navigation";
 import { createCineforum } from "@/lib/client/cineforum";
 import { CineforumDTO } from "@/lib/shared/types";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -47,19 +39,82 @@ import {
   Film,
   LayoutGrid,
   LayoutList,
+  MoreHorizontal,
   Plus,
   Search,
-  Settings2,
   Sparkles,
   Users,
+  Vote,
+  Popcorn,
 } from "lucide-react";
 
 type ViewMode = "grid" | "list";
 
+// Hook per animazioni on scroll
+function useInView(threshold = 0.1) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold },
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, isInView };
+}
+
+// Floating elements for visual polish
+function FloatingElements() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div
+        className="absolute top-10 left-[8%] w-14 h-14 rounded-full border-2 border-primary/20 animate-float opacity-20"
+        style={{ animationDelay: "0s" }}
+      >
+        <div className="absolute inset-2 rounded-full border border-primary/30" />
+      </div>
+      <div
+        className="absolute top-32 right-[12%] w-10 h-10 rounded-full border-2 border-primary/15 animate-float-slow opacity-15"
+        style={{ animationDelay: "1s" }}
+      >
+        <div className="absolute inset-2 rounded-full border border-primary/20" />
+      </div>
+      <div
+        className="absolute bottom-20 left-[15%] w-8 h-8 rounded-full border-2 border-primary/10 animate-float opacity-10"
+        style={{ animationDelay: "2s" }}
+      />
+
+      {/* Sparkle effects */}
+      <div className="absolute top-20 right-[20%] w-2 h-2 bg-primary/30 rounded-full animate-pulse-soft" />
+      <div
+        className="absolute top-48 left-[25%] w-1.5 h-1.5 bg-primary/20 rounded-full animate-pulse-soft"
+        style={{ animationDelay: "0.5s" }}
+      />
+      <div
+        className="absolute bottom-32 right-[25%] w-2 h-2 bg-primary/25 rounded-full animate-pulse-soft"
+        style={{ animationDelay: "1s" }}
+      />
+    </div>
+  );
+}
+
 export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
   const router = useRouter();
-
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const heroSection = useInView(0.1);
+  const cardsSection = useInView(0.1);
 
   const [query, setQuery] = useState("");
   const [view, setView] = useState<ViewMode>("grid");
@@ -69,22 +124,8 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [justCreated, setJustCreated] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  // Spotlight follow-mouse (usa la tua .bg-spotlight in globals.css)
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-
-    const onMove = (e: MouseEvent) => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty("--mouse-x", `${e.clientX - r.left}px`);
-      el.style.setProperty("--mouse-y", `${e.clientY - r.top}px`);
-    };
-
-    el.addEventListener("mousemove", onMove);
-    return () => el.removeEventListener("mousemove", onMove);
-  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -102,7 +143,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
     setError(null);
     const clean = name.trim();
     if (clean.length < 2) {
-      setError("Dai un nome un filo più lungo (min 2 caratteri).");
+      setError("Dai un nome un filo piu lungo (min 2 caratteri).");
       return;
     }
 
@@ -115,7 +156,6 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
       setOpen(false);
       setName("");
 
-      // refresh (App Router). fallback: reload.
       startTransition(() => {
         try {
           router.refresh?.();
@@ -123,8 +163,12 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
           window.location.reload();
         }
       });
-    } catch (err: any) {
-      setError(err?.message ?? "Errore durante la creazione del cineforum.");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Errore durante la creazione del cineforum.";
+      setError(errorMessage);
     }
   }
 
@@ -132,387 +176,535 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
     try {
       const url = `${window.location.origin}/cineforum/${id}`;
       await navigator.clipboard.writeText(url);
-      setJustCreated(true);
-      setTimeout(() => setJustCreated(false), 1200);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1500);
     } catch {
-      // niente drama: ignora se clipboard non disponibile
+      // ignore clipboard errors
     }
   }
 
   const namePresets = [
-    "Venerdì Noir",
+    "Venerdi Noir",
     "Cinema & Pizza",
     "Anime Night",
     "A24 Club",
-    "Notti in città",
+    "Notti in citta",
     "Horror & Popcorn",
   ];
 
   return (
     <TooltipProvider delayDuration={120}>
-      <div
-        ref={wrapRef}
-        className="relative overflow-hidden rounded-2xl border border-border bg-background/60 p-4 sm:p-6 lg:p-8"
-      >
-        <div className="relative space-y-6">
-          {/* Header / Hero */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full border bg-card/40 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span>Un posto solo per scegliere, votare, discutere.</span>
+      <div className="min-h-screen bg-background text-foreground overflow-hidden">
+        {/* Animated Background */}
+        <div className="fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/4 w-175 h-175 bg-primary/8 blur-[150px] rounded-full animate-pulse-soft" />
+          <div className="absolute bottom-0 right-0 w-100 h-100 bg-cine-red-soft/5 blur-[120px] rounded-full animate-float-slow" />
+          <div className="absolute top-1/2 left-0 w-62.5 h-62.5 bg-primary/3 blur-[100px] rounded-full" />
+          <div className="absolute inset-0 bg-grid-pattern opacity-[0.015]" />
+        </div>
+
+        {/* Hero Section */}
+        <section className="relative pt-8 pb-8 sm:pt-12 sm:pb-12 md:pt-16 md:pb-16">
+          <FloatingElements />
+
+          <div
+            ref={heroSection.ref}
+            className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
+          >
+            <div
+              className={`transition-all duration-700 ${heroSection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+            >
+              {/* Badge */}
+              <div className="flex justify-center mb-6 sm:mb-8 animate-fade-in-down">
+                <div className="cine-badge animate-shine group cursor-default text-xs sm:text-sm">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover:animate-spin-slow" />
+                  <span>I tuoi cineforum</span>
+                </div>
               </div>
 
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                <span className="text-gradient-animated">I tuoi cineforum</span>
-              </h2>
+              {/* Main headline */}
+              <div className="text-center space-y-4 sm:space-y-6 ">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight sm:leading-tight md:leading-tight text-balance">
+                  <span className="inline-block animate-fade-in-up">
+                    Scegli, vota,
+                  </span>
+                  <br />
+                  <span className="text-gradient inline-block animate-scale-in-bounce delay-200">
+                    guarda insieme
+                  </span>
+                </h1>
 
-              <p className="max-w-2xl text-sm text-muted-foreground">
-                Entra in un cineforum esistente oppure creane uno nuovo. Tutto
-                con micro-interazioni e zero attrito.
-              </p>
+                <p
+                  className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-md sm:max-w-lg mx-auto leading-relaxed animate-fade-in-up delay-300 opacity-0 px-2 sm:px-0"
+                  style={{ animationFillMode: "forwards" }}
+                >
+                  Entra in un cineforum esistente oppure creane uno nuovo.
+                  <br className="hidden sm:block" />
+                  <span className="text-foreground/80 font-medium">
+                    Zero attrito, solo cinema.
+                  </span>
+                </p>
+              </div>
 
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <Badge variant="secondary" className="gap-1">
-                  <Clapperboard className="h-3.5 w-3.5" />
-                  {total} {total === 1 ? "cineforum" : "cineforum"}
-                </Badge>
+              {/* Stats row */}
+              <div
+                className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-10 animate-fade-in-up delay-400 opacity-0"
+                style={{ animationFillMode: "forwards" }}
+              >
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Clapperboard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
+                      {total}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {total === 1 ? "Cineforum" : "Cineforum"}
+                    </p>
+                  </div>
+                </div>
 
                 {justCreated && (
-                  <Badge className="gap-1 animate-pop-in">
-                    <Check className="h-3.5 w-3.5" />
-                    Fatto
-                  </Badge>
+                  <div className="flex items-center gap-2 animate-pop-in">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-green-500">
+                        Creato!
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-2 sm:min-w-[420px] sm:flex-row sm:items-center sm:justify-end">
-              <div className="relative w-full sm:w-[260px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Cerca per nome o descrizione…"
-                  className="pl-9 bg-card/50 backdrop-blur"
+        {/* Controls & Content Section */}
+        <section className="pb-16 sm:pb-20 md:pb-28">
+          <div
+            ref={cardsSection.ref}
+            className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"
+          >
+            {/* Controls Bar */}
+            <div
+              className={`cine-card mb-6 sm:mb-8 transition-all duration-700 ${cardsSection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                {/* Search */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Cerca per nome o descrizione..."
+                    className="pl-10 bg-secondary/50 border-border/50 focus:border-primary/50 transition-colors"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-3">
+                  {/* View toggle */}
+                  <div className="flex items-center gap-1 rounded-full border border-border/50 bg-secondary/30 p-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant={view === "grid" ? "secondary" : "ghost"}
+                          size="icon"
+                          className="h-8 w-8 rounded-full"
+                          onClick={() => setView("grid")}
+                          aria-label="Vista griglia"
+                        >
+                          <LayoutGrid className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Griglia</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant={view === "list" ? "secondary" : "ghost"}
+                          size="icon"
+                          className="h-8 w-8 rounded-full"
+                          onClick={() => setView("list")}
+                          aria-label="Vista lista"
+                        >
+                          <LayoutList className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Lista</TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  {/* Create button */}
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="cine-btn h-10 px-5 text-sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Crea cineforum
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="sm:max-w-125 border-border/50 bg-card">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-xl">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Clapperboard className="h-5 w-5 text-primary" />
+                          </div>
+                          Nuovo cineforum
+                        </DialogTitle>
+                        <DialogDesc className="text-muted-foreground">
+                          Un nome chiaro = inviti piu facili. Puoi cambiare
+                          tutto dopo.
+                        </DialogDesc>
+                      </DialogHeader>
+
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-sm font-medium">Nome</label>
+                            <span className="text-xs text-muted-foreground">
+                              {name.trim().length}/40
+                            </span>
+                          </div>
+                          <Input
+                            value={name}
+                            onChange={(e) =>
+                              setName(e.target.value.slice(0, 40))
+                            }
+                            placeholder="Es. Venerdi Noir"
+                            className="bg-secondary/50 border-border/50 focus:border-primary/50"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                onCreate();
+                              }
+                            }}
+                          />
+                        </div>
+
+                        {/* Presets */}
+                        <div className="space-y-2">
+                          <label className="text-xs text-muted-foreground">
+                            Suggerimenti
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {namePresets.map((p) => (
+                              <button
+                                key={p}
+                                type="button"
+                                className="px-3 py-1.5 text-xs rounded-full bg-secondary/50 border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
+                                onClick={() => setName(p)}
+                              >
+                                {p}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {error && (
+                          <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-fade-in">
+                            {error}
+                          </div>
+                        )}
+                      </div>
+
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setOpen(false)}
+                          className="rounded-full"
+                        >
+                          Annulla
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={onCreate}
+                          disabled={isPending}
+                          className="cine-btn"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          {isPending ? "Creazione..." : "Crea"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            {filtered.length === 0 ? (
+              <div
+                className={`transition-all duration-700 delay-100 ${cardsSection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+              >
+                <EmptyState
+                  total={total}
+                  onClearSearch={() => setQuery("")}
+                  onOpenCreate={() => setOpen(true)}
                 />
               </div>
-
-              <div className="flex items-center justify-between gap-2 sm:justify-end">
-                <div className="flex items-center gap-1 rounded-full border bg-card/40 p-1 backdrop-blur">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant={view === "grid" ? "secondary" : "ghost"}
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                        onClick={() => setView("grid")}
-                        aria-label="Vista griglia"
-                      >
-                        <LayoutGrid className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Griglia</TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant={view === "list" ? "secondary" : "ghost"}
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                        onClick={() => setView("list")}
-                        aria-label="Vista lista"
-                      >
-                        <LayoutList className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Lista</TooltipContent>
-                  </Tooltip>
-                </div>
-
-                <Dialog open={open} onOpenChange={setOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="gap-2 rounded-full animate-shine">
-                      <Plus className="h-4 w-4" />
-                      Crea
-                    </Button>
-                  </DialogTrigger>
-
-                  <DialogContent className="sm:max-w-[560px]">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <Clapperboard className="h-5 w-5 text-primary" />
-                        Crea un nuovo cineforum
-                      </DialogTitle>
-                      <DialogDesc>
-                        Un nome chiaro = inviti più facili. Puoi cambiare tutto
-                        dopo.
-                      </DialogDesc>
-                    </DialogHeader>
-
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium">Nome</label>
-                          <span className="text-xs text-muted-foreground">
-                            {name.trim().length}/40
-                          </span>
-                        </div>
-                        <Input
-                          value={name}
-                          onChange={(e) => setName(e.target.value.slice(0, 40))}
-                          placeholder="Es. Venerdì Noir"
-                          className="bg-card/60"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              onCreate();
-                            }
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {namePresets.map((p) => (
-                          <Button
-                            key={p}
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            className="rounded-full"
-                            onClick={() => setName(p)}
-                          >
-                            {p}
-                          </Button>
-                        ))}
-                      </div>
-
-                      {error && (
-                        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive animate-fade-in">
-                          {error}
-                        </div>
-                      )}
-                    </div>
-
-                    <DialogFooter className="gap-2 sm:gap-0">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setOpen(false)}
-                        className="rounded-full"
-                      >
-                        Annulla
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={onCreate}
-                        disabled={isPending}
-                        className="rounded-full gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        {isPending ? "Creazione…" : "Crea cineforum"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+            ) : (
+              <div
+                className={
+                  view === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+                    : "flex flex-col gap-3"
+                }
+              >
+                {filtered.map((cf, idx) => (
+                  <CineforumCard
+                    key={cf.id}
+                    cineforum={cf}
+                    index={idx}
+                    isInView={cardsSection.isInView}
+                    viewMode={view}
+                    copiedId={copiedId}
+                    onCopyLink={copyCineforumLink}
+                  />
+                ))}
               </div>
-            </div>
+            )}
           </div>
-
-          <Separator className="opacity-60" />
-
-          {/* Content */}
-          {filtered.length === 0 ? (
-            <Card className="bg-card/40 backdrop-blur animate-fade-in-up">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clapperboard className="h-5 w-5 text-primary" />
-                  Nessun cineforum trovato
-                </CardTitle>
-                <CardDescription>
-                  {total === 0
-                    ? "Crea il tuo primo cineforum e invita amici: il resto viene da sé."
-                    : "Prova a cambiare la ricerca o crea un nuovo cineforum."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <HintCard
-                    icon={<Plus className="h-4 w-4" />}
-                    title="Crea"
-                    desc="Dagli un nome riconoscibile."
-                  />
-                  <HintCard
-                    icon={<Users className="h-4 w-4" />}
-                    title="Invita"
-                    desc="Condividi il link con il gruppo."
-                  />
-                  <HintCard
-                    icon={<CalendarClock className="h-4 w-4" />}
-                    title="Vota"
-                    desc="Proposte, ranking, decisione."
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Button
-                    className="rounded-full gap-2"
-                    onClick={() => setOpen(true)}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Crea un cineforum
-                  </Button>
-                  {total > 0 && (
-                    <Button
-                      variant="secondary"
-                      className="rounded-full"
-                      onClick={() => setQuery("")}
-                    >
-                      Pulisci ricerca
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div
-              className={[
-                view === "grid"
-                  ? "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-                  : "flex flex-col gap-3",
-                "animate-fade-in-up",
-              ].join(" ")}
-            >
-              {filtered.map((cf, idx) => (
-                <Link
-                  key={cf.id}
-                  href={`/cineforum/${cf.id}`}
-                  className="group block"
-                  style={{ animationDelay: `${Math.min(idx * 60, 420)}ms` }}
-                >
-                  <Card className="relative overflow-hidden bg-card/40 backdrop-blur transition-all duration-300 hover:shadow-lg hover:shadow-[color:var(--cine-red-glow)] hover:border-[color:color-mix(in_srgb,var(--primary)_50%,transparent)] hover-lift">
-                    {/* tiny glow strip */}
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[color:var(--primary)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl border bg-background/40 text-primary glow-red-soft">
-                            <Clapperboard className="h-5 w-5" />
-                          </div>
-
-                          <div className="min-w-0">
-                            <CardTitle className="truncate flex items-center gap-2">
-                              <span className="truncate">{cf.name}</span>
-                              <ArrowRight className="h-4 w-4 opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-70 group-hover:translate-x-0" />
-                            </CardTitle>
-
-                            <CardDescription className="line-clamp-2">
-                              {cf.description || "Nessuna descrizione"}
-                            </CardDescription>
-                          </div>
-                        </div>
-
-                        {/* Actions dropdown */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 rounded-full opacity-80 hover:opacity-100"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              aria-label="Azioni"
-                            >
-                              <Settings2 className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-52"
-                            onClick={(e) => {
-                              // evita click-through al Link
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                          >
-                            <DropdownMenuItem
-                              onClick={() => copyCineforumLink(cf.id)}
-                              className="gap-2"
-                            >
-                              <Copy className="h-4 w-4" />
-                              Copia link
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem
-                              disabled
-                              className="gap-2 opacity-70"
-                            >
-                              <Film className="h-4 w-4" />
-                              Impostazioni (coming soon)
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="pt-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="gap-1">
-                          <Users className="h-3.5 w-3.5" />
-                          {cf._count?.memberships ?? 0} membri
-                        </Badge>
-
-                        <Badge variant="secondary" className="gap-1">
-                          <CalendarClock className="h-3.5 w-3.5" />
-                          {cf._count?.rounds ?? 0} round
-                        </Badge>
-
-                        <div className="ml-auto hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
-                          <span className="opacity-70">Apri</span>
-                          <ArrowRight className="h-3.5 w-3.5 opacity-70" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+        </section>
       </div>
     </TooltipProvider>
   );
 }
 
-function HintCard({
-  icon,
-  title,
-  desc,
+// Empty state component
+function EmptyState({
+  total,
+  onClearSearch,
+  onOpenCreate,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
+  total: number;
+  onClearSearch: () => void;
+  onOpenCreate: () => void;
 }) {
   return (
-    <div className="rounded-2xl border bg-background/30 p-4 backdrop-blur transition hover:border-[color:color-mix(in_srgb,var(--primary)_50%,transparent)] hover:shadow-md hover:shadow-[color:var(--cine-red-glow)]">
-      <div className="flex items-center gap-2">
-        <div className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border bg-card/50 text-primary">
-          {icon}
+    <div className="cine-card text-center py-12 sm:py-16 md:py-20 relative overflow-hidden">
+      {/* Background accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 sm:w-52 h-40 sm:h-52 bg-primary/10 rounded-full blur-3xl" />
+
+      <div className="relative">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+          <Clapperboard className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
         </div>
-        <div className="font-medium">{title}</div>
+
+        <h3 className="text-xl sm:text-2xl font-bold mb-3 text-foreground">
+          {total === 0 ? "Crea il tuo primo cineforum" : "Nessun risultato"}
+        </h3>
+
+        <p className="text-muted-foreground text-sm sm:text-base mb-8 max-w-md mx-auto">
+          {total === 0
+            ? "Invita i tuoi amici e inizia a scegliere film insieme. Il resto viene da se."
+            : "Prova a cambiare la ricerca o crea un nuovo cineforum."}
+        </p>
+
+        {/* How it works hints */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
+          {[
+            {
+              icon: Plus,
+              title: "Crea",
+              desc: "Dagli un nome riconoscibile",
+            },
+            {
+              icon: Users,
+              title: "Invita",
+              desc: "Condividi il link con il gruppo",
+            },
+            {
+              icon: Vote,
+              title: "Vota",
+              desc: "Proposte, ranking, decisione",
+            },
+          ].map((hint, idx) => {
+            const Icon = hint.icon;
+            return (
+              <div
+                key={idx}
+                className="p-4 rounded-xl bg-secondary/30 border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all group"
+              >
+                <div className="w-10 h-10 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                  <Icon className="w-5 h-5 text-primary" />
+                </div>
+                <p className="font-medium text-sm mb-1">{hint.title}</p>
+                <p className="text-xs text-muted-foreground">{hint.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button onClick={onOpenCreate} className="cine-btn">
+            <Plus className="h-4 w-4 mr-2" />
+            Crea un cineforum
+          </Button>
+          {total > 0 && (
+            <Button
+              variant="outline"
+              onClick={onClearSearch}
+              className="cine-btn-ghost"
+            >
+              Pulisci ricerca
+            </Button>
+          )}
+        </div>
       </div>
-      <div className="mt-2 text-sm text-muted-foreground">{desc}</div>
     </div>
+  );
+}
+
+// Cineforum card component
+function CineforumCard({
+  cineforum,
+  index,
+  isInView,
+  viewMode,
+  copiedId,
+  onCopyLink,
+}: {
+  cineforum: CineforumDTO;
+  index: number;
+  isInView: boolean;
+  viewMode: ViewMode;
+  copiedId: string | null;
+  onCopyLink: (id: string) => void;
+}) {
+  const delay = Math.min(index * 80, 400);
+
+  return (
+    <Link
+      href={`/cineforum/${cineforum.id}`}
+      className={`group block transition-all duration-700 ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <div
+        className={`relative overflow-hidden rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card hover:shadow-lg hover:shadow-primary/5 hover-lift ${viewMode === "list" ? "p-4" : "p-5"}`}
+      >
+        {/* Hover glow */}
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+        {/* Top glow strip */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-primary to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-60" />
+
+        <div
+          className={`relative ${viewMode === "list" ? "flex items-center justify-between gap-4" : ""}`}
+        >
+          {/* Icon & Content */}
+          <div
+            className={`${viewMode === "list" ? "flex items-center gap-4 flex-1 min-w-0" : ""}`}
+          >
+            <div
+              className={`inline-flex items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary/20 group-hover:scale-105 ${viewMode === "list" ? "w-12 h-12 shrink-0" : "w-14 h-14 mb-4"}`}
+            >
+              <Clapperboard
+                className={viewMode === "list" ? "w-5 h-5" : "w-6 h-6"}
+              />
+            </div>
+
+            <div className={viewMode === "list" ? "min-w-0 flex-1" : ""}>
+              <div className="flex items-center gap-2 mb-1">
+                <h3
+                  className={`font-semibold text-foreground truncate group-hover:text-primary transition-colors ${viewMode === "list" ? "text-base" : "text-lg"}`}
+                >
+                  {cineforum.name}
+                </h3>
+                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 shrink-0" />
+              </div>
+
+              <p
+                className={`text-muted-foreground ${viewMode === "list" ? "text-sm line-clamp-1" : "text-sm line-clamp-2 mb-4"}`}
+              >
+                {cineforum.description || "Nessuna descrizione"}
+              </p>
+            </div>
+          </div>
+
+          {/* Stats & Actions */}
+          <div
+            className={`flex items-center gap-2 ${viewMode === "list" ? "" : "mt-auto"}`}
+          >
+            <Badge
+              variant="secondary"
+              className="gap-1 bg-secondary/50 text-muted-foreground text-xs"
+            >
+              <Users className="h-3 w-3" />
+              {cineforum._count?.memberships ?? 0}
+            </Badge>
+
+            <Badge
+              variant="secondary"
+              className="gap-1 bg-secondary/50 text-muted-foreground text-xs"
+            >
+              <Popcorn className="h-3 w-3" />
+              {cineforum._count?.rounds ?? 0}
+            </Badge>
+
+            {/* Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full opacity-60 hover:opacity-100 ml-auto"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  aria-label="Azioni"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 border-border/50 bg-card"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <DropdownMenuItem
+                  onClick={() => onCopyLink(cineforum.id)}
+                  className="gap-2 cursor-pointer"
+                >
+                  {copiedId === cineforum.id ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-green-500">Link copiato!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copia link
+                    </>
+                  )}
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="bg-border/50" />
+
+                <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                  <Link href={`/cineforum/${cineforum.id}`}>
+                    <CalendarClock className="h-4 w-4" />
+                    Vai al cineforum
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }
