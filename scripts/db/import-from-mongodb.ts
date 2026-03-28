@@ -50,6 +50,12 @@ async function importData() {
         email: mongoUser.email,
         name: mongoUser.username || mongoUser.email.split("@")[0],
         passwordHash: passwordHash,
+        createdAt: mongoUser.created_at
+          ? new Date(mongoUser.created_at)
+          : undefined,
+        updatedAt: mongoUser.updated_at
+          ? new Date(mongoUser.updated_at)
+          : undefined,
       },
     });
     idMap.set(mongoUser._id.toString(), prismaUser.id);
@@ -65,6 +71,12 @@ async function importData() {
         cineforumId: cineforum.id,
         role: isAdmin ? "ADMIN" : "MEMBER",
         disabled: isDisabled,
+        createdAt: mongoUser.created_at
+          ? new Date(mongoUser.created_at)
+          : undefined,
+        updatedAt: mongoUser.updated_at
+          ? new Date(mongoUser.updated_at)
+          : undefined,
       },
     });
   }
@@ -100,6 +112,12 @@ async function importData() {
         releaseDate: mongoMovie.relase_date
           ? new Date(mongoMovie.relase_date)
           : null,
+        createdAt: mongoMovie.created_at
+          ? new Date(mongoMovie.created_at)
+          : undefined,
+        updatedAt: mongoMovie.updated_at
+          ? new Date(mongoMovie.updated_at)
+          : undefined,
         actors: mongoMovie.actors,
         genres: mongoMovie.genres,
         productionCompanies: mongoMovie.production_companies,
@@ -131,6 +149,12 @@ async function importData() {
         chooserId: mongoRound.chooser_id
           ? idMap.get(mongoRound.chooser_id.toString())
           : null,
+        createdAt: mongoRound.created_at
+          ? new Date(mongoRound.created_at)
+          : undefined,
+        updatedAt: mongoRound.updated_at
+          ? new Date(mongoRound.updated_at)
+          : undefined,
       },
     });
     idMap.set(mongoRound._id.toString(), prismaRound.id);
@@ -147,6 +171,12 @@ async function importData() {
         roundId: mongoTeam.round_id
           ? idMap.get(mongoTeam.round_id.toString())
           : null,
+        createdAt: mongoTeam.created_at
+          ? new Date(mongoTeam.created_at)
+          : undefined,
+        updatedAt: mongoTeam.updated_at
+          ? new Date(mongoTeam.updated_at)
+          : undefined,
       },
     });
     idMap.set(mongoTeam._id.toString(), prismaTeam.id);
@@ -193,6 +223,12 @@ async function importData() {
         winnerId: mongoProposal.winner_id
           ? idMap.get(mongoProposal.winner_id.toString())
           : null,
+        createdAt: mongoProposal.created_at
+          ? new Date(mongoProposal.created_at)
+          : undefined,
+        updatedAt: mongoProposal.updated_at
+          ? new Date(mongoProposal.updated_at)
+          : undefined,
       },
     });
     idMap.set(mongoProposal._id.toString(), prismaProposal.id);
@@ -217,32 +253,48 @@ async function importData() {
   // 7. Importa ProposalVotes
   console.log("\n7️⃣ Importazione ProposalVotes...");
   let voteCount = 0;
-  for (const mongoVote of data.proposalVotes) {
+  for (const mongoPVote of data.proposalVotes) {
     console.log(
       `   Importando proposal vote ${++voteCount}/${data.proposalVotes.length}...`,
     );
     try {
       // Mappa gli ID MongoDB in movieSelection ai nuovi ID Prisma
-      const movieSelection = mongoVote.movie_selection || {};
-      const mappedMovieSelection: Record<string, number> = {};
+      // Struttura: { "1": ["movieId1", "movieId2"], "2": ["movieId3"], ... }
+      // dove la chiave è il rank e il valore è un array di movie IDs
+      const movieSelection = mongoPVote.movie_selection || {};
+      const mappedMovieSelection: Record<string, string[]> = {};
 
-      for (const [mongoMovieId, rank] of Object.entries(movieSelection)) {
-        const prismaMovieId = idMap.get(mongoMovieId);
-        if (prismaMovieId) {
-          mappedMovieSelection[prismaMovieId] = rank as number;
+      for (const [rank, movieIds] of Object.entries(movieSelection)) {
+        if (Array.isArray(movieIds)) {
+          const mappedIds: string[] = [];
+          for (const mongoMovieId of movieIds) {
+            const prismaMovieId = idMap.get(mongoMovieId.toString());
+            if (prismaMovieId) {
+              mappedIds.push(prismaMovieId);
+            }
+          }
+          if (mappedIds.length > 0) {
+            mappedMovieSelection[rank] = mappedIds;
+          }
         }
       }
 
       await prisma.proposalVote.create({
         data: {
-          proposalId: idMap.get(mongoVote.proposal_id.toString())!,
-          userId: idMap.get(mongoVote.user_id.toString())!,
+          proposalId: idMap.get(mongoPVote.proposal_id.toString())!,
+          userId: idMap.get(mongoPVote.user_id.toString())!,
           movieSelection: mappedMovieSelection,
+          createdAt: mongoPVote.created_at
+            ? new Date(mongoPVote.created_at)
+            : undefined,
+          updatedAt: mongoPVote.updated_at
+            ? new Date(mongoPVote.updated_at)
+            : undefined,
         },
       });
     } catch (error) {
       console.error(
-        `   ❌ Errore importando proposal vote ${JSON.stringify(mongoVote)}:`,
+        `   ❌ Errore importando proposal vote ${JSON.stringify(mongoPVote)}:`,
         error,
       );
     }
@@ -252,7 +304,7 @@ async function importData() {
   // 8. Importa MovieVotes
   console.log("\n8️⃣ Importazione MovieVotes...");
   let movieVoteCount = 0;
-  for (const mongoVote of data.movieVotes) {
+  for (const mongoMVote of data.movieVotes) {
     console.log(
       `   Importando movie vote ${++movieVoteCount}/${data.movieVotes.length}...`,
     );
@@ -261,11 +313,17 @@ async function importData() {
     // Per ora lo salviamo senza questo campo
     await prisma.movieVote.create({
       data: {
-        rating: mongoVote.rating,
-        roundId: idMap.get(mongoVote.round_id.toString())!,
-        userId: idMap.get(mongoVote.user_id.toString())!,
-        movieId: idMap.get(mongoVote.movie_id.toString())!,
+        rating: mongoMVote.rating,
+        roundId: idMap.get(mongoMVote.round_id.toString())!,
+        userId: idMap.get(mongoMVote.user_id.toString())!,
+        movieId: idMap.get(mongoMVote.movie_id.toString())!,
         movieRoundRankingId: null, // Sarà aggiornato dopo
+        createdAt: mongoMVote.created_at
+          ? new Date(mongoMVote.created_at)
+          : undefined,
+        updatedAt: mongoMVote.updated_at
+          ? new Date(mongoMVote.updated_at)
+          : undefined,
       },
     });
   }
@@ -290,6 +348,12 @@ async function importData() {
         teamId: mongoRanking.team_id
           ? idMap.get(mongoRanking.team_id.toString())
           : null,
+        createdAt: mongoRanking.created_at
+          ? new Date(mongoRanking.created_at)
+          : undefined,
+        updatedAt: mongoRanking.updated_at
+          ? new Date(mongoRanking.updated_at)
+          : undefined,
       },
     });
     idMap.set(mongoRanking._id.toString(), prismaRanking.id);
@@ -301,16 +365,16 @@ async function importData() {
   // 9b. Aggiorna MovieVotes con movieRoundRankingId
   console.log("\n9️⃣b Aggiornamento MovieVotes con movieRoundRankingId...");
   let updatedVotes = 0;
-  for (const mongoVote of data.movieVotes) {
-    if (mongoVote.movie_round_ranking_id) {
+  for (const mongoMVote of data.movieVotes) {
+    if (mongoMVote.movie_round_ranking_id) {
       const movieRoundRankingId = idMap.get(
-        mongoVote.movie_round_ranking_id.toString(),
+        mongoMVote.movie_round_ranking_id.toString(),
       );
       if (movieRoundRankingId) {
         // Trova il voto corrispondente
-        const roundId = idMap.get(mongoVote.round_id.toString())!;
-        const userId = idMap.get(mongoVote.user_id.toString())!;
-        const movieId = idMap.get(mongoVote.movie_id.toString())!;
+        const roundId = idMap.get(mongoMVote.round_id.toString())!;
+        const userId = idMap.get(mongoMVote.user_id.toString())!;
+        const movieId = idMap.get(mongoMVote.movie_id.toString())!;
 
         await prisma.movieVote.updateMany({
           where: {
@@ -331,29 +395,35 @@ async function importData() {
   // 10. Importa UserRankings
   console.log("\n🔟 Importazione UserRankings...");
   let userRankingCount = 0;
-  for (const mongoRanking of data.userRankings) {
+  for (const mongoURanking of data.userRankings) {
     console.log(
       `   Importando user ranking ${++userRankingCount}/${data.userRankings.length}...`,
     );
     const prismaRanking = await prisma.userRanking.create({
       data: {
-        userId: idMap.get(mongoRanking.user_id.toString())!,
+        userId: idMap.get(mongoURanking.user_id.toString())!,
         cineforumId: cineforum.id,
-        averageRating: mongoRanking.average_rating,
-        averageImdbRating: mongoRanking.average_imdb_rating,
-        averageTmdbRating: mongoRanking.average_tmdb_rating,
-        averageRotoRating: mongoRanking.average_roto_rating,
-        averageMetaRating: mongoRanking.average_meta_rating,
+        averageRating: mongoURanking.average_rating,
+        averageImdbRating: mongoURanking.average_imdb_rating,
+        averageTmdbRating: mongoURanking.average_tmdb_rating,
+        averageRotoRating: mongoURanking.average_roto_rating,
+        averageMetaRating: mongoURanking.average_meta_rating,
+        createdAt: mongoURanking.created_at
+          ? new Date(mongoURanking.created_at)
+          : undefined,
+        updatedAt: mongoURanking.updated_at
+          ? new Date(mongoURanking.updated_at)
+          : undefined,
       },
     });
-    idMap.set(mongoRanking._id.toString(), prismaRanking.id);
+    idMap.set(mongoURanking._id.toString(), prismaRanking.id);
 
     // Crea UserRankingMovieRoundRanking
     if (
-      mongoRanking.movie_round_ranking_ids &&
-      Array.isArray(mongoRanking.movie_round_ranking_ids)
+      mongoURanking.movie_round_ranking_ids &&
+      Array.isArray(mongoURanking.movie_round_ranking_ids)
     ) {
-      for (const mrrId of mongoRanking.movie_round_ranking_ids) {
+      for (const mrrId of mongoURanking.movie_round_ranking_ids) {
         const prismaMrrId = idMap.get(mrrId.toString());
         if (prismaMrrId) {
           await prisma.userRankingMovieRoundRanking.create({
