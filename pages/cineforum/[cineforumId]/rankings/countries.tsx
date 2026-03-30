@@ -47,7 +47,7 @@ const COLORS = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-cine-bg-elevated border border-cine-border rounded-xl px-4 py-3 shadow-xl">
+      <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl">
         <div className="flex items-center gap-2 mb-1">
           <MapPin className="w-4 h-4 text-primary" />
           <span className="font-bold text-foreground">{label}</span>
@@ -97,7 +97,7 @@ export default function CountriesRankingPage({
   if (loading) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-        <div className="flex justify-center items-center min-h-100">
+        <div className="flex justify-center items-center min-h-[400px]">
           <LoadingCard text="Caricamento paesi..." />
         </div>
       </CineforumLayout>
@@ -233,8 +233,8 @@ export default function CountriesRankingPage({
                       tickLine={false}
                     />
                     <Tooltip
-                      content={(<CustomTooltip />) as any}
-                      cursor={{ fill: "var(--cine-bg-lighter)", opacity: 0.5 }}
+                      content={<CustomTooltip />}
+                      cursor={{ fill: "hsl(var(--secondary))", opacity: 0.5 }}
                     />
                     <Bar
                       dataKey="count"
@@ -242,7 +242,7 @@ export default function CountriesRankingPage({
                       animationDuration={1000}
                       animationBegin={0}
                     >
-                      {chartData.map((_entry, index) => (
+                      {chartData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -262,7 +262,7 @@ export default function CountriesRankingPage({
             >
               {/* Table Header */}
               <div className="relative overflow-hidden">
-                <div className="absolute inset-0 bg-linear-to-r from-primary via-cine-red-soft to-primary opacity-90" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary via-cine-red-soft to-primary opacity-90" />
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
                 <div className="relative px-4 sm:px-6 py-4 flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-white/90" />
@@ -274,7 +274,7 @@ export default function CountriesRankingPage({
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-cine-bg-lighter border-b border-border">
+                  <thead className="bg-secondary/50 border-b border-border">
                     <tr>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
                         #
@@ -295,19 +295,12 @@ export default function CountriesRankingPage({
                       const percentage = ((count / totalFilms) * 100).toFixed(
                         1,
                       );
-                      // calculate position with ties
-                      let position = 1;
-                      for (let i = 0; i < index; i++) {
-                        if (countries[i][1] > count) {
-                          position++;
-                        }
-                      }
-                      const isTop3 = position <= 3;
+                      const isTop3 = index < 3;
 
                       return (
                         <tr
                           key={name}
-                          className="hover:bg-cine-bg-lighter transition-colors duration-200 group"
+                          className="hover:bg-secondary/50 transition-colors duration-200 group"
                           style={{ animationDelay: `${600 + index * 50}ms` }}
                         >
                           <td className="px-4 sm:px-6 py-3 sm:py-4">
@@ -315,16 +308,16 @@ export default function CountriesRankingPage({
                               <div
                                 className={`
                                 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm
-                                ${position === 1 ? "bg-yellow-500/20 text-yellow-500" : ""}
-                                ${position === 2 ? "bg-gray-400/20 text-gray-400" : ""}
-                                ${position === 3 ? "bg-amber-600/20 text-amber-600" : ""}
+                                ${index === 0 ? "bg-yellow-500/20 text-yellow-500" : ""}
+                                ${index === 1 ? "bg-gray-400/20 text-gray-400" : ""}
+                                ${index === 2 ? "bg-amber-600/20 text-amber-600" : ""}
                               `}
                               >
-                                {position}
+                                {index + 1}
                               </div>
                             ) : (
                               <span className="font-medium text-sm text-muted-foreground pl-2">
-                                {position}
+                                {index + 1}
                               </span>
                             )}
                           </td>
@@ -353,7 +346,7 @@ export default function CountriesRankingPage({
                           </td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <div className="hidden sm:block w-16 h-1.5 bg-cine-bg-elevated rounded-full overflow-hidden">
+                              <div className="hidden sm:block w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
                                 <div
                                   className="h-full rounded-full transition-all duration-500"
                                   style={{
@@ -363,7 +356,7 @@ export default function CountriesRankingPage({
                                   }}
                                 />
                               </div>
-                              <span className="text-sm text-muted-foreground min-w-11.25 text-right">
+                              <span className="text-sm text-muted-foreground min-w-[45px] text-right">
                                 {percentage}%
                               </span>
                             </div>

@@ -32,7 +32,10 @@ export default function SupplierSelect({
             const supplier = suppliers.find((s) => s.id === e.target.value);
             if (supplier) onSupplierChange(supplier);
           }}
-          className="w-full appearance-none cine-input pr-10 cursor-pointer text-sm sm:text-base font-medium"
+          className="w-full appearance-none px-4 py-3 rounded-xl border border-border bg-card text-foreground
+            focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+            hover:border-primary/50 hover:bg-secondary/50
+            transition-all duration-200 cursor-pointer text-sm sm:text-base font-medium pr-10"
         >
           {suppliers.map((supplier) => (
             <option
