@@ -1,14 +1,25 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import { Trophy } from "lucide-react";
-import { fetchUserRankings } from "@/lib/client/cineforum";
 import {
-  RankingHeader,
-  SupplierSelect,
-  RankingCard,
-} from "@/components/cineforum/rankings";
+  Trophy,
+  Crown,
+  Users,
+  TrendingUp,
+  Award,
+  Search,
+  LayoutGrid,
+  List,
+  SlidersHorizontal,
+  Film,
+  Table as TableIcon,
+  LineChart as LineChartIcon,
+} from "lucide-react";
+import { fetchUserRankings } from "@/lib/client/cineforum";
+import { SupplierSelect, RankingCard } from "@/components/cineforum/rankings";
+import UserRankingTrendChart from "@/components/cineforum/rankings/UserRankingTrendChart";
+import { Badge } from "@/components/ui/badge";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
 import type {
@@ -30,6 +41,12 @@ type Props = {
   cineforumName: string;
 };
 
+const sortRounds = (a: string, b: string) =>
+  a.localeCompare(b, undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+
 export default function UsersRankingPage({
   cineforumId,
   cineforumName,
@@ -40,53 +57,196 @@ export default function UsersRankingPage({
     suppliers[0],
   );
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [roundRange, setRoundRange] = useState<[number, number]>([0, 0]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [showFilters, setShowFilters] = useState(false);
+  const [cardViewMode, setCardViewMode] = useState<
+    Record<string, "table" | "chart">
+  >({});
 
-  useEffect(() => {
-    loadRankings();
-  }, [cineforumId]);
-
-  const loadRankings = async () => {
+  const loadRankings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetchUserRankings(cineforumId, {
         offset: 0,
         limit: 100,
       });
+
       setRankings(response.body);
+
+      if (response.body.length > 0) {
+        const allRounds = new Set<string>();
+
+        response.body.forEach((ranking) => {
+          ranking.movie_round_rankings.forEach((mrr) => {
+            allRounds.add(mrr.round);
+          });
+        });
+
+        const sortedRounds = Array.from(allRounds).sort(sortRounds);
+        if (sortedRounds.length > 0) {
+          setRoundRange([1, sortedRounds.length]);
+        }
+      }
     } catch (error) {
       console.error("Error loading rankings:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [cineforumId]);
 
-  const getRatingForSupplier = (ranking: UserRankingDTO): number | null => {
-    switch (selectedSupplier.id) {
-      case "cineforum":
-        return ranking.average_rating;
-      case "tmdb":
-        return ranking.tmdb_vote;
-      case "imdb":
-        return ranking.imdb_rating;
-      case "rotten_tomatoes":
-        return ranking.tomatometer;
-      case "metacritic":
-        return ranking.metascore;
-      default:
-        return ranking.average_rating;
+  useEffect(() => {
+    loadRankings();
+  }, [loadRankings]);
+
+  const allRounds = useMemo(() => {
+    const rounds = new Set<string>();
+
+    rankings.forEach((ranking) => {
+      ranking.movie_round_rankings.forEach((mrr) => {
+        rounds.add(mrr.round);
+      });
+    });
+
+    return Array.from(rounds).sort(sortRounds);
+  }, [rankings]);
+
+  const filteredByRoundRankings = useMemo(() => {
+    if (allRounds.length === 0) return rankings;
+
+    const selectedRounds = allRounds.slice(roundRange[0] - 1, roundRange[1]);
+
+    return rankings.map((ranking) => {
+      const filteredMovieRounds = ranking.movie_round_rankings.filter((mrr) =>
+        selectedRounds.includes(mrr.round),
+      );
+
+      const validRatings = filteredMovieRounds
+        .map((mrr) => mrr.average_rating)
+        .filter((r): r is number => r !== null);
+
+      const newAvgRating =
+        validRatings.length > 0
+          ? validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
+          : null;
+
+      return {
+        ...ranking,
+        movie_round_rankings: filteredMovieRounds,
+        average_rating: newAvgRating,
+      };
+    });
+  }, [rankings, roundRange, allRounds]);
+
+  const getRatingForSupplier = useCallback(
+    (ranking: UserRankingDTO): number | null => {
+      switch (selectedSupplier.id) {
+        case "cineforum":
+          return ranking.average_rating;
+        case "tmdb":
+          return ranking.tmdb_vote;
+        case "imdb":
+          return ranking.imdb_rating;
+        case "rotten_tomatoes":
+          return ranking.tomatometer;
+        case "metacritic":
+          return ranking.metascore;
+        default:
+          return ranking.average_rating;
+      }
+    },
+    [selectedSupplier],
+  );
+
+  const sortedAndFilteredRankings = useMemo(() => {
+    let result = [...filteredByRoundRankings].sort((a, b) => {
+      const ratingA = getRatingForSupplier(a) ?? -1;
+      const ratingB = getRatingForSupplier(b) ?? -1;
+      return ratingB - ratingA;
+    });
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((r) => r.user.toLowerCase().includes(query));
     }
-  };
 
-  const sortedRankings = [...rankings].sort((a, b) => {
-    const ratingA = getRatingForSupplier(a) ?? -1;
-    const ratingB = getRatingForSupplier(b) ?? -1;
-    return ratingB - ratingA;
-  });
+    return result;
+  }, [filteredByRoundRankings, getRatingForSupplier, searchQuery]);
+
+  const displayedRankings = sortedAndFilteredRankings;
+
+  const stats = useMemo(() => {
+    const withRatings = filteredByRoundRankings.filter(
+      (u) => u.average_rating !== null,
+    );
+
+    const avgRating =
+      withRatings.length > 0
+        ? withRatings.reduce((sum, u) => sum + (u.average_rating || 0), 0) /
+          withRatings.length
+        : 0;
+
+    const totalVotes = filteredByRoundRankings.reduce(
+      (sum, u) => sum + u.movie_round_rankings.length,
+      0,
+    );
+
+    const totalWins = filteredByRoundRankings.reduce(
+      (sum, u) =>
+        sum + u.movie_round_rankings.filter((m) => m.round_winner).length,
+      0,
+    );
+
+    return {
+      totalUsers: filteredByRoundRankings.length,
+      activeUsers: withRatings.length,
+      avgRating,
+      totalVotes,
+      totalWins,
+    };
+  }, [filteredByRoundRankings]);
 
   const getWinningRounds = (
     ranking: UserRankingDTO,
   ): MovieRoundRankingDTO[] => {
     return ranking.movie_round_rankings.filter((mrr) => mrr.round_winner);
+  };
+
+  const getPosition = (index: number, ranking: UserRankingDTO): number => {
+    if (index === 0) return 1;
+
+    const currentRating = getRatingForSupplier(ranking) ?? -1;
+    const previousRating =
+      getRatingForSupplier(sortedAndFilteredRankings[index - 1]) ?? -1;
+
+    if (currentRating === previousRating) {
+      for (let i = index - 1; i >= 0; i--) {
+        const iRating =
+          getRatingForSupplier(sortedAndFilteredRankings[i]) ?? -1;
+        if (iRating !== currentRating) {
+          return i + 2;
+        }
+      }
+      return 1;
+    }
+
+    return index + 1;
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const setCardMode = (userId: string, mode: "table" | "chart") => {
+    setCardViewMode((prev) => ({
+      ...prev,
+      [userId]: mode,
+    }));
+  };
+
+  const getCardViewMode = (userId: string): "table" | "chart" => {
+    return cardViewMode[userId] || "table";
   };
 
   if (loading) {
@@ -101,159 +261,454 @@ export default function UsersRankingPage({
 
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900">
-          Classifica Utenti
-        </h1>
+      <div className="py-6 sm:py-8">
+        <div className="mb-8 sm:mb-10 animate-fade-in-up">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10 glow-red-soft">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+              Classifica Utenti
+            </h1>
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Voti medi degli utenti del cineforum
+          </p>
+        </div>
 
-        <SupplierSelect
-          suppliers={suppliers}
-          selectedSupplier={selectedSupplier}
-          onSupplierChange={setSelectedSupplier}
-        />
+        <div
+          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 animate-fade-in-up"
+          style={{ animationDelay: "100ms" }}
+        >
+          <div className="cine-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Utenti</p>
+              <p className="text-lg font-bold text-foreground">
+                {stats.totalUsers}
+              </p>
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <RankingHeader title="UTENTI" />
+          <div className="cine-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-500/10">
+              <TrendingUp className="w-5 h-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Attivi</p>
+              <p className="text-lg font-bold text-foreground">
+                {stats.activeUsers}
+              </p>
+            </div>
+          </div>
 
-          {sortedRankings.map((ranking, index) => {
-            const isExpanded = expandedIndex === index;
-            const rating = getRatingForSupplier(ranking);
-            const winningRounds = getWinningRounds(ranking);
+          <div className="cine-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10">
+              <Award className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Media</p>
+              <p className="text-lg font-bold text-foreground">
+                {stats.avgRating.toFixed(2)}
+              </p>
+            </div>
+          </div>
 
-            // Calculate position with ties
-            let position = 1;
-            if (index > 0) {
-              const currentRating = rating ?? -1;
-              const previousRating =
-                getRatingForSupplier(sortedRankings[index - 1]) ?? -1;
+          <div className="cine-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-yellow-500/10">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Vittorie</p>
+              <p className="text-lg font-bold text-foreground">
+                {stats.totalWins}
+              </p>
+            </div>
+          </div>
+        </div>
 
-              if (currentRating === previousRating) {
-                // Same rating as previous, find the position of the first item with this rating
-                for (let i = index - 1; i >= 0; i--) {
-                  const iRating = getRatingForSupplier(sortedRankings[i]) ?? -1;
-                  if (iRating === currentRating) {
-                    position = i + 1;
-                  } else {
-                    break;
-                  }
-                }
-              } else {
-                // Different rating, position is index + 1
-                position = index + 1;
-              }
-            }
+        <div
+          className="flex flex-col gap-4 mb-6 animate-fade-in-up"
+          style={{ animationDelay: "200ms" }}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <SupplierSelect
+              suppliers={suppliers}
+              selectedSupplier={selectedSupplier}
+              onSupplierChange={setSelectedSupplier}
+            />
 
-            return (
-              <RankingCard
-                key={ranking.id}
-                position={position}
-                title={ranking.user}
-                rating={rating}
-                isExpanded={isExpanded}
-                onToggle={() => setExpandedIndex(isExpanded ? null : index)}
-                badges={winningRounds.map((mrr, idx) => (
-                  <span
-                    key={idx}
-                    title={`Vincitore con "${mrr.movie}" (${mrr.round})`}
-                  >
-                    <Trophy className="w-5 h-5 text-yellow-500" />
-                  </span>
-                ))}
+            <div className="flex-1 flex gap-3 lg:justify-end">
+              <div className="relative flex-1 lg:flex-initial lg:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Cerca utente..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card text-foreground
+                    focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                    hover:border-primary/50 transition-all duration-200 text-sm"
+                />
+              </div>
+
+              {allRounds.length > 1 && (
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-3 lg:px-4 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200
+                    ${
+                      showFilters
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border bg-card text-foreground hover:bg-secondary hover:border-primary/50"
+                    }`}
+                  title="Filtri"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span className="hidden lg:inline">Filtri</span>
+                </button>
+              )}
+
+              <div className="flex rounded-xl border border-border overflow-hidden bg-card">
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
+                    ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                  title="Cards"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="hidden lg:inline">Cards</span>
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
+                    ${viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                  title="Tabella"
+                >
+                  <List className="w-4 h-4" />
+                  <span className="hidden lg:inline">Tabella</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {showFilters && allRounds.length > 1 && (
+            <div className="cine-card p-4 animate-fade-in">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-4">
+                <Film className="w-4 h-4 text-primary" />
+                Filtra per Round:
+                <span className="text-primary font-bold">
+                  {allRounds[roundRange[0] - 1]} →{" "}
+                  {allRounds[roundRange[1] - 1]}
+                </span>
+              </label>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">
+                    Inizio:{" "}
+                    <span className="font-medium text-foreground">
+                      {allRounds[roundRange[0] - 1]}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max={allRounds.length}
+                    value={roundRange[0]}
+                    onChange={(e) => {
+                      const newStart = parseInt(e.target.value);
+                      setRoundRange([
+                        newStart,
+                        Math.max(newStart, roundRange[1]),
+                      ]);
+                    }}
+                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">
+                    Fine:{" "}
+                    <span className="font-medium text-foreground">
+                      {allRounds[roundRange[1] - 1]}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max={allRounds.length}
+                    value={roundRange[1]}
+                    onChange={(e) => {
+                      const newEnd = parseInt(e.target.value);
+                      setRoundRange([Math.min(roundRange[0], newEnd), newEnd]);
+                    }}
+                    className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                </div>
+
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{allRounds[0]}</span>
+                  <span>{allRounds[allRounds.length - 1]}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {displayedRankings.length > 0 && (
+          <>
+            {viewMode === "cards" ? (
+              <div
+                className="space-y-3 animate-fade-in-up"
+                style={{ animationDelay: "300ms" }}
               >
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-bold text-red-600 mb-3 text-sm uppercase tracking-wide">
-                      Film Votati
-                    </h3>
+                {displayedRankings.map((ranking) => {
+                  const globalIndex = sortedAndFilteredRankings.findIndex(
+                    (r) => r.id === ranking.id,
+                  );
+                  const isExpanded = expandedIndex === globalIndex;
+                  const rating = getRatingForSupplier(ranking);
+                  const winningRounds = getWinningRounds(ranking);
+                  const position = getPosition(globalIndex, ranking);
 
-                    {ranking.movie_round_rankings.length === 0 ? (
-                      <EmptyState
-                        title="Nessun film votato"
-                        subtitle="Questo utente non ha ancora votato alcun film"
-                      />
-                    ) : (
-                      <div className="space-y-2">
-                        {ranking.movie_round_rankings.map((mrr, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-                          >
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="font-medium text-gray-900 truncate">
-                                {mrr.movie}
+                  return (
+                    <RankingCard
+                      key={ranking.id}
+                      position={position}
+                      title={ranking.user}
+                      rating={rating}
+                      isExpanded={isExpanded}
+                      onToggle={() =>
+                        setExpandedIndex(isExpanded ? null : globalIndex)
+                      }
+                      badges={
+                        winningRounds.length > 0 ? (
+                          <div className="relative inline-flex items-center">
+                            <Crown className="w-5 h-5 text-yellow-500 drop-shadow-[0_0_6px_rgba(234,179,8,0.5)]" />
+                            {winningRounds.length > 1 && (
+                              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                {winningRounds.length}
                               </span>
-                              {mrr.round_winner && (
-                                <span
-                                  title="Vincitore del ciclo"
-                                  className="flex-shrink-0"
-                                >
-                                  <Trophy className="w-4 h-4 text-yellow-500" />
+                            )}
+                          </div>
+                        ) : null
+                      }
+                    >
+                      <div className="space-y-6">
+                        <div className="flex justify-end">
+                          <div className="flex rounded-lg border border-border overflow-hidden bg-card">
+                            <button
+                              onClick={() => setCardMode(ranking.id, "table")}
+                              className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors
+                                ${getCardViewMode(ranking.id) === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                            >
+                              <TableIcon className="w-3.5 h-3.5" />
+                              Tabella
+                            </button>
+                            <button
+                              onClick={() => setCardMode(ranking.id, "chart")}
+                              className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors border-l border-border
+                                ${getCardViewMode(ranking.id) === "chart" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                            >
+                              <LineChartIcon className="w-3.5 h-3.5" />
+                              Grafico
+                            </button>
+                          </div>
+                        </div>
+
+                        {getCardViewMode(ranking.id) === "table" && (
+                          <div>
+                            <h3 className="font-bold text-primary mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                              <Film className="w-4 h-4" />
+                              Film Votati
+                            </h3>
+
+                            {ranking.movie_round_rankings.length === 0 ? (
+                              <EmptyState
+                                title="Nessun film votato"
+                                subtitle="Questo utente non ha ancora votato alcun film"
+                              />
+                            ) : (
+                              <div className="space-y-2">
+                                {ranking.movie_round_rankings.map(
+                                  (mrr, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-secondary/50 hover:border-primary/30 transition-all duration-200"
+                                    >
+                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <span className="font-medium text-foreground truncate">
+                                          {mrr.movie}
+                                        </span>
+                                        {mrr.round_winner && (
+                                          <Trophy className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                        )}
+                                      </div>
+                                      <div className="text-sm flex items-center gap-3 flex-shrink-0 ml-4">
+                                        <span className="font-bold text-gradient tabular-nums">
+                                          {mrr.average_rating?.toFixed(2) ??
+                                            "N/A"}
+                                        </span>
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs"
+                                        >
+                                          {mrr.round}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {getCardViewMode(ranking.id) === "chart" && (
+                          <UserRankingTrendChart ranking={ranking} />
+                        )}
+
+                        <div className="pt-4 border-t border-border">
+                          <h4 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wide">
+                            Medie per Sito
+                          </h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            {[
+                              {
+                                label: "Cineforum",
+                                value: ranking.average_rating,
+                              },
+                              { label: "TMDB", value: ranking.tmdb_vote },
+                              { label: "IMDB", value: ranking.imdb_rating },
+                              {
+                                label: "Rotten T.",
+                                value: ranking.tomatometer,
+                              },
+                              { label: "Metacritic", value: ranking.metascore },
+                            ].map((stat) => (
+                              <div
+                                key={stat.label}
+                                className="p-3 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors"
+                              >
+                                <div className="text-xs text-muted-foreground mb-1">
+                                  {stat.label}
+                                </div>
+                                <div className="font-bold text-foreground tabular-nums">
+                                  {stat.value?.toFixed(2) ?? "N/A"}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </RankingCard>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className="cine-card overflow-hidden animate-fade-in-up"
+                style={{ animationDelay: "300ms" }}
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-secondary/50">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          #
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Utente
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Media
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Film
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          Vittorie
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayedRankings.map((ranking) => {
+                        const globalIndex = sortedAndFilteredRankings.findIndex(
+                          (r) => r.id === ranking.id,
+                        );
+                        const rating = getRatingForSupplier(ranking);
+                        const position = getPosition(globalIndex, ranking);
+                        const wins = getWinningRounds(ranking).length;
+
+                        return (
+                          <tr
+                            key={ranking.id}
+                            className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
+                          >
+                            <td className="px-4 py-3.5 text-sm font-bold text-muted-foreground tabular-nums">
+                              {position}
+                            </td>
+                            <td className="px-4 py-3.5 text-sm font-medium text-foreground">
+                              <div className="flex items-center gap-2">
+                                {ranking.user}
+                                {wins > 0 && (
+                                  <Crown className="w-4 h-4 text-yellow-500" />
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
+                              {rating !== null ? (
+                                <span className="text-gradient">
+                                  {rating.toFixed(2)}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  N/A
                                 </span>
                               )}
-                            </div>
-                            <div className="text-sm text-gray-600 flex items-center gap-3 flex-shrink-0 ml-4">
-                              <span className="font-bold text-gray-900">
-                                {mrr.average_rating?.toFixed(2) ?? "N/A"}
-                              </span>
-                              <span className="text-gray-400 text-xs">
-                                {mrr.round}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Average ratings summary */}
-                  <div className="pt-4 border-t border-gray-200">
-                    <h4 className="font-bold text-sm mb-3 text-gray-700 uppercase tracking-wide">
-                      Medie per Sito
-                    </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-red-300 transition-colors">
-                        <div className="text-xs text-gray-600 mb-1">
-                          Cineforum
-                        </div>
-                        <div className="font-bold text-lg text-gray-900">
-                          {ranking.average_rating?.toFixed(2) ?? "N/A"}
-                        </div>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-red-300 transition-colors">
-                        <div className="text-xs text-gray-600 mb-1">TMDB</div>
-                        <div className="font-bold text-lg text-gray-900">
-                          {ranking.tmdb_vote?.toFixed(2) ?? "N/A"}
-                        </div>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-red-300 transition-colors">
-                        <div className="text-xs text-gray-600 mb-1">IMDB</div>
-                        <div className="font-bold text-lg text-gray-900">
-                          {ranking.imdb_rating?.toFixed(2) ?? "N/A"}
-                        </div>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-red-300 transition-colors">
-                        <div className="text-xs text-gray-600 mb-1">
-                          Rotten T.
-                        </div>
-                        <div className="font-bold text-lg text-gray-900">
-                          {ranking.tomatometer?.toFixed(2) ?? "N/A"}
-                        </div>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg border border-gray-200 hover:border-red-300 transition-colors">
-                        <div className="text-xs text-gray-600 mb-1">
-                          Metacritic
-                        </div>
-                        <div className="font-bold text-lg text-gray-900">
-                          {ranking.metascore?.toFixed(2) ?? "N/A"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                            </td>
+                            <td className="px-4 py-3.5 text-sm text-right text-muted-foreground tabular-nums">
+                              {ranking.movie_round_rankings.length}
+                            </td>
+                            <td className="px-4 py-3.5 text-sm text-right tabular-nums">
+                              {wins > 0 ? (
+                                <span className="text-yellow-500 font-bold">
+                                  {wins}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">0</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              </RankingCard>
-            );
-          })}
-        </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {!loading && displayedRankings.length === 0 && (
+          <div className="cine-card p-12 text-center animate-fade-in">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center">
+              <Users className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {searchQuery
+                ? "Nessun risultato"
+                : "Nessun utente nella classifica"}
+            </h3>
+            <p className="text-muted-foreground">
+              {searchQuery
+                ? `Nessun utente corrisponde a "${searchQuery}"`
+                : "Gli utenti appariranno qui dopo aver espresso i loro voti."}
+            </p>
+          </div>
+        )}
       </div>
     </CineforumLayout>
   );
