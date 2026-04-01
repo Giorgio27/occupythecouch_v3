@@ -1,5 +1,5 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import {
@@ -13,20 +13,12 @@ import {
   List,
   SlidersHorizontal,
   Film,
-  LineChart as LineChartIcon,
   Table as TableIcon,
+  LineChart as LineChartIcon,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { fetchUserRankings } from "@/lib/client/cineforum";
 import { SupplierSelect, RankingCard } from "@/components/cineforum/rankings";
+import UserRankingTrendChart from "@/components/cineforum/rankings/UserRankingTrendChart";
 import { Badge } from "@/components/ui/badge";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
@@ -49,6 +41,12 @@ type Props = {
   cineforumName: string;
 };
 
+const sortRounds = (a: string, b: string) =>
+  a.localeCompare(b, undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+
 export default function UsersRankingPage({
   cineforumId,
   cineforumName,
@@ -65,30 +63,28 @@ export default function UsersRankingPage({
   const [showFilters, setShowFilters] = useState(false);
   const [cardViewMode, setCardViewMode] = useState<
     Record<string, "table" | "chart">
-  >({}); // Track view mode per user card
+  >({});
 
-  useEffect(() => {
-    loadRankings();
-  }, [cineforumId]);
-
-  const loadRankings = async () => {
+  const loadRankings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetchUserRankings(cineforumId, {
         offset: 0,
         limit: 100,
       });
+
       setRankings(response.body);
 
-      // Initialize round range based on available rounds
       if (response.body.length > 0) {
         const allRounds = new Set<string>();
+
         response.body.forEach((ranking) => {
           ranking.movie_round_rankings.forEach((mrr) => {
             allRounds.add(mrr.round);
           });
         });
-        const sortedRounds = Array.from(allRounds).sort();
+
+        const sortedRounds = Array.from(allRounds).sort(sortRounds);
         if (sortedRounds.length > 0) {
           setRoundRange([1, sortedRounds.length]);
         }
@@ -98,20 +94,24 @@ export default function UsersRankingPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [cineforumId]);
 
-  // Get all unique rounds sorted
+  useEffect(() => {
+    loadRankings();
+  }, [loadRankings]);
+
   const allRounds = useMemo(() => {
     const rounds = new Set<string>();
+
     rankings.forEach((ranking) => {
       ranking.movie_round_rankings.forEach((mrr) => {
         rounds.add(mrr.round);
       });
     });
-    return Array.from(rounds).sort();
+
+    return Array.from(rounds).sort(sortRounds);
   }, [rankings]);
 
-  // Filter rankings based on selected round range
   const filteredByRoundRankings = useMemo(() => {
     if (allRounds.length === 0) return rankings;
 
@@ -122,7 +122,6 @@ export default function UsersRankingPage({
         selectedRounds.includes(mrr.round),
       );
 
-      // Recalculate average rating for filtered rounds
       const validRatings = filteredMovieRounds
         .map((mrr) => mrr.average_rating)
         .filter((r): r is number => r !== null);
@@ -140,24 +139,26 @@ export default function UsersRankingPage({
     });
   }, [rankings, roundRange, allRounds]);
 
-  const getRatingForSupplier = (ranking: UserRankingDTO): number | null => {
-    switch (selectedSupplier.id) {
-      case "cineforum":
-        return ranking.average_rating;
-      case "tmdb":
-        return ranking.tmdb_vote;
-      case "imdb":
-        return ranking.imdb_rating;
-      case "rotten_tomatoes":
-        return ranking.tomatometer;
-      case "metacritic":
-        return ranking.metascore;
-      default:
-        return ranking.average_rating;
-    }
-  };
+  const getRatingForSupplier = useCallback(
+    (ranking: UserRankingDTO): number | null => {
+      switch (selectedSupplier.id) {
+        case "cineforum":
+          return ranking.average_rating;
+        case "tmdb":
+          return ranking.tmdb_vote;
+        case "imdb":
+          return ranking.imdb_rating;
+        case "rotten_tomatoes":
+          return ranking.tomatometer;
+        case "metacritic":
+          return ranking.metascore;
+        default:
+          return ranking.average_rating;
+      }
+    },
+    [selectedSupplier],
+  );
 
-  // Sort and filter by search
   const sortedAndFilteredRankings = useMemo(() => {
     let result = [...filteredByRoundRankings].sort((a, b) => {
       const ratingA = getRatingForSupplier(a) ?? -1;
@@ -171,25 +172,26 @@ export default function UsersRankingPage({
     }
 
     return result;
-  }, [filteredByRoundRankings, selectedSupplier, searchQuery]);
+  }, [filteredByRoundRankings, getRatingForSupplier, searchQuery]);
 
-  // Show all users without pagination
   const displayedRankings = sortedAndFilteredRankings;
 
-  // Stats
   const stats = useMemo(() => {
     const withRatings = filteredByRoundRankings.filter(
       (u) => u.average_rating !== null,
     );
+
     const avgRating =
       withRatings.length > 0
         ? withRatings.reduce((sum, u) => sum + (u.average_rating || 0), 0) /
           withRatings.length
         : 0;
+
     const totalVotes = filteredByRoundRankings.reduce(
       (sum, u) => sum + u.movie_round_rankings.length,
       0,
     );
+
     const totalWins = filteredByRoundRankings.reduce(
       (sum, u) =>
         sum + u.movie_round_rankings.filter((m) => m.round_winner).length,
@@ -211,7 +213,6 @@ export default function UsersRankingPage({
     return ranking.movie_round_rankings.filter((mrr) => mrr.round_winner);
   };
 
-  // Calculate position with ties
   const getPosition = (index: number, ranking: UserRankingDTO): number => {
     if (index === 0) return 1;
 
@@ -229,6 +230,7 @@ export default function UsersRankingPage({
       }
       return 1;
     }
+
     return index + 1;
   };
 
@@ -236,32 +238,15 @@ export default function UsersRankingPage({
     setSearchQuery(value);
   };
 
-  const toggleCardViewMode = (userId: string) => {
+  const setCardMode = (userId: string, mode: "table" | "chart") => {
     setCardViewMode((prev) => ({
       ...prev,
-      [userId]: prev[userId] === "chart" ? "table" : "chart",
+      [userId]: mode,
     }));
   };
 
   const getCardViewMode = (userId: string): "table" | "chart" => {
     return cardViewMode[userId] || "table";
-  };
-
-  // Prepare chart data for a user
-  const prepareChartData = (ranking: UserRankingDTO) => {
-    const sortedRounds = [...ranking.movie_round_rankings].sort((a, b) => {
-      return a.round.localeCompare(b.round);
-    });
-
-    return sortedRounds.map((mrr, index) => ({
-      index: index + 1,
-      round: mrr.round,
-      rating: mrr.average_rating || 0,
-      movie: mrr.movie,
-      // Truncate long movie titles for display
-      movieShort:
-        mrr.movie.length > 25 ? mrr.movie.substring(0, 22) + "..." : mrr.movie,
-    }));
   };
 
   if (loading) {
@@ -277,7 +262,6 @@ export default function UsersRankingPage({
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="py-6 sm:py-8">
-        {/* Page Header */}
         <div className="mb-8 sm:mb-10 animate-fade-in-up">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10 glow-red-soft">
@@ -292,7 +276,6 @@ export default function UsersRankingPage({
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div
           className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 animate-fade-in-up"
           style={{ animationDelay: "100ms" }}
@@ -308,6 +291,7 @@ export default function UsersRankingPage({
               </p>
             </div>
           </div>
+
           <div className="cine-card p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-500/10">
               <TrendingUp className="w-5 h-5 text-green-500" />
@@ -319,6 +303,7 @@ export default function UsersRankingPage({
               </p>
             </div>
           </div>
+
           <div className="cine-card p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-500/10">
               <Award className="w-5 h-5 text-amber-500" />
@@ -330,6 +315,7 @@ export default function UsersRankingPage({
               </p>
             </div>
           </div>
+
           <div className="cine-card p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-yellow-500/10">
               <Trophy className="w-5 h-5 text-yellow-500" />
@@ -343,21 +329,19 @@ export default function UsersRankingPage({
           </div>
         </div>
 
-        {/* Controls Row */}
         <div
           className="flex flex-col gap-4 mb-6 animate-fade-in-up"
           style={{ animationDelay: "200ms" }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             <SupplierSelect
               suppliers={suppliers}
               selectedSupplier={selectedSupplier}
               onSupplierChange={setSelectedSupplier}
             />
 
-            <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:justify-end">
-              {/* Search */}
-              <div className="relative w-full sm:w-64">
+            <div className="flex-1 flex gap-3 lg:justify-end">
+              <div className="relative flex-1 lg:flex-initial lg:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
@@ -370,45 +354,45 @@ export default function UsersRankingPage({
                 />
               </div>
 
-              {/* Filters Toggle */}
               {allRounds.length > 1 && (
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 text-sm font-medium transition-all duration-200
+                  className={`px-3 lg:px-4 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200
                     ${
                       showFilters
                         ? "bg-primary text-primary-foreground border-primary"
                         : "border-border bg-card text-foreground hover:bg-secondary hover:border-primary/50"
                     }`}
+                  title="Filtri"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
-                  <span className="hidden sm:inline">Filtri</span>
+                  <span className="hidden lg:inline">Filtri</span>
                 </button>
               )}
 
-              {/* View Toggle */}
               <div className="flex rounded-xl border border-border overflow-hidden bg-card">
                 <button
                   onClick={() => setViewMode("cards")}
-                  className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium transition-colors
+                  className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
                     ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                  title="Cards"
                 >
                   <LayoutGrid className="w-4 h-4" />
-                  <span className="hidden sm:inline">Cards</span>
+                  <span className="hidden lg:inline">Cards</span>
                 </button>
                 <button
                   onClick={() => setViewMode("table")}
-                  className={`px-4 py-2.5 flex items-center gap-2 text-sm font-medium transition-colors border-l border-border
+                  className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
                     ${viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                  title="Tabella"
                 >
                   <List className="w-4 h-4" />
-                  <span className="hidden sm:inline">Tabella</span>
+                  <span className="hidden lg:inline">Tabella</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Round Range Slider */}
           {showFilters && allRounds.length > 1 && (
             <div className="cine-card p-4 animate-fade-in">
               <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-4">
@@ -419,6 +403,7 @@ export default function UsersRankingPage({
                   {allRounds[roundRange[1] - 1]}
                 </span>
               </label>
+
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-muted-foreground mb-2 block">
@@ -442,6 +427,7 @@ export default function UsersRankingPage({
                     className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                 </div>
+
                 <div>
                   <label className="text-xs text-muted-foreground mb-2 block">
                     Fine:{" "}
@@ -461,6 +447,7 @@ export default function UsersRankingPage({
                     className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                 </div>
+
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{allRounds[0]}</span>
                   <span>{allRounds[allRounds.length - 1]}</span>
@@ -470,7 +457,6 @@ export default function UsersRankingPage({
           )}
         </div>
 
-        {/* Rankings List */}
         {displayedRankings.length > 0 && (
           <>
             {viewMode === "cards" ? (
@@ -511,11 +497,10 @@ export default function UsersRankingPage({
                       }
                     >
                       <div className="space-y-6">
-                        {/* View Toggle */}
                         <div className="flex justify-end">
                           <div className="flex rounded-lg border border-border overflow-hidden bg-card">
                             <button
-                              onClick={() => toggleCardViewMode(ranking.id)}
+                              onClick={() => setCardMode(ranking.id, "table")}
                               className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors
                                 ${getCardViewMode(ranking.id) === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
                             >
@@ -523,7 +508,7 @@ export default function UsersRankingPage({
                               Tabella
                             </button>
                             <button
-                              onClick={() => toggleCardViewMode(ranking.id)}
+                              onClick={() => setCardMode(ranking.id, "chart")}
                               className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors border-l border-border
                                 ${getCardViewMode(ranking.id) === "chart" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
                             >
@@ -533,7 +518,6 @@ export default function UsersRankingPage({
                           </div>
                         </div>
 
-                        {/* Film Votati - Table View */}
                         {getCardViewMode(ranking.id) === "table" && (
                           <div>
                             <h3 className="font-bold text-primary mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
@@ -582,148 +566,10 @@ export default function UsersRankingPage({
                           </div>
                         )}
 
-                        {/* Chart View */}
                         {getCardViewMode(ranking.id) === "chart" && (
-                          <div>
-                            <h3 className="font-bold text-primary mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
-                              <LineChartIcon className="w-4 h-4" />
-                              Andamento Voti
-                            </h3>
-
-                            {ranking.movie_round_rankings.length === 0 ? (
-                              <EmptyState
-                                title="Nessun film votato"
-                                subtitle="Questo utente non ha ancora votato alcun film"
-                              />
-                            ) : (
-                              <div className="w-full h-[400px] sm:h-[500px] mb-6">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={prepareChartData(ranking)}
-                                    margin={{
-                                      top: 20,
-                                      right: 20,
-                                      left: 0,
-                                      bottom: 80,
-                                    }}
-                                  >
-                                    <CartesianGrid
-                                      strokeDasharray="3 3"
-                                      stroke="hsl(var(--border))"
-                                      opacity={0.3}
-                                    />
-                                    <XAxis
-                                      dataKey="movieShort"
-                                      angle={-45}
-                                      textAnchor="end"
-                                      height={80}
-                                      interval={0}
-                                      tick={(props) => {
-                                        // Hide movie names on small screens
-                                        if (
-                                          typeof window !== "undefined" &&
-                                          window.innerWidth < 640
-                                        ) {
-                                          return null;
-                                        }
-                                        return (
-                                          <text
-                                            x={props.x}
-                                            y={props.y}
-                                            dy={16}
-                                            textAnchor="end"
-                                            fill="hsl(var(--foreground))"
-                                            fontSize={10}
-                                            transform={`rotate(-45 ${props.x} ${props.y})`}
-                                          >
-                                            {props.payload.value}
-                                          </text>
-                                        );
-                                      }}
-                                      stroke="hsl(var(--border))"
-                                    />
-                                    <YAxis
-                                      domain={[0, 5]}
-                                      ticks={[0, 1, 2, 3, 4, 5]}
-                                      tick={{
-                                        fill: "hsl(var(--foreground))",
-                                        fontSize: 12,
-                                      }}
-                                      stroke="hsl(var(--border))"
-                                    />
-                                    <Tooltip
-                                      contentStyle={{
-                                        backgroundColor: "hsl(var(--popover))",
-                                        border: "1px solid hsl(var(--border))",
-                                        borderRadius: "8px",
-                                        color: "hsl(var(--popover-foreground))",
-                                        boxShadow:
-                                          "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                                      }}
-                                      labelStyle={{
-                                        color: "hsl(var(--popover-foreground))",
-                                        fontWeight: 600,
-                                        marginBottom: "4px",
-                                      }}
-                                      formatter={(value: number) => [
-                                        value.toFixed(2),
-                                        "Voto",
-                                      ]}
-                                      labelFormatter={(label, payload) => {
-                                        if (payload && payload[0]) {
-                                          const data = payload[0].payload;
-                                          return `${data.movie}\n${data.round}`;
-                                        }
-                                        return label;
-                                      }}
-                                    />
-                                    <defs>
-                                      <linearGradient
-                                        id="colorRating"
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                      >
-                                        <stop
-                                          offset="5%"
-                                          stopColor="hsl(var(--primary))"
-                                          stopOpacity={0.8}
-                                        />
-                                        <stop
-                                          offset="95%"
-                                          stopColor="hsl(var(--primary))"
-                                          stopOpacity={0.1}
-                                        />
-                                      </linearGradient>
-                                    </defs>
-                                    <Area
-                                      type="monotone"
-                                      dataKey="rating"
-                                      stroke="hsl(var(--primary))"
-                                      strokeWidth={3}
-                                      fill="url(#colorRating)"
-                                      dot={{
-                                        fill: "hsl(var(--primary))",
-                                        stroke: "hsl(var(--background))",
-                                        strokeWidth: 2,
-                                        r: 6,
-                                      }}
-                                      activeDot={{
-                                        r: 8,
-                                        fill: "hsl(var(--primary))",
-                                        stroke: "hsl(var(--background))",
-                                        strokeWidth: 2,
-                                      }}
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              </div>
-                            )}
-                          </div>
+                          <UserRankingTrendChart ranking={ranking} />
                         )}
 
-                        {/* Average ratings summary */}
                         <div className="pt-4 border-t border-border">
                           <h4 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wide">
                             Medie per Sito
@@ -846,7 +692,6 @@ export default function UsersRankingPage({
           </>
         )}
 
-        {/* Empty State */}
         {!loading && displayedRankings.length === 0 && (
           <div className="cine-card p-12 text-center animate-fade-in">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center">
