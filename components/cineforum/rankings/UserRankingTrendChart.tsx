@@ -375,9 +375,16 @@ export default function UserRankingTrendChart({ ranking }: Props) {
               {averageLine !== null && (
                 <ReferenceLine
                   y={averageLine}
-                  stroke="var(--primary)"
-                  strokeDasharray="5 5"
-                  strokeOpacity={0.35}
+                  stroke="var(--foreground)"
+                  strokeDasharray="6 6"
+                  strokeOpacity={0.45}
+                  strokeWidth={1.5}
+                  label={{
+                    value: `Media ${averageLine.toFixed(2)}`,
+                    position: "insideTopRight",
+                    fill: "var(--muted-foreground)",
+                    fontSize: 11,
+                  }}
                 />
               )}
 
