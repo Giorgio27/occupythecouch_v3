@@ -67,6 +67,7 @@ export default function CountriesRankingPage({
   cineforumName,
 }: Props) {
   const [countries, setCountries] = useState<CountryData[]>([]);
+  const [uniqueFilmsCount, setUniqueFilmsCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,6 +79,7 @@ export default function CountriesRankingPage({
       setLoading(true);
       const response = await fetchCountriesRankings(cineforumId);
       setCountries(response.body);
+      setUniqueFilmsCount(response.uniqueFilmsCount);
     } catch (error) {
       console.error("Error loading countries:", error);
     } finally {
@@ -91,7 +93,6 @@ export default function CountriesRankingPage({
     count,
   }));
 
-  const totalFilms = countries.reduce((sum, [, c]) => sum + c, 0);
   const topCountry = countries[0];
 
   if (loading) {
@@ -147,7 +148,7 @@ export default function CountriesRankingPage({
                 <span>Film Totali</span>
               </div>
               <p className="text-2xl sm:text-3xl font-black text-foreground">
-                {totalFilms}
+                {uniqueFilmsCount}
               </p>
             </div>
 
@@ -292,9 +293,10 @@ export default function CountriesRankingPage({
                   </thead>
                   <tbody className="divide-y divide-border">
                     {countries.map(([name, count], index) => {
-                      const percentage = ((count / totalFilms) * 100).toFixed(
-                        1,
-                      );
+                      const percentage = (
+                        (count / uniqueFilmsCount) *
+                        100
+                      ).toFixed(1);
                       const isTop3 = index < 3;
 
                       return (

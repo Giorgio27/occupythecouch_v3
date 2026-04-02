@@ -39,15 +39,17 @@ export default async function handler(
       return res.status(403).json({ error: "Not a member of this cineforum" });
     }
 
-    // Fetch all movie round rankings for this cineforum with movie details
-    const rankings = await prisma.movieRoundRanking.findMany({
+    // Fetch all closed proposals with their winning movies for this cineforum
+    const proposals = await prisma.proposal.findMany({
       where: {
-        round: {
-          cineforumId,
+        cineforumId,
+        closed: true,
+        winnerId: {
+          not: null,
         },
       },
       include: {
-        movie: {
+        winner: {
           select: {
             productionCountries: true,
           },
@@ -58,8 +60,10 @@ export default async function handler(
     // Count movies by country
     const countriesMap: Record<string, number> = {};
 
-    for (const ranking of rankings) {
-      const countries = ranking.movie.productionCountries;
+    for (const proposal of proposals) {
+      if (!proposal.winner) continue;
+
+      const countries = proposal.winner.productionCountries;
 
       // productionCountries is stored as JSON array
       if (countries && Array.isArray(countries)) {
@@ -77,8 +81,12 @@ export default async function handler(
       .map(([name, count]) => [name, count] as CountryData)
       .sort((a, b) => b[1] - a[1]);
 
+    // Calculate unique films count (winning films from closed proposals)
+    const uniqueFilmsCount = proposals.length;
+
     return res.status(200).json({
       body,
+      uniqueFilmsCount,
       status: "completed",
     });
   } catch (error) {

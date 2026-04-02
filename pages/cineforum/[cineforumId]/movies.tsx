@@ -76,7 +76,7 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
 
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-      <div className="py-6 sm:py-8 animate-fade-in">
+      <div className="py-4 sm:py-6 animate-fade-in">
         {/* Page Header */}
         <div className="mb-8 sm:mb-10">
           <div className="flex items-center gap-3 mb-2">
@@ -91,6 +91,30 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
             Lista completa dei film proposti nel tuo cineforum
           </p>
         </div>
+
+        {/* Stats Summary */}
+        {sortedMovies.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4">
+            <div className="cine-card text-center p-4">
+              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1">
+                {sortedMovies.reduce((sum, m) => sum + m.proposals, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Film Proposti</div>
+            </div>
+            <div className="cine-card text-center p-4">
+              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1">
+                {sortedMovies.length}
+              </div>
+              <div className="text-sm text-muted-foreground">Film Unici</div>
+            </div>
+            <div className="cine-card text-center p-4">
+              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1">
+                {sortedMovies.filter((m) => m.wins > 0).length}
+              </div>
+              <div className="text-sm text-muted-foreground">Film Visti</div>
+            </div>
+          </div>
+        )}
 
         {/* Order Criteria Select */}
         <div className="mb-6">
@@ -192,34 +216,6 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
                 </div>
               );
             })}
-          </div>
-        )}
-
-        {/* Stats Summary */}
-        {sortedMovies.length > 0 && (
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="cine-card text-center p-4">
-              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1">
-                {sortedMovies.length}
-              </div>
-              <div className="text-sm text-muted-foreground">Film Totali</div>
-            </div>
-            <div className="cine-card text-center p-4">
-              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1">
-                {sortedMovies.reduce((sum, m) => sum + m.proposals, 0)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Proposte Totali
-              </div>
-            </div>
-            <div className="cine-card text-center p-4">
-              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1">
-                {sortedMovies.filter((m) => m.wins > 0).length}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Film Vincitori
-              </div>
-            </div>
           </div>
         )}
       </div>

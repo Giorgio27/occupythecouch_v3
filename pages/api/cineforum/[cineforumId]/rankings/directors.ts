@@ -54,6 +54,7 @@ export default async function handler(
       where: {
         round: {
           cineforumId,
+          closed: true,
         },
         averageRating: {
           not: null,

@@ -44,6 +44,7 @@ export default async function handler(
       where: {
         round: {
           cineforumId,
+          closed: true,
         },
       },
     });
@@ -53,6 +54,7 @@ export default async function handler(
       where: {
         round: {
           cineforumId,
+          closed: true,
         },
       },
       include: {

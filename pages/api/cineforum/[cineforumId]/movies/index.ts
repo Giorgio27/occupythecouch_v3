@@ -68,6 +68,7 @@ export default async function handler(
         },
       },
     });
+    console.log("Proposals fetched:", proposals.length);
 
     // Aggregate movie statistics
     const moviesMap: Record<string, MovieStats> = {};
