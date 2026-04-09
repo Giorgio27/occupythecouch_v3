@@ -418,7 +418,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   if (loading) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-        <div className="flex justify-center items-center min-h-[400px]">
+        <div className="flex justify-center items-center min-h-100">
           <LoadingCard text="Caricamento statistiche..." />
         </div>
       </CineforumLayout>
@@ -467,7 +467,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
           <select
             value={selectedUserId || ""}
             onChange={(e) => setSelectedUserId(e.target.value)}
-            className="w-full sm:w-auto min-w-[280px] px-4 py-2.5 rounded-xl border border-border bg-card text-foreground
+            className="w-full sm:w-auto min-w-70 px-4 py-2.5 rounded-xl border border-border bg-card text-foreground
               focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
               hover:border-primary/50 transition-all duration-200"
           >
@@ -900,7 +900,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
               Distribuzione Voti
             </h3>
 
-            <div className="h-[300px] sm:h-[350px]">
+            <div className="h-75 sm:h-87.5">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={ratingDistribution}

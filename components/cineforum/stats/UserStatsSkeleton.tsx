@@ -152,7 +152,7 @@ export function RatingDistributionSkeleton() {
         Distribuzione Voti
       </h3>
 
-      <div className="h-[300px] sm:h-[350px] flex items-end justify-around gap-2 px-4">
+      <div className="h-75 sm:h-87.5 flex items-end justify-around gap-2 px-4">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
           <Skeleton
             key={i}
