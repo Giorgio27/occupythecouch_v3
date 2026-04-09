@@ -97,6 +97,21 @@ export type UserToUserComparisonDTO = {
   given_movies_count: number;
 };
 
+export type LoveGivenDTO = {
+  userId: string;
+  userName: string;
+  averageVote: number;
+  averageRanking: number | null;
+  count: number;
+};
+
+export type LoveReceivedDTO = {
+  userId: string;
+  userName: string;
+  averageVote: number;
+  count: number;
+};
+
 export type UserStatisticsDTO = {
   user_id: string;
   user_name: string;
@@ -112,6 +127,8 @@ export type UserStatisticsDTO = {
   most_deviant_movies: UserVoteDetailDTO[];
   vote_details: UserVoteDetailDTO[];
   user_comparisons: UserToUserComparisonDTO[];
+  love_given: LoveGivenDTO[];
+  love_received: LoveReceivedDTO[];
 };
 
 export type UserStatisticsResponseDTO = {

@@ -94,16 +94,16 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   const [statsLoading, setStatsLoading] = useState(false);
 
   // Sorting state for love received table
-  const [receivedSortBy, setReceivedSortBy] = useState<
-    "user" | "average" | "userAverage" | "delta"
-  >("average");
+  const [receivedSortBy, setReceivedSortBy] = useState<"user" | "average">(
+    "average",
+  );
   const [receivedSortDir, setReceivedSortDir] = useState<"asc" | "desc">(
     "desc",
   );
 
   // Sorting state for love given table
   const [givenSortBy, setGivenSortBy] = useState<
-    "user" | "average" | "userAverage" | "delta"
+    "user" | "average" | "averageRanking"
   >("average");
   const [givenSortDir, setGivenSortDir] = useState<"asc" | "desc">("desc");
 
@@ -196,36 +196,29 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
 
   // Prepare love received data (how others voted for user X's movies)
   const loveReceivedData = useMemo(() => {
-    if (!stats || !stats.user_comparisons) return [];
+    if (!stats || !stats.love_received) return [];
 
-    return stats.user_comparisons
-      .filter((c) => c.received_average_from_other !== null)
-      .map((c) => ({
-        user: c.other_user_name,
-        userId: c.other_user_id,
-        average: c.received_average_from_other!,
-        userAverage: c.other_user_global_average,
-        delta: c.received_delta_vs_other_average,
-        moviesCount: c.received_movies_count,
-        isSelectedUser: c.other_user_id === stats.user_id,
-      }));
+    return stats.love_received.map((lr) => ({
+      user: lr.userName,
+      userId: lr.userId,
+      average: lr.averageVote,
+      count: lr.count,
+      isSelectedUser: lr.userId === stats.user_id,
+    }));
   }, [stats]);
 
   // Prepare love given data (how user X voted for others' movies)
   const loveGivenData = useMemo(() => {
-    if (!stats || !stats.user_comparisons) return [];
+    if (!stats || !stats.love_given) return [];
 
-    return stats.user_comparisons
-      .filter((c) => c.given_average_to_other !== null)
-      .map((c) => ({
-        user: c.other_user_name,
-        userId: c.other_user_id,
-        average: c.given_average_to_other!,
-        userAverage: c.other_user_global_average,
-        delta: c.given_delta_vs_other_average,
-        moviesCount: c.given_movies_count,
-        isSelectedUser: c.other_user_id === stats.user_id,
-      }));
+    return stats.love_given.map((lg) => ({
+      user: lg.userName,
+      userId: lg.userId,
+      average: lg.averageVote,
+      averageRanking: lg.averageRanking,
+      count: lg.count,
+      isSelectedUser: lg.userId === stats.user_id,
+    }));
   }, [stats]);
 
   // Sort love received
@@ -237,14 +230,6 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
         comparison = a.user.localeCompare(b.user);
       } else if (receivedSortBy === "average") {
         comparison = a.average - b.average;
-      } else if (receivedSortBy === "userAverage") {
-        const avgA = a.userAverage ?? 0;
-        const avgB = b.userAverage ?? 0;
-        comparison = avgA - avgB;
-      } else if (receivedSortBy === "delta") {
-        const deltaA = a.delta ?? 0;
-        const deltaB = b.delta ?? 0;
-        comparison = deltaA - deltaB;
       }
       return receivedSortDir === "asc" ? comparison : -comparison;
     });
@@ -260,14 +245,10 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
         comparison = a.user.localeCompare(b.user);
       } else if (givenSortBy === "average") {
         comparison = a.average - b.average;
-      } else if (givenSortBy === "userAverage") {
-        const avgA = a.userAverage ?? 0;
-        const avgB = b.userAverage ?? 0;
+      } else if (givenSortBy === "averageRanking") {
+        const avgA = a.averageRanking ?? 0;
+        const avgB = b.averageRanking ?? 0;
         comparison = avgA - avgB;
-      } else if (givenSortBy === "delta") {
-        const deltaA = a.delta ?? 0;
-        const deltaB = b.delta ?? 0;
-        comparison = deltaA - deltaB;
       }
       return givenSortDir === "asc" ? comparison : -comparison;
     });
@@ -276,7 +257,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
 
   // Toggle sort handlers
   const toggleReceivedSort = useCallback(
-    (column: "user" | "average" | "userAverage" | "delta") => {
+    (column: "user" | "average") => {
       if (receivedSortBy === column) {
         setReceivedSortDir(receivedSortDir === "asc" ? "desc" : "asc");
       } else {
@@ -288,7 +269,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   );
 
   const toggleGivenSort = useCallback(
-    (column: "user" | "average" | "userAverage" | "delta") => {
+    (column: "user" | "average" | "averageRanking") => {
       if (givenSortBy === column) {
         setGivenSortDir(givenSortDir === "asc" ? "desc" : "asc");
       } else {
@@ -627,19 +608,8 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                     <strong className="text-foreground">
                       {stats.user_name}
                     </strong>
-                    .
-                    <br />
-                    <strong className="text-foreground">Media Utente</strong>:
-                    la media globale dell'utente della riga nel cineforum.
-                    <br />
-                    <strong className="text-foreground">Media Ricevuta</strong>:
-                    la media dei voti che l'utente della riga ha dato ai film
-                    votati da {stats.user_name}.
-                    <br />
-                    <strong className="text-foreground">Delta</strong>:
-                    differenza tra Media Ricevuta e Media Utente. Positivo =
-                    l'utente vota i film di {stats.user_name} più alto della
-                    propria media.
+                    . La tabella mostra la media dei voti ricevuti da ciascun
+                    utente.
                   </p>
                 </div>
 
@@ -662,38 +632,12 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         </th>
                         <th
                           className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleReceivedSort("userAverage")}
-                        >
-                          <div className="flex items-center justify-end">
-                            Media Utente
-                            {renderSortIcon(
-                              "userAverage",
-                              receivedSortBy,
-                              receivedSortDir,
-                            )}
-                          </div>
-                        </th>
-                        <th
-                          className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
                           onClick={() => toggleReceivedSort("average")}
                         >
                           <div className="flex items-center justify-end">
                             Media Ricevuta
                             {renderSortIcon(
                               "average",
-                              receivedSortBy,
-                              receivedSortDir,
-                            )}
-                          </div>
-                        </th>
-                        <th
-                          className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleReceivedSort("delta")}
-                        >
-                          <div className="flex items-center justify-end">
-                            Delta
-                            {renderSortIcon(
-                              "delta",
                               receivedSortBy,
                               receivedSortDir,
                             )}
@@ -717,34 +661,11 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                               </span>
                             )}
                             <span className="ml-2 text-xs text-muted-foreground">
-                              ({row.moviesCount} film)
+                              ({row.count} film)
                             </span>
-                          </td>
-                          <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
-                            {row.userAverage !== null
-                              ? row.userAverage.toFixed(2)
-                              : "N/A"}
                           </td>
                           <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
                             {row.average.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
-                            {row.delta !== null ? (
-                              <span
-                                className={
-                                  row.delta > 0
-                                    ? "text-green-500"
-                                    : row.delta < 0
-                                      ? "text-red-500"
-                                      : "text-muted-foreground"
-                                }
-                              >
-                                {row.delta > 0 ? "+" : ""}
-                                {row.delta.toFixed(2)}
-                              </span>
-                            ) : (
-                              "N/A"
-                            )}
                           </td>
                         </tr>
                       ))}
@@ -771,19 +692,15 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                     <strong className="text-foreground">
                       {stats.user_name}
                     </strong>{" "}
-                    ha votato in media i film votati dagli altri utenti.
-                    <br />
-                    <strong className="text-foreground">Media Utente</strong>:
-                    la media globale dell'utente della riga nel cineforum.
+                    ha votato in media i film proposti dagli altri utenti.
                     <br />
                     <strong className="text-foreground">Media Data</strong>: la
-                    media dei voti che {stats.user_name} ha dato ai film votati
-                    dall'utente della riga.
+                    media dei voti che {stats.user_name} ha dato ai film
+                    proposti dall'utente della riga.
                     <br />
-                    <strong className="text-foreground">Delta</strong>:
-                    differenza tra Media Data e Media Utente. Positivo ={" "}
-                    {stats.user_name} vota i film di quell'utente più alto della
-                    media globale di quell'utente.
+                    <strong className="text-foreground">Media Ranking</strong>:
+                    la media globale dell'utente della riga nel cineforum (per
+                    confronto).
                   </p>
                 </div>
 
@@ -802,19 +719,6 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         </th>
                         <th
                           className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleGivenSort("userAverage")}
-                        >
-                          <div className="flex items-center justify-end">
-                            Media Utente
-                            {renderSortIcon(
-                              "userAverage",
-                              givenSortBy,
-                              givenSortDir,
-                            )}
-                          </div>
-                        </th>
-                        <th
-                          className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
                           onClick={() => toggleGivenSort("average")}
                         >
                           <div className="flex items-center justify-end">
@@ -828,11 +732,15 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         </th>
                         <th
                           className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleGivenSort("delta")}
+                          onClick={() => toggleGivenSort("averageRanking")}
                         >
                           <div className="flex items-center justify-end">
-                            Delta
-                            {renderSortIcon("delta", givenSortBy, givenSortDir)}
+                            Media Ranking
+                            {renderSortIcon(
+                              "averageRanking",
+                              givenSortBy,
+                              givenSortDir,
+                            )}
                           </div>
                         </th>
                       </tr>
@@ -853,34 +761,16 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                               </span>
                             )}
                             <span className="ml-2 text-xs text-muted-foreground">
-                              ({row.moviesCount} film)
+                              ({row.count} film)
                             </span>
-                          </td>
-                          <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
-                            {row.userAverage !== null
-                              ? row.userAverage.toFixed(2)
-                              : "N/A"}
                           </td>
                           <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
                             {row.average.toFixed(2)}
                           </td>
-                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
-                            {row.delta !== null ? (
-                              <span
-                                className={
-                                  row.delta > 0
-                                    ? "text-green-500"
-                                    : row.delta < 0
-                                      ? "text-red-500"
-                                      : "text-muted-foreground"
-                                }
-                              >
-                                {row.delta > 0 ? "+" : ""}
-                                {row.delta.toFixed(2)}
-                              </span>
-                            ) : (
-                              "N/A"
-                            )}
+                          <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
+                            {row.averageRanking !== null
+                              ? row.averageRanking.toFixed(2)
+                              : "N/A"}
                           </td>
                         </tr>
                       ))}

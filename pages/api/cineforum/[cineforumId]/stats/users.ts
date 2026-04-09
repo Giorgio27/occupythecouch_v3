@@ -208,83 +208,6 @@ export default async function handler(
 
     const userComparisons = [];
 
-    // Love given (how target user voted for others) - prefetch all votes by target user to optimize
-    const movieVotesByTargetUser = await prisma.movieVote.findMany({
-      where: {
-        userId,
-        round: {
-          cineforumId,
-          closed: true,
-        },
-      },
-      select: {
-        movieId: true,
-        rating: true,
-        movieRoundRanking: {
-          select: {
-            averageRating: true,
-            userId: true,
-          },
-        },
-      },
-    });
-    const targetUserGivenVotes: Record<string, { userVotes: number[] }> = {};
-    for (const movieVote of movieVotesByTargetUser) {
-      if (!movieVote.movieRoundRanking) continue;
-      const movieOwner = movieVote.movieRoundRanking.userId;
-      if (!movieOwner) continue;
-      if (!targetUserGivenVotes[movieOwner]) {
-        targetUserGivenVotes[movieOwner] = { userVotes: [] };
-      }
-      targetUserGivenVotes[movieOwner].userVotes.push(movieVote.rating);
-    }
-    const loveGiven = Object.entries(targetUserGivenVotes).map(
-      ([otherUserId, { userVotes }]) => {
-        const averageGiven =
-          userVotes.reduce((sum, v) => sum + v, 0) / userVotes.length;
-        return {
-          otherUserId,
-          averageGiven,
-          count: userVotes.length,
-        };
-      },
-    );
-
-    // Love received (how others voted for target user) - prefetch all votes for target user's movies to optimize
-    const movieVotesForTargetUser = await prisma.movieVote.findMany({
-      where: {
-        movieId: {
-          in: userVotes.map((v) => v.movieId),
-        },
-        round: {
-          cineforumId,
-          closed: true,
-        },
-      },
-      select: {
-        rating: true,
-        userId: true,
-      },
-    });
-    const targetUserReceivedVotes: Record<string, { receivedVotes: number[] }> =
-      {};
-    for (const vote of movieVotesForTargetUser) {
-      if (!targetUserReceivedVotes[vote.userId]) {
-        targetUserReceivedVotes[vote.userId] = { receivedVotes: [] };
-      }
-      targetUserReceivedVotes[vote.userId].receivedVotes.push(vote.rating);
-    }
-    const loveReceived = Object.entries(targetUserReceivedVotes).map(
-      ([userId, { receivedVotes }]) => {
-        const averageReceived =
-          receivedVotes.reduce((sum, v) => sum + v, 0) / receivedVotes.length;
-        return {
-          otherUserId: userId,
-          averageReceived,
-          count: receivedVotes.length,
-        };
-      },
-    );
     // Get target user's movie IDs (movies voted by target user)
     const targetUserMovieIds = userVotes.map((v) => v.movieId);
 
@@ -424,6 +347,127 @@ export default async function handler(
     );
     userComparisons.unshift(selfRow);
 
+    // Love given (how target user voted for others' movies)
+    const movieVotesByTargetUser = await prisma.movieVote.findMany({
+      where: {
+        userId,
+        round: {
+          cineforumId,
+          closed: true,
+        },
+      },
+      select: {
+        movieId: true,
+        rating: true,
+        movieRoundRanking: {
+          select: {
+            averageRating: true,
+            userId: true,
+          },
+        },
+      },
+    });
+
+    const targetUserGivenVotes: Record<string, { userVotes: number[] }> = {};
+    for (const movieVote of movieVotesByTargetUser) {
+      if (!movieVote.movieRoundRanking) continue;
+      const movieOwner = movieVote.movieRoundRanking.userId;
+      if (!movieOwner) continue;
+      if (!targetUserGivenVotes[movieOwner]) {
+        targetUserGivenVotes[movieOwner] = { userVotes: [] };
+      }
+      targetUserGivenVotes[movieOwner].userVotes.push(movieVote.rating);
+    }
+
+    // Get all user rankings to fetch averageRating for each user
+    const allUserRankings = await prisma.userRanking.findMany({
+      where: {
+        cineforumId,
+        userId: {
+          in: Object.keys(targetUserGivenVotes),
+        },
+      },
+      select: {
+        userId: true,
+        averageRating: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    const userRankingMap = new Map(
+      allUserRankings.map((ur) => [ur.userId, ur]),
+    );
+
+    const loveGiven = Object.entries(targetUserGivenVotes).map(
+      ([otherUserId, { userVotes }]) => {
+        const averageGiven =
+          userVotes.reduce((sum, v) => sum + v, 0) / userVotes.length;
+        const userRanking = userRankingMap.get(otherUserId);
+        return {
+          userId: otherUserId,
+          userName: userRanking?.user.name || "Unknown",
+          averageVote: averageGiven,
+          averageRanking: userRanking?.averageRating || null,
+          count: userVotes.length,
+        };
+      },
+    );
+
+    // Love received (how others voted for target user's movies)
+    const movieVotesForTargetUser = await prisma.movieVote.findMany({
+      where: {
+        movieId: {
+          in: targetUserMovieIds,
+        },
+        round: {
+          cineforumId,
+          closed: true,
+        },
+      },
+      select: {
+        rating: true,
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    const targetUserReceivedVotes: Record<
+      string,
+      { receivedVotes: number[]; userName: string }
+    > = {};
+    for (const vote of movieVotesForTargetUser) {
+      if (!targetUserReceivedVotes[vote.userId]) {
+        targetUserReceivedVotes[vote.userId] = {
+          receivedVotes: [],
+          userName: vote.user.name || "Unknown",
+        };
+      }
+      targetUserReceivedVotes[vote.userId].receivedVotes.push(vote.rating);
+    }
+
+    const loveReceived = Object.entries(targetUserReceivedVotes).map(
+      ([userId, { receivedVotes, userName }]) => {
+        const averageReceived =
+          receivedVotes.reduce((sum, v) => sum + v, 0) / receivedVotes.length;
+        return {
+          userId,
+          userName,
+          averageVote: averageReceived,
+          count: receivedVotes.length,
+        };
+      },
+    );
+
     const body = {
       user_id: targetUser.id,
       user_name: targetUser.name || "Unknown",
@@ -439,6 +483,8 @@ export default async function handler(
       most_deviant_movies: mostDeviantMovies,
       vote_details: voteDetails,
       user_comparisons: userComparisons,
+      love_given: loveGiven,
+      love_received: loveReceived,
     };
 
     return res.status(200).json({
