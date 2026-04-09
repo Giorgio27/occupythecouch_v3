@@ -135,3 +135,42 @@ export type UserStatisticsResponseDTO = {
   body: UserStatisticsDTO;
   status: string;
 };
+
+// Split API response types
+export type UserProfileStatsDTO = {
+  user_id: string;
+  user_name: string;
+  total_votes: number;
+  average_rating: number | null;
+  global_average: number | null;
+  delta_from_global: number | null;
+  standard_deviation: number | null;
+  average_deviation_from_consensus: number | null;
+  above_consensus_percentage: number | null;
+  below_consensus_percentage: number | null;
+};
+
+export type UserProfileStatsResponseDTO = {
+  body: UserProfileStatsDTO;
+  status: string;
+};
+
+export type LoveReceivedResponseDTO = {
+  body: LoveReceivedDTO[];
+  status: string;
+};
+
+export type LoveGivenResponseDTO = {
+  body: LoveGivenDTO[];
+  status: string;
+};
+
+export type RatingDistributionResponseDTO = {
+  body: RatingDistributionDTO[];
+  status: string;
+};
+
+export type DeviantMoviesResponseDTO = {
+  body: UserVoteDetailDTO[];
+  status: string;
+};

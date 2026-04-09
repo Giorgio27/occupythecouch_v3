@@ -19,7 +19,14 @@ import {
   Heart,
   Gift,
 } from "lucide-react";
-import { fetchUserRankings, fetchUserStatistics } from "@/lib/client/cineforum";
+import {
+  fetchUserRankings,
+  fetchUserProfileStats,
+  fetchLoveReceived,
+  fetchLoveGiven,
+  fetchRatingDistribution,
+  fetchDeviantMovies,
+} from "@/lib/client/cineforum";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
 import UserRankingTrendChart from "@/components/cineforum/rankings/UserRankingTrendChart";
@@ -40,10 +47,20 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import {
+  ProfileStatsSkeleton,
+  LoveReceivedSkeleton,
+  LoveGivenSkeleton,
+  RatingDistributionSkeleton,
+  DeviantMoviesSkeleton,
+} from "@/components/cineforum/stats/UserStatsSkeleton";
 import type {
   UserRankingDTO,
-  UserStatisticsDTO,
+  UserProfileStatsDTO,
   RatingDistributionDTO,
+  LoveReceivedDTO,
+  LoveGivenDTO,
+  UserVoteDetailDTO,
 } from "@/lib/shared/types";
 
 type Props = {
@@ -89,9 +106,25 @@ const DistributionTooltip = ({ active, payload }: DistributionTooltipProps) => {
 export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   const [users, setUsers] = useState<UserRankingDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [stats, setStats] = useState<UserStatisticsDTO | null>(null);
+
+  // Separate state for each section
+  const [profileStats, setProfileStats] = useState<UserProfileStatsDTO | null>(
+    null,
+  );
+  const [loveReceived, setLoveReceived] = useState<LoveReceivedDTO[]>([]);
+  const [loveGiven, setLoveGiven] = useState<LoveGivenDTO[]>([]);
+  const [ratingDistribution, setRatingDistribution] = useState<
+    RatingDistributionDTO[]
+  >([]);
+  const [deviantMovies, setDeviantMovies] = useState<UserVoteDetailDTO[]>([]);
+
+  // Separate loading states
   const [loading, setLoading] = useState(true);
-  const [statsLoading, setStatsLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [loveReceivedLoading, setLoveReceivedLoading] = useState(false);
+  const [loveGivenLoading, setLoveGivenLoading] = useState(false);
+  const [distributionLoading, setDistributionLoading] = useState(false);
+  const [deviantLoading, setDeviantLoading] = useState(false);
 
   // Sorting state for love received table
   const [receivedSortBy, setReceivedSortBy] = useState<"user" | "average">(
@@ -132,24 +165,110 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
     loadUsers();
   }, [cineforumId]);
 
-  // Load stats for selected user
+  // Load profile stats for selected user
   useEffect(() => {
     if (!selectedUserId) return;
 
-    const loadStats = async () => {
+    const loadProfileStats = async () => {
       try {
-        setStatsLoading(true);
-        const response = await fetchUserStatistics(cineforumId, selectedUserId);
-        setStats(response.body);
+        setProfileLoading(true);
+        const response = await fetchUserProfileStats(
+          cineforumId,
+          selectedUserId,
+        );
+        setProfileStats(response.body);
       } catch (error) {
-        console.error("Error loading stats:", error);
-        setStats(null);
+        console.error("Error loading profile stats:", error);
+        setProfileStats(null);
       } finally {
-        setStatsLoading(false);
+        setProfileLoading(false);
       }
     };
 
-    loadStats();
+    loadProfileStats();
+  }, [cineforumId, selectedUserId]);
+
+  // Load love received for selected user
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    const loadLoveReceived = async () => {
+      try {
+        setLoveReceivedLoading(true);
+        const response = await fetchLoveReceived(cineforumId, selectedUserId);
+        setLoveReceived(response.body);
+      } catch (error) {
+        console.error("Error loading love received:", error);
+        setLoveReceived([]);
+      } finally {
+        setLoveReceivedLoading(false);
+      }
+    };
+
+    loadLoveReceived();
+  }, [cineforumId, selectedUserId]);
+
+  // Load love given for selected user
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    const loadLoveGiven = async () => {
+      try {
+        setLoveGivenLoading(true);
+        const response = await fetchLoveGiven(cineforumId, selectedUserId);
+        setLoveGiven(response.body);
+      } catch (error) {
+        console.error("Error loading love given:", error);
+        setLoveGiven([]);
+      } finally {
+        setLoveGivenLoading(false);
+      }
+    };
+
+    loadLoveGiven();
+  }, [cineforumId, selectedUserId]);
+
+  // Load rating distribution for selected user
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    const loadRatingDistribution = async () => {
+      try {
+        setDistributionLoading(true);
+        const response = await fetchRatingDistribution(
+          cineforumId,
+          selectedUserId,
+        );
+        setRatingDistribution(response.body);
+      } catch (error) {
+        console.error("Error loading rating distribution:", error);
+        setRatingDistribution([]);
+      } finally {
+        setDistributionLoading(false);
+      }
+    };
+
+    loadRatingDistribution();
+  }, [cineforumId, selectedUserId]);
+
+  // Load deviant movies for selected user
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    const loadDeviantMovies = async () => {
+      try {
+        setDeviantLoading(true);
+        const response = await fetchDeviantMovies(cineforumId, selectedUserId);
+        setDeviantMovies(response.body);
+      } catch (error) {
+        console.error("Error loading deviant movies:", error);
+        setDeviantMovies([]);
+      } finally {
+        setDeviantLoading(false);
+      }
+    };
+
+    loadDeviantMovies();
   }, [cineforumId, selectedUserId]);
 
   const selectedUserRanking = useMemo(() => {
@@ -158,21 +277,21 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
 
   // Determine user tendency
   const userTendency = useMemo(() => {
-    if (!stats || stats.delta_from_global === null) return null;
+    if (!profileStats || profileStats.delta_from_global === null) return null;
 
-    const delta = stats.delta_from_global;
+    const delta = profileStats.delta_from_global;
     if (delta > 0.3)
       return { label: "Generoso", color: "text-green-500", icon: TrendingUp };
     if (delta < -0.3)
       return { label: "Severo", color: "text-red-500", icon: TrendingDown };
     return { label: "Equilibrato", color: "text-blue-500", icon: Target };
-  }, [stats]);
+  }, [profileStats]);
 
   // Determine consistency
   const consistencyLevel = useMemo(() => {
-    if (!stats || stats.standard_deviation === null) return null;
+    if (!profileStats || profileStats.standard_deviation === null) return null;
 
-    const sd = stats.standard_deviation;
+    const sd = profileStats.standard_deviation;
     if (sd < 0.5)
       return {
         label: "Molto Coerente",
@@ -192,34 +311,34 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
       label: "Molto Variabile",
       color: "bg-red-500/10 text-red-500 border-red-500/30",
     };
-  }, [stats]);
+  }, [profileStats]);
 
   // Prepare love received data (how others voted for user X's movies)
   const loveReceivedData = useMemo(() => {
-    if (!stats || !stats.love_received) return [];
+    if (!profileStats) return [];
 
-    return stats.love_received.map((lr) => ({
+    return loveReceived.map((lr) => ({
       user: lr.userName,
       userId: lr.userId,
       average: lr.averageVote,
       count: lr.count,
-      isSelectedUser: lr.userId === stats.user_id,
+      isSelectedUser: lr.userId === profileStats.user_id,
     }));
-  }, [stats]);
+  }, [loveReceived, profileStats]);
 
   // Prepare love given data (how user X voted for others' movies)
   const loveGivenData = useMemo(() => {
-    if (!stats || !stats.love_given) return [];
+    if (!profileStats) return [];
 
-    return stats.love_given.map((lg) => ({
+    return loveGiven.map((lg) => ({
       user: lg.userName,
       userId: lg.userId,
       average: lg.averageVote,
       averageRanking: lg.averageRanking,
       count: lg.count,
-      isSelectedUser: lg.userId === stats.user_id,
+      isSelectedUser: lg.userId === profileStats.user_id,
     }));
-  }, [stats]);
+  }, [loveGiven, profileStats]);
 
   // Sort love received
   const sortedLoveReceived = useMemo(() => {
@@ -363,17 +482,13 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
           </select>
         </div>
 
-        {statsLoading ? (
-          <div className="flex justify-center items-center min-h-[300px]">
-            <LoadingCard text="Caricamento dati utente..." />
-          </div>
-        ) : stats ? (
+        {/* Profile Stats Section */}
+        {profileLoading ? (
+          <ProfileStatsSkeleton />
+        ) : profileStats ? (
           <TooltipProvider>
             {/* Stats Cards */}
-            <div
-              className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 animate-fade-in-up"
-              style={{ animationDelay: "200ms" }}
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="cine-card p-4 flex items-center gap-3 cursor-help">
@@ -386,8 +501,8 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         <Info className="w-3 h-3" />
                       </p>
                       <p className="text-lg font-bold text-foreground tabular-nums">
-                        {stats.average_rating !== null
-                          ? stats.average_rating.toFixed(2)
+                        {profileStats.average_rating !== null
+                          ? profileStats.average_rating.toFixed(2)
                           : "N/A"}
                       </p>
                     </div>
@@ -414,8 +529,8 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         <Info className="w-3 h-3" />
                       </p>
                       <p className="text-lg font-bold text-foreground tabular-nums">
-                        {stats.global_average !== null
-                          ? stats.global_average.toFixed(2)
+                        {profileStats.global_average !== null
+                          ? profileStats.global_average.toFixed(2)
                           : "N/A"}
                       </p>
                     </div>
@@ -442,18 +557,18 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                       </p>
                       <p
                         className={`text-lg font-bold tabular-nums ${
-                          stats.delta_from_global !== null
-                            ? stats.delta_from_global > 0
+                          profileStats.delta_from_global !== null
+                            ? profileStats.delta_from_global > 0
                               ? "text-green-500"
-                              : stats.delta_from_global < 0
+                              : profileStats.delta_from_global < 0
                                 ? "text-red-500"
                                 : "text-foreground"
                             : "text-foreground"
                         }`}
                       >
-                        {stats.delta_from_global !== null
-                          ? (stats.delta_from_global > 0 ? "+" : "") +
-                            stats.delta_from_global.toFixed(2)
+                        {profileStats.delta_from_global !== null
+                          ? (profileStats.delta_from_global > 0 ? "+" : "") +
+                            profileStats.delta_from_global.toFixed(2)
                           : "N/A"}
                       </p>
                     </div>
@@ -479,17 +594,14 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                 <div>
                   <p className="text-xs text-muted-foreground">Film Votati</p>
                   <p className="text-lg font-bold text-foreground tabular-nums">
-                    {stats.total_votes}
+                    {profileStats.total_votes}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Tendency & Consistency Section */}
-            <div
-              className="cine-card p-6 mb-8 animate-fade-in-up"
-              style={{ animationDelay: "300ms" }}
-            >
+            <div className="cine-card p-6 mb-8">
               <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 Profilo Votante
@@ -551,14 +663,15 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                           {consistencyLevel.label}
                         </Badge>
                         <p className="text-xs text-muted-foreground mt-1">
-                          σ = {stats.standard_deviation?.toFixed(2) || "N/A"}
+                          σ ={" "}
+                          {profileStats.standard_deviation?.toFixed(2) || "N/A"}
                         </p>
                       </div>
                     </div>
                   )}
 
                   {/* Consensus Agreement */}
-                  {stats.above_consensus_percentage !== null && (
+                  {profileStats.above_consensus_percentage !== null && (
                     <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-secondary/30">
                       <div className="p-2 rounded-lg bg-cyan-500/10">
                         <Percent className="w-5 h-5 text-cyan-500" />
@@ -568,362 +681,343 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                           Sopra Consenso
                         </p>
                         <p className="text-sm font-bold text-foreground">
-                          {stats.above_consensus_percentage.toFixed(1)}%
+                          {profileStats.above_consensus_percentage.toFixed(1)}%
                         </p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {stats.average_deviation_from_consensus !== null && (
+                {profileStats.average_deviation_from_consensus !== null && (
                   <div className="mt-4 pt-4 border-t border-border">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">
                         Deviazione media dal consenso:
                       </span>
                       <span className="font-bold text-foreground tabular-nums">
-                        {stats.average_deviation_from_consensus.toFixed(2)}
+                        {profileStats.average_deviation_from_consensus.toFixed(
+                          2,
+                        )}
                       </span>
                     </div>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Love Received - How others voted for user X's movies */}
-            {sortedLoveReceived.length > 0 && (
-              <div
-                className="cine-card p-6 mb-8 animate-fade-in-up"
-                style={{ animationDelay: "350ms" }}
-              >
-                <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <Heart className="w-4 h-4" />
-                  Amore Ricevuto
-                </h3>
-
-                <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Quanto gli altri utenti hanno votato in media i film votati
-                    da{" "}
-                    <strong className="text-foreground">
-                      {stats.user_name}
-                    </strong>
-                    . La tabella mostra la media dei voti ricevuti da ciascun
-                    utente.
-                  </p>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-secondary/50">
-                        <th
-                          className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleReceivedSort("user")}
-                        >
-                          <div className="flex items-center">
-                            Utente
-                            {renderSortIcon(
-                              "user",
-                              receivedSortBy,
-                              receivedSortDir,
-                            )}
-                          </div>
-                        </th>
-                        <th
-                          className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleReceivedSort("average")}
-                        >
-                          <div className="flex items-center justify-end">
-                            Media Ricevuta
-                            {renderSortIcon(
-                              "average",
-                              receivedSortBy,
-                              receivedSortDir,
-                            )}
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedLoveReceived.map((row) => (
-                        <tr
-                          key={row.userId}
-                          className={`border-b border-border last:border-0 hover:bg-secondary/50 transition-colors ${
-                            row.isSelectedUser ? "bg-primary/5" : ""
-                          }`}
-                        >
-                          <td className="px-4 py-3.5 text-sm font-medium text-foreground">
-                            {row.user}
-                            {row.isSelectedUser && (
-                              <span className="ml-2 text-xs text-primary font-semibold">
-                                (tu)
-                              </span>
-                            )}
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              ({row.count} film)
-                            </span>
-                          </td>
-                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
-                            {row.average.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Love Given - How user X voted for others' movies */}
-            {sortedLoveGiven.length > 0 && (
-              <div
-                className="cine-card p-6 mb-8 animate-fade-in-up"
-                style={{ animationDelay: "400ms" }}
-              >
-                <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <Gift className="w-4 h-4" />
-                  Amore Dato
-                </h3>
-
-                <div className="mb-4 p-4 rounded-xl bg-secondary/30 border border-border">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Quanto{" "}
-                    <strong className="text-foreground">
-                      {stats.user_name}
-                    </strong>{" "}
-                    ha votato in media i film proposti dagli altri utenti.
-                    <br />
-                    <strong className="text-foreground">Media Data</strong>: la
-                    media dei voti che {stats.user_name} ha dato ai film
-                    proposti dall'utente della riga.
-                    <br />
-                    <strong className="text-foreground">Media Ranking</strong>:
-                    la media globale dell'utente della riga nel cineforum (per
-                    confronto).
-                  </p>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-secondary/50">
-                        <th
-                          className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleGivenSort("user")}
-                        >
-                          <div className="flex items-center">
-                            Utente
-                            {renderSortIcon("user", givenSortBy, givenSortDir)}
-                          </div>
-                        </th>
-                        <th
-                          className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleGivenSort("average")}
-                        >
-                          <div className="flex items-center justify-end">
-                            Media Data
-                            {renderSortIcon(
-                              "average",
-                              givenSortBy,
-                              givenSortDir,
-                            )}
-                          </div>
-                        </th>
-                        <th
-                          className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
-                          onClick={() => toggleGivenSort("averageRanking")}
-                        >
-                          <div className="flex items-center justify-end">
-                            Media Ranking
-                            {renderSortIcon(
-                              "averageRanking",
-                              givenSortBy,
-                              givenSortDir,
-                            )}
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedLoveGiven.map((row) => (
-                        <tr
-                          key={row.userId}
-                          className={`border-b border-border last:border-0 hover:bg-secondary/50 transition-colors ${
-                            row.isSelectedUser ? "bg-primary/5" : ""
-                          }`}
-                        >
-                          <td className="px-4 py-3.5 text-sm font-medium text-foreground">
-                            {row.user}
-                            {row.isSelectedUser && (
-                              <span className="ml-2 text-xs text-primary font-semibold">
-                                (tu)
-                              </span>
-                            )}
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              ({row.count} film)
-                            </span>
-                          </td>
-                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
-                            {row.average.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
-                            {row.averageRanking !== null
-                              ? row.averageRanking.toFixed(2)
-                              : "N/A"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Rating Distribution */}
-            {stats.rating_distribution.length > 0 && (
-              <div
-                className="cine-card p-6 mb-8 animate-fade-in-up"
-                style={{ animationDelay: "450ms" }}
-              >
-                <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  Distribuzione Voti
-                </h3>
-
-                <div className="h-[300px] sm:h-[350px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={stats.rating_distribution}
-                      margin={{ top: 20, right: 20, left: -10, bottom: 20 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="var(--border)"
-                        opacity={0.3}
-                      />
-                      <XAxis
-                        dataKey="rating"
-                        tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={false}
-                        allowDecimals={false}
-                      />
-                      <RechartsTooltip
-                        content={<DistributionTooltip />}
-                        cursor={{ fill: "var(--secondary)" }}
-                      />
-                      <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                        {stats.rating_distribution.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill="var(--primary)"
-                            opacity={0.7 + (entry.rating / 5) * 0.3}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-
-            {/* Most Deviant Movies */}
-            {stats.most_deviant_movies.length > 0 && (
-              <div
-                className="cine-card p-6 mb-8 animate-fade-in-up"
-                style={{ animationDelay: "500ms" }}
-              >
-                <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Film con Maggiore Divergenza
-                </h3>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-secondary/50">
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Film
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Round
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Tuo Voto
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Media Film
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Differenza
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stats.most_deviant_movies.map((movie, index) => (
-                        <tr
-                          key={index}
-                          className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
-                        >
-                          <td className="px-4 py-3.5 text-sm font-medium text-foreground">
-                            {movie.movie}
-                          </td>
-                          <td className="px-4 py-3.5 text-sm text-muted-foreground">
-                            <Badge variant="outline" className="text-xs">
-                              {movie.round}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-primary">
-                            {movie.user_rating.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
-                            {movie.movie_average.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
-                            <span
-                              className={
-                                movie.user_rating > movie.movie_average
-                                  ? "text-green-500"
-                                  : "text-red-500"
-                              }
-                            >
-                              {movie.user_rating > movie.movie_average
-                                ? "+"
-                                : ""}
-                              {(
-                                movie.user_rating - movie.movie_average
-                              ).toFixed(2)}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Trend Chart */}
-            {selectedUserRanking && (
-              <div
-                className="animate-fade-in-up"
-                style={{ animationDelay: "600ms" }}
-              >
-                <UserRankingTrendChart ranking={selectedUserRanking} />
-              </div>
-            )}
           </TooltipProvider>
-        ) : (
-          <EmptyState
-            title="Nessun dato disponibile"
-            subtitle="Non è stato possibile caricare le statistiche per questo utente"
-          />
+        ) : null}
+
+        {/* Love Received Section */}
+        {loveReceivedLoading ? (
+          <LoveReceivedSkeleton />
+        ) : sortedLoveReceived.length > 0 && profileStats ? (
+          <div className="cine-card p-6 mb-8">
+            <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+              <Heart className="w-4 h-4" />
+              Amore Ricevuto
+            </h3>
+
+            <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Quanto gli altri utenti hanno votato in media i film votati da{" "}
+                <strong className="text-foreground">
+                  {profileStats.user_name}
+                </strong>
+                . La tabella mostra la media dei voti ricevuti da ciascun
+                utente.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50">
+                    <th
+                      className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleReceivedSort("user")}
+                    >
+                      <div className="flex items-center">
+                        Utente
+                        {renderSortIcon(
+                          "user",
+                          receivedSortBy,
+                          receivedSortDir,
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleReceivedSort("average")}
+                    >
+                      <div className="flex items-center justify-end">
+                        Media Ricevuta
+                        {renderSortIcon(
+                          "average",
+                          receivedSortBy,
+                          receivedSortDir,
+                        )}
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedLoveReceived.map((row) => (
+                    <tr
+                      key={row.userId}
+                      className={`border-b border-border last:border-0 hover:bg-secondary/50 transition-colors ${
+                        row.isSelectedUser ? "bg-primary/5" : ""
+                      }`}
+                    >
+                      <td className="px-4 py-3.5 text-sm font-medium text-foreground">
+                        {row.user}
+                        {row.isSelectedUser && (
+                          <span className="ml-2 text-xs text-primary font-semibold">
+                            (tu)
+                          </span>
+                        )}
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({row.count} film)
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
+                        {row.average.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Love Given Section */}
+        {loveGivenLoading ? (
+          <LoveGivenSkeleton />
+        ) : sortedLoveGiven.length > 0 && profileStats ? (
+          <div className="cine-card p-6 mb-8">
+            <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+              <Gift className="w-4 h-4" />
+              Amore Dato
+            </h3>
+
+            <div className="mb-4 p-4 rounded-xl bg-secondary/30 border border-border">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Quanto{" "}
+                <strong className="text-foreground">
+                  {profileStats.user_name}
+                </strong>{" "}
+                ha votato in media i film proposti dagli altri utenti.
+                <br />
+                <strong className="text-foreground">Media Data</strong>: la
+                media dei voti che {profileStats.user_name} ha dato ai film
+                proposti dall'utente della riga.
+                <br />
+                <strong className="text-foreground">Media Ranking</strong>: la
+                media globale dell'utente della riga nel cineforum (per
+                confronto).
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50">
+                    <th
+                      className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleGivenSort("user")}
+                    >
+                      <div className="flex items-center">
+                        Utente
+                        {renderSortIcon("user", givenSortBy, givenSortDir)}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleGivenSort("average")}
+                    >
+                      <div className="flex items-center justify-end">
+                        Media Data
+                        {renderSortIcon("average", givenSortBy, givenSortDir)}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleGivenSort("averageRanking")}
+                    >
+                      <div className="flex items-center justify-end">
+                        Media Ranking
+                        {renderSortIcon(
+                          "averageRanking",
+                          givenSortBy,
+                          givenSortDir,
+                        )}
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedLoveGiven.map((row) => (
+                    <tr
+                      key={row.userId}
+                      className={`border-b border-border last:border-0 hover:bg-secondary/50 transition-colors ${
+                        row.isSelectedUser ? "bg-primary/5" : ""
+                      }`}
+                    >
+                      <td className="px-4 py-3.5 text-sm font-medium text-foreground">
+                        {row.user}
+                        {row.isSelectedUser && (
+                          <span className="ml-2 text-xs text-primary font-semibold">
+                            (tu)
+                          </span>
+                        )}
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({row.count} film)
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
+                        {row.average.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
+                        {row.averageRanking !== null
+                          ? row.averageRanking.toFixed(2)
+                          : "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Rating Distribution Section */}
+        {distributionLoading ? (
+          <RatingDistributionSkeleton />
+        ) : ratingDistribution.length > 0 ? (
+          <div className="cine-card p-6 mb-8">
+            <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Distribuzione Voti
+            </h3>
+
+            <div className="h-[300px] sm:h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={ratingDistribution}
+                  margin={{ top: 20, right: 20, left: -10, bottom: 20 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border)"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="rating"
+                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <RechartsTooltip
+                    content={<DistributionTooltip />}
+                    cursor={{ fill: "var(--secondary)" }}
+                  />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                    {ratingDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill="var(--primary)"
+                        opacity={0.7 + (entry.rating / 5) * 0.3}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Most Deviant Movies Section */}
+        {deviantLoading ? (
+          <DeviantMoviesSkeleton />
+        ) : deviantMovies.length > 0 ? (
+          <div className="cine-card p-6 mb-8">
+            <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Film con Maggiore Divergenza
+            </h3>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Film
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Round
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Tuo Voto
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Media Film
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Differenza
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deviantMovies.map((movie, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
+                    >
+                      <td className="px-4 py-3.5 text-sm font-medium text-foreground">
+                        {movie.movie}
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-muted-foreground">
+                        <Badge variant="outline" className="text-xs">
+                          {movie.round}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-primary">
+                        {movie.user_rating.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
+                        {movie.movie_average.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
+                        <span
+                          className={
+                            movie.user_rating > movie.movie_average
+                              ? "text-green-500"
+                              : "text-red-500"
+                          }
+                        >
+                          {movie.user_rating > movie.movie_average ? "+" : ""}
+                          {(movie.user_rating - movie.movie_average).toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Trend Chart */}
+        {selectedUserRanking && (
+          <div>
+            <UserRankingTrendChart ranking={selectedUserRanking} />
+          </div>
         )}
       </div>
     </CineforumLayout>
