@@ -69,3 +69,52 @@ export const SUPPLIERS: Supplier[] = [
   { id: "rotten_tomatoes", name: "Rotten Tomatoes" },
   { id: "metacritic", name: "Metacritic" },
 ];
+
+// User Statistics types
+export type UserVoteDetailDTO = {
+  movie: string;
+  round: string;
+  user_rating: number;
+  movie_average: number;
+  deviation: number;
+  round_winner: boolean;
+};
+
+export type RatingDistributionDTO = {
+  rating: number;
+  count: number;
+};
+
+export type UserToUserComparisonDTO = {
+  other_user_id: string;
+  other_user_name: string;
+  other_user_global_average: number | null;
+  received_average_from_other: number | null;
+  received_delta_vs_other_average: number | null;
+  received_movies_count: number;
+  given_average_to_other: number | null;
+  given_delta_vs_other_average: number | null;
+  given_movies_count: number;
+};
+
+export type UserStatisticsDTO = {
+  user_id: string;
+  user_name: string;
+  total_votes: number;
+  average_rating: number | null;
+  global_average: number | null;
+  delta_from_global: number | null;
+  standard_deviation: number | null;
+  average_deviation_from_consensus: number | null;
+  above_consensus_percentage: number | null;
+  below_consensus_percentage: number | null;
+  rating_distribution: RatingDistributionDTO[];
+  most_deviant_movies: UserVoteDetailDTO[];
+  vote_details: UserVoteDetailDTO[];
+  user_comparisons: UserToUserComparisonDTO[];
+};
+
+export type UserStatisticsResponseDTO = {
+  body: UserStatisticsDTO;
+  status: string;
+};
