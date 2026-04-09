@@ -110,6 +110,12 @@ export type LoveReceivedDTO = {
   userName: string;
   averageVote: number;
   count: number;
+  votes: {
+    rating: number;
+    movieTitle: string;
+    movieAverageVote: number;
+    round: string;
+  }[];
 };
 
 export type UserStatisticsDTO = {

@@ -18,6 +18,8 @@ import {
   ArrowDown,
   Heart,
   Gift,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import {
   fetchUserRankings,
@@ -132,6 +134,11 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   );
   const [receivedSortDir, setReceivedSortDir] = useState<"asc" | "desc">(
     "desc",
+  );
+
+  // Expanded rows state for love received table
+  const [expandedReceivedRows, setExpandedReceivedRows] = useState<Set<string>>(
+    new Set(),
   );
 
   // Sorting state for love given table
@@ -322,6 +329,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
       userId: lr.userId,
       average: lr.averageVote,
       count: lr.count,
+      votes: lr.votes,
       isSelectedUser: lr.userId === profileStats.user_id,
     }));
   }, [loveReceived, profileStats]);
@@ -414,6 +422,19 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
       <ArrowDown className="w-3.5 h-3.5 ml-1" />
     );
   };
+
+  // Toggle expanded row
+  const toggleExpandedRow = useCallback((userId: string) => {
+    setExpandedReceivedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -732,6 +753,9 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-secondary/50">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider w-10">
+                      {/* Expand column */}
+                    </th>
                     <th
                       className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
                       onClick={() => toggleReceivedSort("user")}
@@ -758,32 +782,154 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         )}
                       </div>
                     </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Delta
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedLoveReceived.map((row) => (
-                    <tr
-                      key={row.userId}
-                      className={`border-b border-border last:border-0 hover:bg-secondary/50 transition-colors ${
-                        row.isSelectedUser ? "bg-primary/5" : ""
-                      }`}
-                    >
-                      <td className="px-4 py-3.5 text-sm font-medium text-foreground">
-                        {row.user}
-                        {row.isSelectedUser && (
-                          <span className="ml-2 text-xs text-primary font-semibold">
-                            (tu)
-                          </span>
+                  {sortedLoveReceived.map((row) => {
+                    const isExpanded = expandedReceivedRows.has(row.userId);
+                    const selectedUser = users.find(
+                      (u) => u.user_id === selectedUserId,
+                    );
+                    const delta = profileStats
+                      ? row.average - (selectedUser.average_rating ?? 0)
+                      : 0;
+                    return (
+                      <>
+                        <tr
+                          key={row.userId}
+                          className={`border-b border-border hover:bg-secondary/50 transition-colors ${
+                            row.isSelectedUser ? "bg-primary/5" : ""
+                          } ${isExpanded ? "border-b-0" : ""}`}
+                        >
+                          <td className="px-4 py-3.5 text-sm">
+                            <button
+                              onClick={() => toggleExpandedRow(row.userId)}
+                              className="p-1 hover:bg-secondary rounded transition-colors"
+                              aria-label={
+                                isExpanded ? "Chiudi dettagli" : "Apri dettagli"
+                              }
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3.5 text-sm font-medium text-foreground">
+                            {row.user}
+                            {row.isSelectedUser && (
+                              <span className="ml-2 text-xs text-primary font-semibold">
+                                (utente selezionato)
+                              </span>
+                            )}
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({row.count} film)
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
+                            {row.average.toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
+                            <span
+                              className={
+                                delta > 0
+                                  ? "text-green-500"
+                                  : delta < 0
+                                    ? "text-red-500"
+                                    : "text-muted-foreground"
+                              }
+                            >
+                              {delta > 0 ? "+" : ""}
+                              {delta.toFixed(2)}
+                            </span>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr
+                            key={`${row.userId}-details`}
+                            className="border-b border-border"
+                          >
+                            <td
+                              colSpan={4}
+                              className="px-4 py-4 bg-secondary/30"
+                            >
+                              <div className="space-y-3">
+                                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                  Voti per Film
+                                </h4>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs">
+                                    <thead>
+                                      <tr className="border-b border-border">
+                                        <th className="px-3 py-2 text-left text-muted-foreground font-semibold">
+                                          Round
+                                        </th>
+                                        <th className="px-3 py-2 text-left text-muted-foreground font-semibold">
+                                          Film
+                                        </th>
+                                        <th className="px-3 py-2 text-right text-muted-foreground font-semibold">
+                                          Voto Dato
+                                        </th>
+                                        <th className="px-3 py-2 text-right text-muted-foreground font-semibold">
+                                          Media Film
+                                        </th>
+                                        <th className="px-3 py-2 text-right text-muted-foreground font-semibold">
+                                          Delta
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {row.votes.map((vote, idx) => {
+                                        const voteDelta =
+                                          vote.rating - vote.movieAverageVote;
+                                        return (
+                                          <tr
+                                            key={idx}
+                                            className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
+                                          >
+                                            <td className="px-3 py-2 text-muted-foreground">
+                                              {vote.round}
+                                            </td>
+                                            <td className="px-3 py-2 text-foreground">
+                                              {vote.movieTitle}
+                                            </td>
+                                            <td className="px-3 py-2 text-right font-bold text-primary tabular-nums">
+                                              {vote.rating.toFixed(2)}
+                                            </td>
+                                            <td className="px-3 py-2 text-right text-muted-foreground tabular-nums">
+                                              {vote.movieAverageVote.toFixed(2)}
+                                            </td>
+                                            <td className="px-3 py-2 text-right font-bold tabular-nums">
+                                              <span
+                                                className={
+                                                  voteDelta > 0
+                                                    ? "text-green-500"
+                                                    : voteDelta < 0
+                                                      ? "text-red-500"
+                                                      : "text-muted-foreground"
+                                                }
+                                              >
+                                                {voteDelta > 0 ? "+" : ""}
+                                                {voteDelta.toFixed(2)}
+                                              </span>
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({row.count} film)
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-foreground">
-                        {row.average.toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -867,7 +1013,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         {row.user}
                         {row.isSelectedUser && (
                           <span className="ml-2 text-xs text-primary font-semibold">
-                            (tu)
+                            (utente selezionato())
                           </span>
                         )}
                         <span className="ml-2 text-xs text-muted-foreground">

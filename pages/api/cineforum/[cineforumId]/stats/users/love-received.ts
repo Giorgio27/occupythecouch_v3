@@ -41,71 +41,96 @@ export default async function handler(
       return res.status(403).json({ error: "Not a member of this cineforum" });
     }
 
-    // Get target user's movie IDs (movies voted by target user)
-    const targetUserMovieIds = await prisma.movieVote.findMany({
+    const enabledUsers = await prisma.user.findMany({
       where: {
-        userId,
-        round: {
-          cineforumId,
-          closed: true,
-        },
-      },
-      select: {
-        movieId: true,
-      },
-    });
-
-    const movieIds = targetUserMovieIds.map((v) => v.movieId);
-
-    // Love received (how others voted for target user's movies)
-    const movieVotesForTargetUser = await prisma.movieVote.findMany({
-      where: {
-        movieId: {
-          in: movieIds,
-        },
-        round: {
-          cineforumId,
-          closed: true,
-        },
-      },
-      select: {
-        rating: true,
-        userId: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
+        memberships: {
+          some: {
+            cineforumId,
+            disabled: false,
           },
         },
       },
+      select: {
+        id: true,
+        name: true,
+      },
     });
 
-    const targetUserReceivedVotes: Record<
-      string,
-      { receivedVotes: number[]; userName: string }
-    > = {};
-    for (const vote of movieVotesForTargetUser) {
-      if (!targetUserReceivedVotes[vote.userId]) {
-        targetUserReceivedVotes[vote.userId] = {
-          receivedVotes: [],
-          userName: vote.user.name || "Unknown",
-        };
-      }
-      targetUserReceivedVotes[vote.userId].receivedVotes.push(vote.rating);
-    }
+    // get target user proposed movies (movies proposed by target user)
+    const targetUserMovieRoundRankings =
+      await prisma.movieRoundRanking.findMany({
+        where: {
+          userId,
+          round: {
+            cineforumId,
+            closed: true,
+          },
+        },
+        select: {
+          movieId: true,
+          movieVotes: true,
+          averageRating: true,
+          movie: {
+            select: {
+              title: true,
+            },
+          },
+          round: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          round: {
+            name: "asc",
+          },
+        },
+      });
 
-    const loveReceived = Object.entries(targetUserReceivedVotes).map(
-      ([userId, { receivedVotes, userName }]) => {
-        const averageReceived =
-          receivedVotes.reduce((sum, v) => sum + v, 0) / receivedVotes.length;
+    // for each move round rankings i should put its votes in a map of userId to votes, so that I can calculate love received for each user
+    const userVotesMap: Record<
+      string,
+      {
+        rating: number;
+        movieTitle: string;
+        movieAverageVote: number;
+        round: string;
+      }[]
+    > = {};
+    targetUserMovieRoundRankings.forEach((ranking) => {
+      ranking.movieVotes.forEach((vote) => {
+        if (!userVotesMap[vote.userId]) {
+          userVotesMap[vote.userId] = [];
+        }
+        userVotesMap[vote.userId].push({
+          rating: vote.rating,
+          movieTitle: ranking.movie.title,
+          movieAverageVote: ranking.averageRating,
+          round: ranking.round.name,
+        });
+      });
+    });
+
+    const loveReceived = Object.entries(userVotesMap)
+      .map(([userId, votes]) => {
+        const userName = enabledUsers.find((u) => u.id === userId)?.name;
+        if (!userName) {
+          return null; // Skip users who are not enabled in this cineforum
+        }
+        const averageVote =
+          votes.reduce((sum, v) => sum + v.rating, 0) / votes.length;
+
+        // whould be nice also to return all the votes from the user for each film
         return {
           userId,
           userName,
-          averageVote: averageReceived,
-          count: receivedVotes.length,
+          averageVote,
+          count: votes.length,
+          votes,
         };
-      },
-    );
+      })
+      .filter((v) => v !== null);
 
     return res.status(200).json({
       body: loveReceived,
