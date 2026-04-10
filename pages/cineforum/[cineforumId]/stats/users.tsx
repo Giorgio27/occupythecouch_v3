@@ -1,5 +1,5 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, Fragment } from "react";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import {
@@ -140,6 +140,14 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   const [expandedReceivedRows, setExpandedReceivedRows] = useState<Set<string>>(
     new Set(),
   );
+
+  // Sorting state for expanded movie details
+  const [expandedSortBy, setExpandedSortBy] = useState<
+    Record<string, "round" | "movie" | "rating" | "average" | "delta">
+  >({});
+  const [expandedSortDir, setExpandedSortDir] = useState<
+    Record<string, "asc" | "desc">
+  >({});
 
   // Sorting state for love given table
   const [givenSortBy, setGivenSortBy] = useState<
@@ -282,15 +290,39 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
     return users.find((u) => u.user_id === selectedUserId);
   }, [users, selectedUserId]);
 
-  // Determine user tendency
+  // Determine user tendency (create at least 6 categories to avoid having too many "equilibrato")
   const userTendency = useMemo(() => {
     if (!profileStats || profileStats.delta_from_global === null) return null;
 
     const delta = profileStats.delta_from_global;
-    if (delta > 0.3)
+    if (delta > 1.0)
+      return {
+        label: "Molto Generoso",
+        color: "text-green-700",
+        icon: TrendingUp,
+      };
+    if (delta > 0.5)
       return { label: "Generoso", color: "text-green-500", icon: TrendingUp };
-    if (delta < -0.3)
+    if (delta > 0.1)
+      return {
+        label: "Leggermente Generoso",
+        color: "text-green-300",
+        icon: TrendingUp,
+      };
+    if (delta < -0.1)
+      return {
+        label: "Leggermente Severo",
+        color: "text-red-300",
+        icon: TrendingDown,
+      };
+    if (delta < -0.5)
       return { label: "Severo", color: "text-red-500", icon: TrendingDown };
+    if (delta < -1.0)
+      return {
+        label: "Molto Severo",
+        color: "text-red-700",
+        icon: TrendingDown,
+      };
     return { label: "Equilibrato", color: "text-blue-500", icon: Target };
   }, [profileStats]);
 
@@ -435,6 +467,76 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
       return newSet;
     });
   }, []);
+
+  // Toggle sort for expanded movie details
+  const toggleExpandedSort = useCallback(
+    (
+      userId: string,
+      column: "round" | "movie" | "rating" | "average" | "delta",
+    ) => {
+      setExpandedSortBy((prev) => {
+        const currentSort = prev[userId] || "rating";
+        return { ...prev, [userId]: column };
+      });
+      setExpandedSortDir((prev) => {
+        const currentSort = expandedSortBy[userId] || "rating";
+        const currentDir = prev[userId] || "desc";
+        if (currentSort === column) {
+          return { ...prev, [userId]: currentDir === "asc" ? "desc" : "asc" };
+        } else {
+          return { ...prev, [userId]: "desc" };
+        }
+      });
+    },
+    [expandedSortBy],
+  );
+
+  // Sort votes for a specific user
+  const getSortedVotes = useCallback(
+    (votes: LoveReceivedDTO["votes"], userId: string) => {
+      const sortBy = expandedSortBy[userId] || "rating";
+      const sortDir = expandedSortDir[userId] || "desc";
+
+      const sorted = [...votes];
+      sorted.sort((a, b) => {
+        let comparison = 0;
+        if (sortBy === "round") {
+          comparison = a.round.localeCompare(b.round);
+        } else if (sortBy === "movie") {
+          comparison = a.movieTitle.localeCompare(b.movieTitle);
+        } else if (sortBy === "rating") {
+          comparison = a.rating - b.rating;
+        } else if (sortBy === "average") {
+          comparison = a.movieAverageVote - b.movieAverageVote;
+        } else if (sortBy === "delta") {
+          const deltaA = a.rating - a.movieAverageVote;
+          const deltaB = b.rating - b.movieAverageVote;
+          comparison = deltaA - deltaB;
+        }
+        return sortDir === "asc" ? comparison : -comparison;
+      });
+      return sorted;
+    },
+    [expandedSortBy, expandedSortDir],
+  );
+
+  // Render sort icon for expanded tables
+  const renderExpandedSortIcon = (
+    userId: string,
+    column: "round" | "movie" | "rating" | "average" | "delta",
+  ) => {
+    const currentSort = expandedSortBy[userId] || "rating";
+    const currentDir = expandedSortDir[userId] || "desc";
+
+    if (column !== currentSort) {
+      return <ArrowUpDown className="w-3 h-3 ml-1 opacity-40" />;
+    }
+    return currentDir === "asc" ? (
+      <ArrowUp className="w-3 h-3 ml-1" />
+    ) : (
+      <ArrowDown className="w-3 h-3 ml-1" />
+    );
+  };
 
   if (loading) {
     return (
@@ -796,10 +898,10 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                     const delta = profileStats
                       ? row.average - (selectedUser.average_rating ?? 0)
                       : 0;
+                    const sortedVotes = getSortedVotes(row.votes, row.userId);
                     return (
-                      <>
+                      <Fragment key={row.userId}>
                         <tr
-                          key={row.userId}
                           className={`border-b border-border hover:bg-secondary/50 transition-colors ${
                             row.isSelectedUser ? "bg-primary/5" : ""
                           } ${isExpanded ? "border-b-0" : ""}`}
@@ -849,10 +951,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                           </td>
                         </tr>
                         {isExpanded && (
-                          <tr
-                            key={`${row.userId}-details`}
-                            className="border-b border-border"
-                          >
+                          <tr className="border-b border-border">
                             <td
                               colSpan={4}
                               className="px-4 py-4 bg-secondary/30"
@@ -865,30 +964,100 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                                   <table className="w-full text-xs">
                                     <thead>
                                       <tr className="border-b border-border">
-                                        <th className="px-3 py-2 text-left text-muted-foreground font-semibold">
-                                          Round
+                                        <th
+                                          className="px-3 py-2 text-left text-muted-foreground font-semibold cursor-pointer hover:text-primary transition-colors"
+                                          onClick={() =>
+                                            toggleExpandedSort(
+                                              row.userId,
+                                              "round",
+                                            )
+                                          }
+                                        >
+                                          <div className="flex items-center">
+                                            Round
+                                            {renderExpandedSortIcon(
+                                              row.userId,
+                                              "round",
+                                            )}
+                                          </div>
                                         </th>
-                                        <th className="px-3 py-2 text-left text-muted-foreground font-semibold">
-                                          Film
+                                        <th
+                                          className="px-3 py-2 text-left text-muted-foreground font-semibold cursor-pointer hover:text-primary transition-colors"
+                                          onClick={() =>
+                                            toggleExpandedSort(
+                                              row.userId,
+                                              "movie",
+                                            )
+                                          }
+                                        >
+                                          <div className="flex items-center">
+                                            Film
+                                            {renderExpandedSortIcon(
+                                              row.userId,
+                                              "movie",
+                                            )}
+                                          </div>
                                         </th>
-                                        <th className="px-3 py-2 text-right text-muted-foreground font-semibold">
-                                          Voto Dato
+                                        <th
+                                          className="px-3 py-2 text-right text-muted-foreground font-semibold cursor-pointer hover:text-primary transition-colors"
+                                          onClick={() =>
+                                            toggleExpandedSort(
+                                              row.userId,
+                                              "rating",
+                                            )
+                                          }
+                                        >
+                                          <div className="flex items-center justify-end">
+                                            Voto Dato
+                                            {renderExpandedSortIcon(
+                                              row.userId,
+                                              "rating",
+                                            )}
+                                          </div>
                                         </th>
-                                        <th className="px-3 py-2 text-right text-muted-foreground font-semibold">
-                                          Media Film
+                                        <th
+                                          className="px-3 py-2 text-right text-muted-foreground font-semibold cursor-pointer hover:text-primary transition-colors"
+                                          onClick={() =>
+                                            toggleExpandedSort(
+                                              row.userId,
+                                              "average",
+                                            )
+                                          }
+                                        >
+                                          <div className="flex items-center justify-end">
+                                            Media Film
+                                            {renderExpandedSortIcon(
+                                              row.userId,
+                                              "average",
+                                            )}
+                                          </div>
                                         </th>
-                                        <th className="px-3 py-2 text-right text-muted-foreground font-semibold">
-                                          Delta
+                                        <th
+                                          className="px-3 py-2 text-right text-muted-foreground font-semibold cursor-pointer hover:text-primary transition-colors"
+                                          onClick={() =>
+                                            toggleExpandedSort(
+                                              row.userId,
+                                              "delta",
+                                            )
+                                          }
+                                        >
+                                          <div className="flex items-center justify-end">
+                                            Delta
+                                            {renderExpandedSortIcon(
+                                              row.userId,
+                                              "delta",
+                                            )}
+                                          </div>
                                         </th>
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {row.votes.map((vote, idx) => {
+                                      {sortedVotes.map((vote, idx) => {
                                         const voteDelta =
                                           vote.rating - vote.movieAverageVote;
                                         return (
                                           <tr
-                                            key={idx}
+                                            key={`${row.userId}-${vote.movieTitle}-${vote.round}-${idx}`}
                                             className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
                                           >
                                             <td className="px-3 py-2 text-muted-foreground">
@@ -927,7 +1096,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     );
                   })}
                 </tbody>

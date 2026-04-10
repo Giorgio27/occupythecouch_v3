@@ -56,15 +56,44 @@ export default async function handler(
       },
     });
 
-    // get target user proposed movies (movies proposed by target user)
+    // find teams where target user is a member
+    const targetUserTeams = await prisma.team.findMany({
+      where: {
+        cineforumId,
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    // get target user proposed movies (movies proposed by target user or by one of his teams)
     const targetUserMovieRoundRankings =
       await prisma.movieRoundRanking.findMany({
         where: {
-          userId,
           round: {
             cineforumId,
             closed: true,
           },
+          AND: [
+            {
+              OR: [
+                {
+                  userId: userId,
+                },
+                {
+                  teamId: {
+                    in: targetUserTeams.map((t) => t.id),
+                  },
+                },
+              ],
+            },
+          ],
         },
         select: {
           movieId: true,
