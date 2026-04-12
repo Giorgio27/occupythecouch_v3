@@ -41,6 +41,10 @@ export default function CineforumHeaderNav() {
           href: `/cineforum/${cineforumId}/rankings/users`,
         },
         {
+          label: "User statistics",
+          href: `/cineforum/${cineforumId}/stats/users`,
+        },
+        {
           label: "Directors ranking",
           href: `/cineforum/${cineforumId}/rankings/directors`,
         },
