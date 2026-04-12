@@ -103,6 +103,12 @@ export type LoveGivenDTO = {
   averageVote: number;
   averageRanking: number | null;
   count: number;
+  votes: {
+    rating: number;
+    movieTitle: string;
+    movieAverageVote: number;
+    round: string;
+  }[];
 };
 
 export type LoveReceivedDTO = {

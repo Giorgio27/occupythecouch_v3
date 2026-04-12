@@ -41,6 +41,21 @@ export default async function handler(
       return res.status(403).json({ error: "Not a member of this cineforum" });
     }
 
+    const enabledUsers = await prisma.user.findMany({
+      where: {
+        memberships: {
+          some: {
+            cineforumId,
+            disabled: false,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
     // Love given (how target user voted for others' movies)
     const movieVotesByTargetUser = await prisma.movieVote.findMany({
       where: {
@@ -57,20 +72,71 @@ export default async function handler(
           select: {
             averageRating: true,
             userId: true,
+            team: true,
+            movie: {
+              select: {
+                title: true,
+              },
+            },
+            round: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
     });
 
-    const targetUserGivenVotes: Record<string, { userVotes: number[] }> = {};
+    const targetUserGivenVotes: Record<
+      string,
+      {
+        userVotes: number[];
+        votes: {
+          rating: number;
+          movieTitle: string;
+          movieAverageVote: number;
+          round: string;
+        }[];
+      }
+    > = {};
     for (const movieVote of movieVotesByTargetUser) {
       if (!movieVote.movieRoundRanking) continue;
-      const movieOwner = movieVote.movieRoundRanking.userId;
-      if (!movieOwner) continue;
-      if (!targetUserGivenVotes[movieOwner]) {
-        targetUserGivenVotes[movieOwner] = { userVotes: [] };
+      // get the owner of the movie: if no user Id should search for all users in the team and add the vote to each of them
+      let movieOwner = movieVote.movieRoundRanking.userId;
+      const voteDetail = {
+        rating: movieVote.rating,
+        movieTitle: movieVote.movieRoundRanking.movie.title,
+        movieAverageVote: movieVote.movieRoundRanking.averageRating,
+        round: movieVote.movieRoundRanking.round.name,
+      };
+
+      if (movieOwner) {
+        if (!targetUserGivenVotes[movieOwner]) {
+          targetUserGivenVotes[movieOwner] = { userVotes: [], votes: [] };
+        }
+        targetUserGivenVotes[movieOwner].userVotes.push(movieVote.rating);
+        targetUserGivenVotes[movieOwner].votes.push(voteDetail);
+      } else if (!movieOwner && movieVote.movieRoundRanking.team) {
+        const teamMembers = await prisma.teamUser.findMany({
+          where: {
+            teamId: movieVote.movieRoundRanking.team.id,
+          },
+          select: {
+            userId: true,
+          },
+        });
+        for (const member of teamMembers) {
+          if (!targetUserGivenVotes[member.userId]) {
+            targetUserGivenVotes[member.userId] = { userVotes: [], votes: [] };
+          }
+
+          targetUserGivenVotes[member.userId].userVotes.push(movieVote.rating);
+          targetUserGivenVotes[member.userId].votes.push(voteDetail);
+        }
+      } else {
+        continue;
       }
-      targetUserGivenVotes[movieOwner].userVotes.push(movieVote.rating);
     }
 
     // Get all user rankings to fetch averageRating for each user
@@ -97,20 +163,25 @@ export default async function handler(
       allUserRankings.map((ur) => [ur.userId, ur]),
     );
 
-    const loveGiven = Object.entries(targetUserGivenVotes).map(
-      ([otherUserId, { userVotes }]) => {
+    const loveGiven = Object.entries(targetUserGivenVotes)
+      .map(([otherUserId, { userVotes, votes }]) => {
+        const userName = enabledUsers.find((u) => u.id === otherUserId)?.name;
+        if (!userName) {
+          return null; // Skip users who are not enabled in this cineforum
+        }
         const averageGiven =
           userVotes.reduce((sum, v) => sum + v, 0) / userVotes.length;
         const userRanking = userRankingMap.get(otherUserId);
         return {
           userId: otherUserId,
-          userName: userRanking?.user.name || "Unknown",
+          userName,
           averageVote: averageGiven,
           averageRanking: userRanking?.averageRating || null,
           count: userVotes.length,
+          votes,
         };
-      },
-    );
+      })
+      .filter((v) => v !== null);
 
     return res.status(200).json({
       body: loveGiven,
