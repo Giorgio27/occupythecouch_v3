@@ -57,12 +57,12 @@ export default async function handler(
 
     // Calculate rating distribution
     const distributionMap = new Map<number, number>();
-    for (let i = 0; i <= 5; i += 0.5) {
+    for (let i = 0; i <= 5; i += 0.25) {
       distributionMap.set(i, 0);
     }
 
     userVotes.forEach((v) => {
-      const rounded = Math.round(v.rating * 2) / 2; // Round to nearest 0.5
+      const rounded = Math.round(v.rating * 4) / 4; // Round to nearest 0.25
       distributionMap.set(rounded, (distributionMap.get(rounded) || 0) + 1);
     });
 

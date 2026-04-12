@@ -896,34 +896,65 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
 
                   {/* Consensus Agreement */}
                   {profileStats.above_consensus_percentage !== null && (
-                    <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-secondary/30">
-                      <div className="p-2 rounded-lg bg-cyan-500/10">
-                        <Percent className="w-5 h-5 text-cyan-500" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          Sopra Consenso
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-secondary/30 cursor-help">
+                          <div className="p-2 rounded-lg bg-cyan-500/10">
+                            <Percent className="w-5 h-5 text-cyan-500" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              Sopra Consenso
+                              <Info className="w-3 h-3" />
+                            </p>
+                            <p className="text-sm font-bold text-foreground">
+                              {profileStats.above_consensus_percentage.toFixed(
+                                1,
+                              )}
+                              %
+                            </p>
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="text-sm">
+                          La percentuale di volte in cui l'utente ha votato
+                          sopra la media del film. Indica quanto spesso l'utente
+                          è più generoso rispetto al consenso generale su
+                          ciascun film.
                         </p>
-                        <p className="text-sm font-bold text-foreground">
-                          {profileStats.above_consensus_percentage.toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </div>
 
                 {profileStats.average_deviation_from_consensus !== null && (
                   <div className="mt-4 pt-4 border-t border-border">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Deviazione media dal consenso:
-                      </span>
-                      <span className="font-bold text-foreground tabular-nums">
-                        {profileStats.average_deviation_from_consensus.toFixed(
-                          2,
-                        )}
-                      </span>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-between text-sm cursor-help">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            Deviazione media dal consenso:
+                            <Info className="w-3 h-3" />
+                          </span>
+                          <span className="font-bold text-foreground tabular-nums">
+                            {profileStats.average_deviation_from_consensus.toFixed(
+                              2,
+                            )}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="text-sm">
+                          La media delle differenze assolute tra i voti
+                          dell'utente e la media di ciascun film. Misura quanto
+                          l'utente si discosta tipicamente dal consenso,
+                          indipendentemente dalla direzione (sopra o sotto).
+                          Valori più alti indicano opinioni più divergenti dal
+                          gruppo.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 )}
               </div>
