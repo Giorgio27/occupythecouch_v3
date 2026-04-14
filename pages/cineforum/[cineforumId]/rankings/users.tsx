@@ -15,6 +15,10 @@ import {
   Film,
   Table as TableIcon,
   LineChart as LineChartIcon,
+  BarChart3,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { fetchUserRankings } from "@/lib/client/cineforum";
 import { SupplierSelect, RankingCard } from "@/components/cineforum/rankings";
@@ -30,6 +34,14 @@ import type {
 
 const suppliers: Supplier[] = [
   { id: "cineforum", name: "Cineforum" },
+  { id: "tmdb", name: "TMDB" },
+  { id: "imdb", name: "IMDB" },
+  { id: "rotten_tomatoes", name: "Rotten Tomatoes" },
+  { id: "metacritic", name: "Metacritic" },
+  { id: "delta", name: "Confronto Piattaforme" },
+];
+
+const externalSuppliers: Supplier[] = [
   { id: "tmdb", name: "TMDB" },
   { id: "imdb", name: "IMDB" },
   { id: "rotten_tomatoes", name: "Rotten Tomatoes" },
@@ -64,6 +76,10 @@ export default function UsersRankingPage({
   const [cardViewMode, setCardViewMode] = useState<
     Record<string, "table" | "chart">
   >({});
+  const [deltaSortBy, setDeltaSortBy] = useState<
+    "user" | "cineforum" | "tmdb" | "imdb" | "rotten_tomatoes" | "metacritic"
+  >("user");
+  const [deltaSortDir, setDeltaSortDir] = useState<"asc" | "desc">("asc");
 
   const loadRankings = useCallback(async () => {
     try {
@@ -175,6 +191,78 @@ export default function UsersRankingPage({
   }, [filteredByRoundRankings, getRatingForSupplier, searchQuery]);
 
   const displayedRankings = sortedAndFilteredRankings;
+
+  // Sorted rankings for Delta table
+  const sortedDeltaRankings = useMemo(() => {
+    if (selectedSupplier.id !== "delta") return displayedRankings;
+
+    return [...displayedRankings].sort((a, b) => {
+      let comparison = 0;
+
+      if (deltaSortBy === "user") {
+        comparison = a.user.localeCompare(b.user);
+      } else if (deltaSortBy === "cineforum") {
+        const valA = a.average_rating ?? -Infinity;
+        const valB = b.average_rating ?? -Infinity;
+        comparison = valA - valB;
+      } else {
+        // Sorting by delta of a specific supplier
+        const cineforumA = a.average_rating ?? 0;
+        const cineforumB = b.average_rating ?? 0;
+
+        let supplierA = 0;
+        let supplierB = 0;
+
+        switch (deltaSortBy) {
+          case "tmdb":
+            supplierA = a.tmdb_vote ?? 0;
+            supplierB = b.tmdb_vote ?? 0;
+            break;
+          case "imdb":
+            supplierA = a.imdb_rating ?? 0;
+            supplierB = b.imdb_rating ?? 0;
+            break;
+          case "rotten_tomatoes":
+            supplierA = a.tomatometer ?? 0;
+            supplierB = b.tomatometer ?? 0;
+            break;
+          case "metacritic":
+            supplierA = a.metascore ?? 0;
+            supplierB = b.metascore ?? 0;
+            break;
+        }
+
+        const deltaA = cineforumA - supplierA;
+        const deltaB = cineforumB - supplierB;
+        comparison = deltaA - deltaB;
+      }
+
+      return deltaSortDir === "asc" ? comparison : -comparison;
+    });
+  }, [displayedRankings, selectedSupplier.id, deltaSortBy, deltaSortDir]);
+
+  const toggleDeltaSort = useCallback(
+    (column: typeof deltaSortBy) => {
+      if (deltaSortBy === column) {
+        setDeltaSortDir(deltaSortDir === "asc" ? "desc" : "asc");
+      } else {
+        setDeltaSortBy(column);
+        setDeltaSortDir("desc");
+      }
+    },
+    [deltaSortBy, deltaSortDir],
+  );
+
+  const renderDeltaSortIcon = (column: typeof deltaSortBy) => {
+    if (column !== deltaSortBy) {
+      return <ArrowUpDown className="w-3.5 h-3.5 ml-1 opacity-40" />;
+    }
+    return deltaSortDir === "asc" ? (
+      <ArrowUp className="w-3.5 h-3.5 ml-1" />
+    ) : (
+      <ArrowDown className="w-3.5 h-3.5 ml-1" />
+    );
+  };
 
   const stats = useMemo(() => {
     const withRatings = filteredByRoundRankings.filter(
@@ -369,27 +457,28 @@ export default function UsersRankingPage({
                   <span className="hidden lg:inline">Filtri</span>
                 </button>
               )}
-
-              <div className="flex rounded-xl border border-border overflow-hidden bg-card">
-                <button
-                  onClick={() => setViewMode("cards")}
-                  className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
+              {selectedSupplier.id !== "delta" && (
+                <div className="flex rounded-xl border border-border overflow-hidden bg-card">
+                  <button
+                    onClick={() => setViewMode("cards")}
+                    className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
                     ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                  title="Cards"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  <span className="hidden lg:inline">Cards</span>
-                </button>
-                <button
-                  onClick={() => setViewMode("table")}
-                  className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
+                    title="Cards"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    <span className="hidden lg:inline">Cards</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("table")}
+                    className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
                     ${viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                  title="Tabella"
-                >
-                  <List className="w-4 h-4" />
-                  <span className="hidden lg:inline">Tabella</span>
-                </button>
-              </div>
+                    title="Tabella"
+                  >
+                    <List className="w-4 h-4" />
+                    <span className="hidden lg:inline">Tabella</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -457,7 +546,7 @@ export default function UsersRankingPage({
           )}
         </div>
 
-        {displayedRankings.length > 0 && (
+        {displayedRankings.length > 0 && selectedSupplier.id !== "delta" && (
           <>
             {viewMode === "cards" ? (
               <div
@@ -690,6 +779,329 @@ export default function UsersRankingPage({
               </div>
             )}
           </>
+        )}
+
+        {/* Platform Comparison Section - Only show when Delta is selected */}
+        {selectedSupplier.id === "delta" && displayedRankings.length > 0 && (
+          <div
+            className="cine-card overflow-hidden mt-8 animate-fade-in-up"
+            style={{ animationDelay: "400ms" }}
+          >
+            <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-amber-500/5">
+              <h2 className="font-black text-xl text-foreground tracking-tight flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                </div>
+                Confronto Piattaforme
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Analisi comparativa delle medie di voto tra Cineforum e le
+                piattaforme esterne. Il{" "}
+                <strong className="text-foreground">Delta</strong> indica quanto
+                Cineforum vota più alto o più basso rispetto alle piattaforme:{" "}
+                <span className="text-green-500 font-semibold">
+                  valori positivi
+                </span>{" "}
+                indicano che Cineforum vota più alto,{" "}
+                <span className="text-red-500 font-semibold">
+                  valori negativi
+                </span>{" "}
+                indicano che Cineforum vota più basso.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50">
+                    <th
+                      className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider sticky left-0 bg-secondary/50 z-10 cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleDeltaSort("user")}
+                    >
+                      <div className="flex items-center">
+                        Utente
+                        {renderDeltaSortIcon("user")}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-center text-xs font-semibold text-primary uppercase tracking-wider bg-primary/5 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => toggleDeltaSort("cineforum")}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-1">
+                          <span>Cineforum</span>
+                          {renderDeltaSortIcon("cineforum")}
+                        </div>
+                        <span className="text-[10px] font-normal text-muted-foreground">
+                          (riferimento)
+                        </span>
+                      </div>
+                    </th>
+                    {externalSuppliers.map((supplier) => (
+                      <th
+                        key={supplier.id}
+                        className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider border-l border-border cursor-pointer hover:text-primary transition-colors"
+                        colSpan={2}
+                        onClick={() =>
+                          toggleDeltaSort(supplier.id as typeof deltaSortBy)
+                        }
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <span>{supplier.name}</span>
+                          {renderDeltaSortIcon(
+                            supplier.id as typeof deltaSortBy,
+                          )}
+                        </div>
+                        <div className="flex items-center justify-center gap-4 mt-2 text-[10px] font-normal">
+                          <span className="text-foreground">Media</span>
+                          <span className="text-amber-500">Delta</span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedDeltaRankings.map((ranking, index) => {
+                    const cineforumRating = ranking.average_rating;
+                    const position = getPosition(
+                      sortedAndFilteredRankings.findIndex(
+                        (r) => r.id === ranking.id,
+                      ),
+                      ranking,
+                    );
+
+                    return (
+                      <tr
+                        key={ranking.id}
+                        className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors group"
+                      >
+                        <td className="px-4 py-3.5 text-sm font-medium text-foreground sticky left-0 bg-card group-hover:bg-secondary/30 transition-colors z-10">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground font-bold tabular-nums w-6">
+                              {position}.
+                            </span>
+                            {ranking.user}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 text-center bg-primary/5">
+                          <span className="text-sm font-bold text-primary tabular-nums">
+                            {cineforumRating !== null
+                              ? cineforumRating.toFixed(2)
+                              : "N/A"}
+                          </span>
+                        </td>
+                        {externalSuppliers.map((supplier) => {
+                          let supplierRating: number | null = null;
+                          switch (supplier.id) {
+                            case "tmdb":
+                              supplierRating = ranking.tmdb_vote;
+                              break;
+                            case "imdb":
+                              supplierRating = ranking.imdb_rating;
+                              break;
+                            case "rotten_tomatoes":
+                              supplierRating = ranking.tomatometer;
+                              break;
+                            case "metacritic":
+                              supplierRating = ranking.metascore;
+                              break;
+                          }
+
+                          const delta =
+                            supplierRating !== null && cineforumRating !== null
+                              ? cineforumRating - supplierRating
+                              : null;
+
+                          return (
+                            <td
+                              key={supplier.id}
+                              className="border-l border-border"
+                              colSpan={2}
+                            >
+                              <div className="flex items-center justify-center gap-4 px-4 py-3.5">
+                                <span className="text-sm font-semibold text-foreground tabular-nums w-14 text-center">
+                                  {supplierRating !== null
+                                    ? supplierRating.toFixed(2)
+                                    : "N/A"}
+                                </span>
+                                <span
+                                  className={`text-sm font-bold tabular-nums w-16 text-center ${
+                                    delta === null
+                                      ? "text-muted-foreground"
+                                      : delta > 0.5
+                                        ? "text-green-600"
+                                        : delta > 0.1
+                                          ? "text-green-500"
+                                          : delta < -0.5
+                                            ? "text-red-600"
+                                            : delta < -0.1
+                                              ? "text-red-500"
+                                              : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {delta !== null ? (
+                                    <>
+                                      {delta > 0 ? "+" : ""}
+                                      {delta.toFixed(2)}
+                                    </>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </span>
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-primary/30 bg-gradient-to-r from-primary/10 to-amber-500/10">
+                    <td className="px-4 py-4 text-sm font-bold text-foreground sticky left-0 bg-gradient-to-r from-primary/10 to-amber-500/10 z-10">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-primary" />
+                        Media Globale
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-center bg-primary/10">
+                      <span className="text-sm font-bold text-primary tabular-nums">
+                        {(() => {
+                          const validRatings = sortedDeltaRankings
+                            .map((r) => r.average_rating)
+                            .filter((r): r is number => r !== null);
+                          return validRatings.length > 0
+                            ? (
+                                validRatings.reduce((a, b) => a + b, 0) /
+                                validRatings.length
+                              ).toFixed(2)
+                            : "N/A";
+                        })()}
+                      </span>
+                    </td>
+                    {externalSuppliers.map((supplier) => {
+                      const supplierRatings = sortedDeltaRankings
+                        .map((r) => {
+                          switch (supplier.id) {
+                            case "tmdb":
+                              return r.tmdb_vote;
+                            case "imdb":
+                              return r.imdb_rating;
+                            case "rotten_tomatoes":
+                              return r.tomatometer;
+                            case "metacritic":
+                              return r.metascore;
+                            default:
+                              return null;
+                          }
+                        })
+                        .filter((r): r is number => r !== null);
+
+                      const avgSupplier =
+                        supplierRatings.length > 0
+                          ? supplierRatings.reduce((a, b) => a + b, 0) /
+                            supplierRatings.length
+                          : null;
+
+                      const cineforumRatings = sortedDeltaRankings
+                        .map((r) => r.average_rating)
+                        .filter((r): r is number => r !== null);
+
+                      const avgCineforum =
+                        cineforumRatings.length > 0
+                          ? cineforumRatings.reduce((a, b) => a + b, 0) /
+                            cineforumRatings.length
+                          : null;
+
+                      const delta =
+                        avgSupplier !== null && avgCineforum !== null
+                          ? avgCineforum - avgSupplier
+                          : null;
+
+                      return (
+                        <td
+                          key={supplier.id}
+                          className="border-l border-border"
+                          colSpan={2}
+                        >
+                          <div className="flex items-center justify-center gap-4 px-4 py-4">
+                            <span className="text-sm font-bold text-foreground tabular-nums w-14 text-center">
+                              {avgSupplier !== null
+                                ? avgSupplier.toFixed(2)
+                                : "N/A"}
+                            </span>
+                            <span
+                              className={`text-sm font-black tabular-nums w-16 text-center ${
+                                delta === null
+                                  ? "text-muted-foreground"
+                                  : delta > 0.5
+                                    ? "text-green-600"
+                                    : delta > 0.1
+                                      ? "text-green-500"
+                                      : delta < -0.5
+                                        ? "text-red-600"
+                                        : delta < -0.1
+                                          ? "text-red-500"
+                                          : "text-muted-foreground"
+                              }`}
+                            >
+                              {delta !== null ? (
+                                <>
+                                  {delta > 0 ? "+" : ""}
+                                  {delta.toFixed(2)}
+                                </>
+                              ) : (
+                                "—"
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            {/* Legend */}
+            <div className="p-4 border-t border-border bg-secondary/20">
+              <div className="flex flex-wrap items-center gap-4 text-xs">
+                <span className="font-semibold text-foreground">
+                  Legenda Delta:
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-600"></div>
+                  <span className="text-muted-foreground">
+                    Cineforum molto più alto (&gt; +0.5)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-muted-foreground">
+                    Cineforum più alto (+0.1 a +0.5)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
+                  <span className="text-muted-foreground">
+                    Simile (-0.1 a +0.1)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-muted-foreground">
+                    Cineforum più basso (-0.5 a -0.1)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-600"></div>
+                  <span className="text-muted-foreground">
+                    Cineforum molto più basso (&lt; -0.5)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {!loading && displayedRankings.length === 0 && (
