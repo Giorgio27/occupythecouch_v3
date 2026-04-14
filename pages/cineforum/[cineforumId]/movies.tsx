@@ -152,7 +152,7 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
         ) : (
           <div className="space-y-2 sm:space-y-3">
             {/* Header */}
-            <div className="cine-card bg-primary text-primary-foreground">
+            <div className="cine-card bg-primary">
               <div className="flex items-center gap-2 sm:gap-4 py-3 sm:py-4 px-4 sm:px-6">
                 <div className="w-12 sm:w-16 text-center font-bold text-sm sm:text-base">
                   #

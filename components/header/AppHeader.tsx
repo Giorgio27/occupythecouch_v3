@@ -8,16 +8,20 @@ export default function AppHeader() {
   return (
     <header className="w-full border-b border-border cine-glass sticky top-0 z-50 animate-fade-in-down">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-        <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group">
+        <Link
+          href="/"
+          className="flex items-center gap-2 sm:gap-2.5 group"
+          title="Home"
+        >
           <Image
             src="/couch-red.svg"
-            alt="CineForum"
+            alt="Home"
             width={32}
             height={32}
-            className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-105"
+            className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-110"
           />
           <span className="font-black text-base sm:text-lg tracking-tight text-foreground hover:text-primary transition-colors duration-300">
-            OccupySilvano
+            Occupy the Couch
           </span>
         </Link>
 

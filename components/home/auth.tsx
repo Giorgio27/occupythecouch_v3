@@ -174,7 +174,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
 
   async function copyCineforumLink(id: string) {
     try {
-      const url = `${window.location.origin}/cineforum/${id}`;
+      const url = `${window.location.origin}/cineforum/${id}/proposal`;
       await navigator.clipboard.writeText(url);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 1500);
