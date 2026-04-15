@@ -151,7 +151,7 @@ export function Landing() {
       <section className="relative pt-8 pb-16 sm:pt-12 sm:pb-20 md:pt-16 lg:pt-20 md:pb-28 lg:pb-36">
         <FloatingElements />
 
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 xl:px-4 relative">
+        <div className="mx-auto max-w-site px-4 sm:px-6 lg:px-8 xl:px-4 relative">
           {/* Badge */}
           <div className="flex justify-center mb-6 sm:mb-8 md:mb-10 animate-fade-in-down">
             <div className="cine-badge animate-shine group cursor-default text-xs sm:text-sm">
@@ -253,7 +253,7 @@ export function Landing() {
 
         <div
           ref={howItWorksSection.ref}
-          className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 xl:px-4 relative"
+          className="mx-auto max-w-site px-4 sm:px-6 lg:px-8 xl:px-4 relative"
         >
           <div
             className={`transition-all duration-700 ${howItWorksSection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
@@ -350,7 +350,7 @@ export function Landing() {
       <section className="py-16 sm:py-20 md:py-28 lg:py-36 relative">
         <div
           ref={whySection.ref}
-          className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 xl:px-4"
+          className="mx-auto max-w-site px-4 sm:px-6 lg:px-8 xl:px-4"
         >
           <div
             className={`transition-all duration-700 ${whySection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}

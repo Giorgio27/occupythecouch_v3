@@ -369,7 +369,7 @@ export default function CineforumHeaderNav() {
 
   return (
     <header className="w-full border-b border-border cine-glass sticky top-0 z-50 animate-fade-in-down">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+      <nav className="mx-auto flex max-w-site items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         {/* Brand + desktop cine nav */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Logo → Home generale */}
@@ -390,12 +390,12 @@ export default function CineforumHeaderNav() {
           {/* Nome Cineforum → Home del cineforum (con ellipsis per nomi lunghi) */}
           {cineforumName && cineforumId && (
             <>
-              <span className="text-muted-foreground/50 hidden sm:inline flex-shrink-0">
+              <span className="text-muted-foreground/50 hidden sm:inline shrink-0">
                 •
               </span>
               <Link
                 href={`/cineforum/${cineforumId}`}
-                className="font-black text-base sm:text-lg tracking-tight text-foreground hover:text-primary transition-colors duration-300 truncate max-w-[200px] sm:max-w-[250px] lg:max-w-[300px]"
+                className="font-black text-base sm:text-lg tracking-tight text-foreground hover:text-primary transition-colors duration-300 truncate max-w-50 sm:max-w-62.5 lg:max-w-75"
                 title={cineforumName}
               >
                 {cineforumName}

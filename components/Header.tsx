@@ -18,7 +18,7 @@ export default function Header() {
   if (status === "loading") {
     return (
       <header className="w-full border-b border-border bg-linear-to-r from-cine-bg via-cine-bg-soft to-cine-bg">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 text-sm text-muted-foreground">
+        <div className="mx-auto flex max-w-site items-center justify-between px-4 py-4 text-sm text-muted-foreground">
           <span className="font-black text-foreground">OccupySilvano</span>
           <span>Checking session…</span>
         </div>

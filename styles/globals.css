@@ -173,6 +173,9 @@
   --font-sans: "Inter", "Geist", "Geist Fallback", system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", monospace;
   
+  /* Site-wide max-width — change here to update everywhere */
+  --max-width-site: 72rem;
+  
   /* Semantic colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
