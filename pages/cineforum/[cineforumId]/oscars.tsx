@@ -122,7 +122,7 @@ export default function OscarsPage({
       {/* Header Section */}
       <div className="mb-8 animate-fade-in-down">
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-500/30">
+          <div className="p-2.5 rounded-xl bg-linear-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-500/30">
             <Trophy className="w-6 h-6 text-yellow-600 dark:text-yellow-500" />
           </div>
           <div>

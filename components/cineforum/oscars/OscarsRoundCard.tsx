@@ -123,14 +123,14 @@ export default function OscarsRoundCard({
                   {/* Winner Badge - Only shown when round is closed */}
                   {isWinner && (
                     <div className="absolute -top-2 -right-2 z-10">
-                      <div className="p-1.5 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 shadow-lg">
+                      <div className="p-1.5 rounded-full bg-linear-to-br from-yellow-400 to-amber-500 shadow-lg">
                         <Crown className="h-4 w-4 text-white" />
                       </div>
                     </div>
                   )}
 
                   {/* Movie Image */}
-                  <div className="flex-shrink-0 w-full sm:w-24 h-48 sm:h-36 relative bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden shadow-sm">
+                  <div className="shrink-0 w-full sm:w-24 h-48 sm:h-36 relative bg-linear-to-br from-muted to-muted/50 rounded-lg overflow-hidden shadow-sm">
                     {movie.imageMedium || movie.image || movie.poster ? (
                       <img
                         src={

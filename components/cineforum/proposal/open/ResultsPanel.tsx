@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Trophy, Medal, Sparkles, ChevronDown } from "lucide-react";
 
 export default function ResultsPanel({
@@ -8,6 +9,7 @@ export default function ResultsPanel({
   ranking: any;
   proposal: any;
 }) {
+  const { t } = useTranslation("proposal");
   const sorted = ranking?.sorted_movies ?? [];
   const top = sorted.slice(0, 3);
   const rest = sorted.slice(3);
@@ -47,7 +49,9 @@ export default function ResultsPanel({
                 <div className="relative flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-xs text-muted-foreground">
-                      {isWinner ? "Winner" : `Top ${idx + 1}`}
+                      {isWinner
+                        ? t("results.winner")
+                        : t("results.topN", { position: idx + 1 })}
                     </div>
 
                     <div className="mt-1 truncate text-base font-black tracking-tight">
@@ -58,7 +62,7 @@ export default function ResultsPanel({
 
                     <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
                       <span className="font-semibold text-foreground/90">
-                        rank
+                        {t("results.rank")}
                       </span>
                       <span className="text-primary">{m.proposal_rank}</span>
                     </div>
@@ -96,7 +100,7 @@ export default function ResultsPanel({
                     {m.title} {m.year ? `(${m.year})` : ""}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    rank: {m.proposal_rank}
+                    {t("results.rank")}: {m.proposal_rank}
                   </div>
                 </div>
 
@@ -116,10 +120,12 @@ export default function ResultsPanel({
             <div className="inline-flex items-center gap-2">
               <span className="cine-badge">
                 <Sparkles className="mr-2 h-4 w-4" />
-                Peek other votes
+                {t("results.peekVotes")}
               </span>
               <span className="text-xs text-muted-foreground">
-                ({ranking?.votes?.length ?? 0})
+                {t("results.votesCount", {
+                  count: ranking?.votes?.length ?? 0,
+                })}
               </span>
             </div>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -134,11 +140,13 @@ export default function ResultsPanel({
             >
               <div className="mb-3 flex items-center justify-between gap-2">
                 <div className="text-sm font-semibold">
-                  User:{" "}
+                  {t("results.user")}{" "}
                   <span className="text-muted-foreground">{v.user.id}</span>
                 </div>
                 <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground">
-                  {Object.keys(v.movie_selection).length} ranks
+                  {t("results.ranksCount", {
+                    count: Object.keys(v.movie_selection).length,
+                  })}
                 </span>
               </div>
 

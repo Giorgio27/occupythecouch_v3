@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import MovieSearch from "./MovieSearch";
+import MovieCard from "./MovieCard";
 import SelectedMovies from "./SelectedMovies";
 import { createProposal } from "@/lib/client/cineforum";
 
@@ -27,6 +29,7 @@ export default function CreateProposal({
   cineforumId: string;
 }) {
   const { data: session } = useSession();
+  const { t } = useTranslation("proposal");
 
   const [results, setResults] = React.useState<any[]>([]);
   const [selected, setSelected] = React.useState<any[]>([]);
@@ -46,16 +49,21 @@ export default function CreateProposal({
   }, [session]);
 
   function toggleMovie(m: any) {
-    setSelected((prev) =>
-      prev.some((x) => x.id === m.id)
-        ? prev.filter((x) => x.id !== m.id)
-        : [...prev, m],
-    );
+    const isAlreadySelected = selected.some((x) => x.id === m.id);
+
+    if (isAlreadySelected) {
+      // Remove from selection
+      setSelected((prev) => prev.filter((x) => x.id !== m.id));
+    } else {
+      // Add to selection and clear search results
+      setSelected((prev) => [...prev, m]);
+      setResults([]);
+    }
   }
 
   async function submitCreate() {
     if (!owner || !title || !description || !date || selected.length === 0) {
-      alert("Compila tutti i campi e seleziona almeno un film");
+      alert(t("create.alertFillFields"));
       return;
     }
     setCreating(true);
@@ -70,7 +78,7 @@ export default function CreateProposal({
       });
       location.reload();
     } catch {
-      alert("Creazione fallita. Riprova.");
+      alert(t("create.alertCreationFailed"));
     } finally {
       setCreating(false);
     }
@@ -88,15 +96,15 @@ export default function CreateProposal({
           <div className="flex items-center gap-2">
             <div className="cine-badge animate-scale-in">
               <Sparkles className="mr-2 h-4 w-4" />
-              Nuovo round
+              {t("create.badge")}
             </div>
           </div>
           <h2 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">
-            Crea una <span className="text-gradient">nuova proposta</span>
+            {t("create.title")}{" "}
+            <span className="text-gradient">{t("create.titleHighlight")}</span>
           </h2>
           <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed">
-            Imposta data e descrizione, poi aggiungi i film. Il gruppo voterà e
-            avrai un vincitore senza drammi.
+            {t("create.subtitle")}
           </p>
         </div>
       </div>
@@ -108,7 +116,7 @@ export default function CreateProposal({
             <div className="p-2 rounded-lg bg-primary/20">
               <Plus className="h-5 w-5 text-primary" />
             </div>
-            <span>Dettagli della proposta</span>
+            <span>{t("create.cardTitle")}</span>
           </CardTitle>
         </CardHeader>
 
@@ -118,7 +126,7 @@ export default function CreateProposal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <CalendarDays className="h-4 w-4 text-primary" />
-                Data di proiezione
+                {t("create.screeningDate")}
               </Label>
               <Input
                 type="date"
@@ -131,12 +139,12 @@ export default function CreateProposal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <FileText className="h-4 w-4 text-primary" />
-                Titolo proposta
+                {t("create.proposalTitle")}
               </Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Es. Oscar night, Horror Friday…"
+                placeholder={t("create.proposalTitlePlaceholder")}
                 className="cine-input h-11"
               />
             </div>
@@ -146,18 +154,17 @@ export default function CreateProposal({
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-sm font-semibold">
               <Film className="h-4 w-4 text-primary" />
-              Descrizione
+              {t("create.description")}
             </Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrivi il mood della serata, il tema, o qualsiasi dettaglio che renda speciale questa proposta…"
-              className="cine-input min-h-[100px] resize-y"
+              placeholder={t("create.descriptionPlaceholder")}
+              className="cine-input min-h-25 resize-y"
               rows={4}
             />
             <p className="text-xs text-muted-foreground">
-              Puoi scrivere una descrizione dettagliata. Sarà visualizzata in
-              modo espandibile.
+              {t("create.descriptionHint")}
             </p>
           </div>
 
@@ -166,12 +173,12 @@ export default function CreateProposal({
             <div className="flex items-center justify-between">
               <Label className="flex items-center gap-2 text-base font-semibold">
                 <Search className="h-5 w-5 text-primary" />
-                Cerca e aggiungi film
+                {t("create.searchTitle")}
               </Label>
               {selected.length > 0 && (
                 <div className="cine-badge bg-primary/30 text-primary animate-scale-in">
                   <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                  {selected.length} {selected.length === 1 ? "film" : "film"}
+                  {t("create.selectedCount", { count: selected.length })}
                 </div>
               )}
             </div>
@@ -182,53 +189,19 @@ export default function CreateProposal({
             {results.length > 0 && (
               <div className="space-y-2 animate-fade-in">
                 <p className="text-xs text-muted-foreground font-medium">
-                  Risultati della ricerca
+                  {t("create.searchResults")}
                 </p>
                 <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-2">
                   {results.map((m) => {
                     const isSelected = selected.some((x) => x.id === m.id);
                     return (
-                      <button
+                      <MovieCard
                         key={m.id}
-                        onClick={() => toggleMovie(m)}
-                        className={`cine-card hover-lift p-3 text-left flex items-center gap-3 transition-all duration-300 ${
-                          isSelected
-                            ? "border-primary/50 bg-primary/5"
-                            : "hover:border-primary/30"
-                        }`}
-                      >
-                        {m.i?.[0] && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            alt=""
-                            src={m.i[0]}
-                            className="h-16 w-11 rounded-md object-cover border border-border/60 shadow-sm"
-                          />
-                        )}
-
-                        <div className="flex-1 min-w-0">
-                          <div className="truncate text-sm font-semibold text-foreground">
-                            {m.l} {m.y ? `(${m.y})` : ""}
-                          </div>
-                          <div className="truncate text-xs text-muted-foreground mt-0.5">
-                            {m.s}
-                          </div>
-                        </div>
-
-                        <div className="ml-auto">
-                          {isSelected ? (
-                            <div className="cine-badge bg-primary text-primary-foreground">
-                              <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                              Selezionato
-                            </div>
-                          ) : (
-                            <div className="cine-badge opacity-70">
-                              <Plus className="mr-1.5 h-3.5 w-3.5" />
-                              Aggiungi
-                            </div>
-                          )}
-                        </div>
-                      </button>
+                        movie={m}
+                        isSelected={isSelected}
+                        onToggle={toggleMovie}
+                        variant="search"
+                      />
                     );
                   })}
                 </div>
@@ -237,17 +210,16 @@ export default function CreateProposal({
           </div>
 
           {/* Selected Movies Display */}
-          <SelectedMovies items={selected} />
+          <SelectedMovies items={selected} onRemove={toggleMovie} />
 
           {/* Validation Message */}
           {!isFormValid &&
             (selected.length > 0 || title || description || date) && (
               <div className="cine-card p-3 bg-destructive/10 border-destructive/30 animate-fade-in">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                   <p className="text-xs text-destructive/90">
-                    Compila tutti i campi e seleziona almeno un film per
-                    continuare
+                    {t("create.validationError")}
                   </p>
                 </div>
               </div>
@@ -257,10 +229,10 @@ export default function CreateProposal({
           <div className="pt-4 border-t border-border/50 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium text-foreground">
-                Pronto per creare la proposta?
+                {t("create.readyTitle")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Serve almeno 1 film. Più scelta = voto più divertente.
+                {t("create.readySubtitle")}
               </p>
             </div>
 
@@ -272,12 +244,12 @@ export default function CreateProposal({
               {creating ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Creazione in corso…
+                  {t("create.creating")}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-5 w-5" />
-                  Crea proposta
+                  {t("create.createButton")}
                 </>
               )}
             </Button>
