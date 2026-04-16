@@ -1,11 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const proposalId = req.query.proposalId as string;
+  const session = await getServerSession(req, res, authOptions);
+  const currentUserId = session?.user?.id;
+
   const p = await prisma.proposal.findUnique({
     where: { id: proposalId },
     include: {
@@ -24,14 +29,19 @@ export default async function handler(
   const votersCount = p.votes.length;
   const noVotesLeft = votersCount >= membersCount;
 
+  // Find current user's vote if authenticated
+  const myVote = currentUserId
+    ? p.votes.find((v) => v.userId === currentUserId)
+    : null;
+
   const body = {
     id: p.id,
     date: p.date ? new Date(p.date).toLocaleDateString("it-IT") : null,
     owner: p.ownerUserId
       ? { id: p.ownerUserId, type: "User" }
       : p.ownerTeamId
-      ? { id: p.ownerTeamId, type: "Team" }
-      : null,
+        ? { id: p.ownerTeamId, type: "Team" }
+        : null,
     movies: p.movies.map((pm) => pm.movie),
     winner: p.winner,
     closed: p.closed,
@@ -40,6 +50,12 @@ export default async function handler(
       user: { id: v.userId, name: v.user?.name ?? "" },
       movie_selection: v.movieSelection as Record<string, string[]>,
     })),
+    my_vote: myVote
+      ? {
+          id: myVote.id,
+          movie_selection: myVote.movieSelection as Record<string, string[]>,
+        }
+      : null,
     created_at: p.createdAt.toLocaleDateString("it-IT"),
     description: p.description?.replace(/\n/g, "<br>") ?? null,
     title: p.title,

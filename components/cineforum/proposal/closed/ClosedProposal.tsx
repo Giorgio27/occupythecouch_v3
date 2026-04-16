@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Trophy, Film, Sparkles, Clock } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function ClosedProposal({
     winner?: { id: string; title: string } | null;
   };
 }) {
+  const { t } = useTranslation("proposal");
   const winnerTitle = last.winner?.title ?? last.title;
 
   return (
@@ -26,12 +28,12 @@ export default function ClosedProposal({
               <div className="p-2 rounded-full bg-primary/20 animate-glow-pulse">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
-              <span className="text-gradient">Film Vincitore</span>
+              <span className="text-gradient">{t("closed.winnerTitle")}</span>
             </CardTitle>
 
             <div className="cine-badge animate-scale-in delay-200">
               <Sparkles className="mr-2 h-4 w-4" />
-              Proposta chiusa
+              {t("closed.closedBadge")}
             </div>
           </div>
         </CardHeader>
@@ -41,7 +43,7 @@ export default function ClosedProposal({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Film className="h-4 w-4 text-primary/70" />
-              <span>Il gruppo ha scelto</span>
+              <span>{t("closed.groupChose")}</span>
             </div>
             <div className="text-2xl sm:text-3xl font-black tracking-tight text-balance leading-tight">
               <span className="text-foreground hover-glow transition-all duration-300">
@@ -59,7 +61,7 @@ export default function ClosedProposal({
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                    Data di proiezione
+                    {t("closed.screeningDate")}
                   </div>
                   <div className="text-lg font-bold text-foreground mt-0.5">
                     {last.date}
@@ -75,7 +77,7 @@ export default function ClosedProposal({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
               <span>
-                Proposta:{" "}
+                {t("closed.proposal")}{" "}
                 <span className="font-semibold text-foreground">
                   {last.title}
                 </span>
@@ -93,12 +95,10 @@ export default function ClosedProposal({
           </div>
           <div className="flex-1 space-y-1">
             <p className="text-sm font-medium text-foreground">
-              Proiezione programmata
+              {t("closed.scheduledTitle")}
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              La votazione è conclusa e il film vincitore è stato selezionato.
-              Dopo la data di proiezione, potrai creare una nuova proposta per
-              il prossimo round.
+              {t("closed.scheduledText")}
             </p>
           </div>
         </div>
