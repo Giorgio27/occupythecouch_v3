@@ -1,0 +1,102 @@
+{
+  "languageSwitcher": {
+    "current": "IT",
+    "tooltip": "Cambia lingua"
+  },
+  "userMenu": {
+    "defaultUser": "Utente",
+    "lightTheme": "Tema chiaro",
+    "darkTheme": "Tema scuro",
+    "language": "Lingua"
+  },
+  "meta": {
+    "title": "CineForum - Scegli film con gli amici",
+    "description": "Crea un round, invita gli amici a proporre film, votate insieme. Il migliore vince. Niente discussioni, solo cinema."
+  },
+  "buttons": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "update": "Aggiorna",
+    "close": "Chiudi",
+    "open": "Apri",
+    "submit": "Invia",
+    "confirm": "Conferma",
+    "back": "Indietro",
+    "next": "Avanti",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "reset": "Reimposta",
+    "viewMore": "Vedi altro",
+    "viewLess": "Vedi meno",
+    "loading": "Caricamento...",
+    "retry": "Riprova"
+  },
+  "actions": {
+    "creating": "Creazione in corso...",
+    "updating": "Aggiornamento in corso...",
+    "deleting": "Eliminazione in corso...",
+    "saving": "Salvataggio in corso...",
+    "loading": "Caricamento in corso..."
+  },
+  "status": {
+    "active": "Attivo",
+    "inactive": "Inattivo",
+    "closed": "Chiuso",
+    "open": "Aperto",
+    "pending": "In attesa",
+    "completed": "Completato",
+    "draft": "Bozza",
+    "published": "Pubblicato"
+  },
+  "errors": {
+    "generic": "Si è verificato un errore. Riprova.",
+    "network": "Errore di connessione. Controlla la tua connessione internet.",
+    "notFound": "Elemento non trovato.",
+    "unauthorized": "Non sei autorizzato a eseguire questa azione.",
+    "validation": "Controlla i campi e riprova.",
+    "required": "Questo campo è obbligatorio.",
+    "invalidEmail": "Inserisci un indirizzo email valido.",
+    "invalidPassword": "La password deve contenere almeno 8 caratteri.",
+    "passwordMismatch": "Le password non corrispondono.",
+    "serverError": "Errore del server. Riprova più tardi."
+  },
+  "success": {
+    "saved": "Salvato con successo!",
+    "created": "Creato con successo!",
+    "updated": "Aggiornato con successo!",
+    "deleted": "Eliminato con successo!",
+    "submitted": "Inviato con successo!"
+  },
+  "loading": {
+    "default": "Caricamento...",
+    "data": "Caricamento dati...",
+    "page": "Caricamento pagina...",
+    "content": "Caricamento contenuto..."
+  },
+  "empty": {
+    "noData": "Nessun dato disponibile",
+    "noResults": "Nessun risultato trovato",
+    "noItems": "Nessun elemento da visualizzare",
+    "tryAgain": "Riprova con criteri diversi"
+  },
+  "confirmation": {
+    "delete": "Sei sicuro di voler eliminare questo elemento?",
+    "cancel": "Sei sicuro di voler annullare?",
+    "leave": "Sei sicuro di voler uscire? Le modifiche non salvate andranno perse.",
+    "yes": "Sì",
+    "no": "No"
+  },
+  "time": {
+    "now": "Adesso",
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "tomorrow": "Domani",
+    "thisWeek": "Questa settimana",
+    "lastWeek": "Settimana scorsa",
+    "thisMonth": "Questo mese",
+    "lastMonth": "Mese scorso"
+  }
+}

@@ -1,0 +1,73 @@
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+
+// Import translation files
+import commonIT from "@/locales/it/common.json";
+import commonEN from "@/locales/en/common.json";
+import landingIT from "@/locales/it/landing.json";
+import landingEN from "@/locales/en/landing.json";
+import authIT from "@/locales/it/auth.json";
+import authEN from "@/locales/en/auth.json";
+import cineforumIT from "@/locales/it/cineforum.json";
+import cineforumEN from "@/locales/en/cineforum.json";
+import proposalIT from "@/locales/it/proposal.json";
+import proposalEN from "@/locales/en/proposal.json";
+import rankingsIT from "@/locales/it/rankings.json";
+import rankingsEN from "@/locales/en/rankings.json";
+import statsIT from "@/locales/it/stats.json";
+import statsEN from "@/locales/en/stats.json";
+import adminIT from "@/locales/it/admin.json";
+import adminEN from "@/locales/en/admin.json";
+import navigationIT from "@/locales/it/navigation.json";
+import navigationEN from "@/locales/en/navigation.json";
+import validationIT from "@/locales/it/validation.json";
+import validationEN from "@/locales/en/validation.json";
+
+const resources = {
+  it: {
+    common: commonIT,
+    landing: landingIT,
+    auth: authIT,
+    cineforum: cineforumIT,
+    proposal: proposalIT,
+    rankings: rankingsIT,
+    stats: statsIT,
+    admin: adminIT,
+    navigation: navigationIT,
+    validation: validationIT,
+  },
+  en: {
+    common: commonEN,
+    landing: landingEN,
+    auth: authEN,
+    cineforum: cineforumEN,
+    proposal: proposalEN,
+    rankings: rankingsEN,
+    stats: statsEN,
+    admin: adminEN,
+    navigation: navigationEN,
+    validation: validationEN,
+  },
+};
+
+i18n
+  .use(LanguageDetector) // Detects browser language
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: "it",
+    defaultNS: "common",
+    interpolation: {
+      escapeValue: false, // React already escapes
+    },
+    detection: {
+      order: ["localStorage", "navigator"], // Check localStorage first, then browser
+      caches: ["localStorage"], // Save preference to localStorage
+      lookupLocalStorage: "i18nextLng",
+    },
+    debug: process.env.NODE_ENV === "development",
+    saveMissing: true, // Log missing keys in development
+  });
+
+export default i18n;

@@ -1,0 +1,102 @@
+{
+  "languageSwitcher": {
+    "current": "EN",
+    "tooltip": "Change language"
+  },
+  "userMenu": {
+    "defaultUser": "User",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "language": "Language"
+  },
+  "meta": {
+    "title": "CineForum - Choose movies with friends",
+    "description": "Create a round, invite friends to propose movies, vote together. The best one wins. No arguments, just cinema."
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "open": "Open",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "viewMore": "View more",
+    "viewLess": "View less",
+    "loading": "Loading...",
+    "retry": "Retry"
+  },
+  "actions": {
+    "creating": "Creating...",
+    "updating": "Updating...",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+    "loading": "Loading..."
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "closed": "Closed",
+    "open": "Open",
+    "pending": "Pending",
+    "completed": "Completed",
+    "draft": "Draft",
+    "published": "Published"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Connection error. Check your internet connection.",
+    "notFound": "Item not found.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "validation": "Please check the fields and try again.",
+    "required": "This field is required.",
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidPassword": "Password must contain at least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "serverError": "Server error. Please try again later."
+  },
+  "success": {
+    "saved": "Saved successfully!",
+    "created": "Created successfully!",
+    "updated": "Updated successfully!",
+    "deleted": "Deleted successfully!",
+    "submitted": "Submitted successfully!"
+  },
+  "loading": {
+    "default": "Loading...",
+    "data": "Loading data...",
+    "page": "Loading page...",
+    "content": "Loading content..."
+  },
+  "empty": {
+    "noData": "No data available",
+    "noResults": "No results found",
+    "noItems": "No items to display",
+    "tryAgain": "Try again with different criteria"
+  },
+  "confirmation": {
+    "delete": "Are you sure you want to delete this item?",
+    "cancel": "Are you sure you want to cancel?",
+    "leave": "Are you sure you want to leave? Unsaved changes will be lost.",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "time": {
+    "now": "Now",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month"
+  }
+}

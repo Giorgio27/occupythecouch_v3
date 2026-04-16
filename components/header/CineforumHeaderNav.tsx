@@ -20,9 +20,13 @@ import {
   Users,
   Earth,
   LucideIcon,
+  Sun,
+  Moon,
+  Globe,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
+import { useTheme } from "@/lib/client/contexts/ThemeContext";
 import UserProfileMenu from "./UserProfileMenu";
 import {
   Accordion,
@@ -30,6 +34,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useTranslation } from "react-i18next";
 
 // Types
 interface NavLink {
@@ -249,6 +254,13 @@ export default function CineforumHeaderNav() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { t, i18n } = useTranslation(["navigation", "common"]);
+  const { theme, toggleTheme } = useTheme();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "it" ? "en" : "it";
+    i18n.changeLanguage(newLang);
+  };
 
   // which desktop dropdown is open
   const [openMenu, setOpenMenu] = useState<"ranking-stats" | "admin" | null>(
@@ -262,13 +274,13 @@ export default function CineforumHeaderNav() {
     ? [
         {
           id: "proposte",
-          label: "Proposte",
+          label: t("menu.proposals"),
           href: `/cineforum/${cineforumId}/proposal`,
           icon: FileText,
         },
         {
           id: "oscar",
-          label: "Oscar",
+          label: t("menu.oscars"),
           href: `/cineforum/${cineforumId}/oscars`,
           icon: Award,
         },
@@ -279,34 +291,34 @@ export default function CineforumHeaderNav() {
   const rankingStatsLinks = hasCineNav
     ? [
         {
-          label: "Movies ranking",
+          label: t("rankings.movies"),
           href: `/cineforum/${cineforumId}/rankings/movies`,
           icon: Film,
-          description: "Classifica film",
+          description: t("rankings.moviesDesc"),
         },
         {
-          label: "Users ranking",
+          label: t("rankings.users"),
           href: `/cineforum/${cineforumId}/rankings/users`,
           icon: TrendingUp,
-          description: "Classifica utenti",
+          description: t("rankings.usersDesc"),
         },
         {
-          label: "User statistics",
+          label: t("rankings.userStats"),
           href: `/cineforum/${cineforumId}/stats/users`,
           icon: Award,
-          description: "Statistiche dettagliate",
+          description: t("rankings.userStatsDesc"),
         },
         {
-          label: "Directors ranking",
+          label: t("rankings.directors"),
           href: `/cineforum/${cineforumId}/rankings/directors`,
           icon: User,
-          description: "Classifica registi",
+          description: t("rankings.directorsDesc"),
         },
         {
-          label: "World ranking",
+          label: t("rankings.countries"),
           href: `/cineforum/${cineforumId}/rankings/countries`,
           icon: Earth,
-          description: "Classifica paesi",
+          description: t("rankings.countriesDesc"),
         },
       ]
     : [];
@@ -315,7 +327,7 @@ export default function CineforumHeaderNav() {
   const videotecaLink = hasCineNav
     ? {
         id: "videoteca",
-        label: "Videoteca",
+        label: t("menu.videoteca"),
         href: `/cineforum/${cineforumId}/movies`,
         icon: Film,
       }
@@ -341,28 +353,28 @@ export default function CineforumHeaderNav() {
     hasCineNav && isAdmin
       ? [
           {
-            label: "Rounds",
+            label: t("admin.rounds"),
             href: `/cineforum/${cineforumId}/admin/rounds`,
             icon: Calendar,
-            description: "Gestisci round",
+            description: t("admin.roundsDesc"),
           },
           {
-            label: "Teams",
+            label: t("admin.teams"),
             href: `/cineforum/${cineforumId}/admin/teams`,
             icon: Users,
-            description: "Gestisci team",
+            description: t("admin.teamsDesc"),
           },
           {
-            label: "Proposals",
+            label: t("admin.proposals"),
             href: `/cineforum/${cineforumId}/admin/proposals`,
             icon: FileText,
-            description: "Gestisci proposte",
+            description: t("admin.proposalsDesc"),
           },
           {
-            label: "Users",
+            label: t("admin.users"),
             href: `/cineforum/${cineforumId}/admin/users`,
             icon: User,
-            description: "Gestisci utenti",
+            description: t("admin.usersDesc"),
           },
         ]
       : [];
@@ -376,7 +388,7 @@ export default function CineforumHeaderNav() {
           <Link
             href="/"
             className="flex items-center group"
-            title="Torna alla home"
+            title={t("menu.backToHome")}
           >
             <Image
               src="/couch-red.svg"
@@ -413,7 +425,7 @@ export default function CineforumHeaderNav() {
               {/* Ranking & Stats dropdown (hover) */}
               {rankingStatsLinks.length > 0 && (
                 <DesktopDropdown
-                  label="Classifiche"
+                  label={t("rankings.title")}
                   icon={TrendingUp}
                   links={rankingStatsLinks}
                   pathname={pathname}
@@ -435,7 +447,7 @@ export default function CineforumHeaderNav() {
               {/* Admin dropdown (hover) */}
               {adminLinks.length > 0 && (
                 <DesktopDropdown
-                  label="Admin"
+                  label={t("admin.title")}
                   icon={Settings}
                   links={adminLinks}
                   pathname={pathname}
@@ -462,7 +474,7 @@ export default function CineforumHeaderNav() {
             type="button"
             className="lg:hidden p-2 -mr-2 text-foreground hover:text-primary transition-colors"
             onClick={() => setMobileOpen((o) => !o)}
-            aria-label={mobileOpen ? "Chiudi menu" : "Apri menu"}
+            aria-label={mobileOpen ? t("menu.closeMenu") : t("menu.openMenu")}
           >
             {mobileOpen ? (
               <X className="w-6 h-6" />
@@ -491,7 +503,7 @@ export default function CineforumHeaderNav() {
                 {/* Ranking & Stats accordion */}
                 {rankingStatsLinks.length > 0 && (
                   <MobileAccordion
-                    label="Classifiche"
+                    label={t("rankings.title")}
                     icon={TrendingUp}
                     links={rankingStatsLinks}
                     pathname={pathname}
@@ -511,7 +523,7 @@ export default function CineforumHeaderNav() {
                 {/* Admin accordion */}
                 {adminLinks.length > 0 && (
                   <MobileAccordion
-                    label="Admin"
+                    label={t("admin.title")}
                     icon={Settings}
                     links={adminLinks}
                     pathname={pathname}
@@ -535,8 +547,51 @@ export default function CineforumHeaderNav() {
                     onClick={() => setMobileOpen(false)}
                   >
                     <User className="h-4 w-4" />
-                    <span className="text-sm font-medium">Profilo</span>
+                    <span className="text-sm font-medium">
+                      {t("menu.profile")}
+                    </span>
                   </Link>
+
+                  {/* Theme switcher */}
+                  <button
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-foreground hover:bg-accent/50 transition-colors w-full text-left"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleTheme();
+                    }}
+                  >
+                    {theme === "dark" ? (
+                      <>
+                        <Sun className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {t("common:userMenu.lightTheme")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {t("common:userMenu.darkTheme")}
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Language switcher */}
+                  <button
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-foreground hover:bg-accent/50 transition-colors w-full text-left"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleLanguage();
+                    }}
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {t("common:userMenu.language")}:{" "}
+                      {t("common:languageSwitcher.current")}
+                    </span>
+                  </button>
+
                   <Button
                     variant="outline"
                     className="w-full cine-btn-ghost h-10 text-sm bg-transparent mx-0"
@@ -545,7 +600,7 @@ export default function CineforumHeaderNav() {
                       signOut();
                     }}
                   >
-                    Log out
+                    {t("header.logout")}
                   </Button>
                 </div>
               </div>

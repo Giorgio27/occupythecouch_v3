@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import UserProfileMenu from "./UserProfileMenu";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function AppHeader() {
   return (
@@ -26,6 +27,7 @@ export default function AppHeader() {
         </Link>
 
         <div className="flex items-center gap-2 md:gap-3">
+          <LanguageSwitcher />
           <UserProfileMenu />
         </div>
       </nav>

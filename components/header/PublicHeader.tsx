@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function PublicHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function PublicHeader() {
 
         {/* Desktop Navigation */}
         <div className="hidden sm:flex items-center gap-2 md:gap-3">
+          <LanguageSwitcher />
           <Link href="/auth/signin">
             <Button
               variant="outline"
@@ -67,6 +69,9 @@ export default function PublicHeader() {
       {isMenuOpen && (
         <div className="sm:hidden border-t border-border bg-card/95 backdrop-blur-xl animate-fade-in">
           <div className="px-4 py-4 space-y-3">
+            <div className="flex justify-center pb-2">
+              <LanguageSwitcher />
+            </div>
             <Link
               href="/auth/signin"
               className="block"

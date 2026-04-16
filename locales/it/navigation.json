@@ -1,0 +1,57 @@
+{
+  "header": {
+    "home": "Home",
+    "signIn": "Accedi",
+    "signUp": "Registrati",
+    "profile": "Profilo",
+    "logout": "Esci"
+  },
+  "menu": {
+    "proposals": "Proposte",
+    "oscars": "Oscar",
+    "rankings": "Classifiche",
+    "videoteca": "Videoteca",
+    "admin": "Admin",
+    "backToHome": "Torna alla home",
+    "openMenu": "Apri menu",
+    "closeMenu": "Chiudi menu",
+    "profile": "Profilo"
+  },
+  "rankings": {
+    "title": "Classifiche",
+    "movies": "Classifica film",
+    "moviesDesc": "Classifica film",
+    "users": "Classifica utenti",
+    "usersDesc": "Classifica utenti",
+    "userStats": "Statistiche utente",
+    "userStatsDesc": "Statistiche dettagliate",
+    "directors": "Classifica registi",
+    "directorsDesc": "Classifica registi",
+    "countries": "Classifica paesi",
+    "countriesDesc": "Classifica paesi"
+  },
+  "admin": {
+    "title": "Admin",
+    "rounds": "Round",
+    "roundsDesc": "Gestisci round",
+    "teams": "Team",
+    "teamsDesc": "Gestisci team",
+    "proposals": "Proposte",
+    "proposalsDesc": "Gestisci proposte",
+    "users": "Utenti",
+    "usersDesc": "Gestisci utenti"
+  },
+  "footer": {
+    "about": "Chi siamo",
+    "contact": "Contatti",
+    "privacy": "Privacy",
+    "terms": "Termini di servizio"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "cineforum": "Cineforum",
+    "proposal": "Proposta",
+    "rankings": "Classifiche",
+    "admin": "Admin"
+  }
+}

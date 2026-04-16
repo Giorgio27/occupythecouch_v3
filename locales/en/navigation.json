@@ -1,0 +1,57 @@
+{
+  "header": {
+    "home": "Home",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "menu": {
+    "proposals": "Proposals",
+    "oscars": "Oscars",
+    "rankings": "Rankings",
+    "videoteca": "Movie Library",
+    "admin": "Admin",
+    "backToHome": "Back to home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "profile": "Profile"
+  },
+  "rankings": {
+    "title": "Rankings",
+    "movies": "Movies ranking",
+    "moviesDesc": "Movie rankings",
+    "users": "Users ranking",
+    "usersDesc": "User rankings",
+    "userStats": "User statistics",
+    "userStatsDesc": "Detailed statistics",
+    "directors": "Directors ranking",
+    "directorsDesc": "Director rankings",
+    "countries": "World ranking",
+    "countriesDesc": "Country rankings"
+  },
+  "admin": {
+    "title": "Admin",
+    "rounds": "Rounds",
+    "roundsDesc": "Manage rounds",
+    "teams": "Teams",
+    "teamsDesc": "Manage teams",
+    "proposals": "Proposals",
+    "proposalsDesc": "Manage proposals",
+    "users": "Users",
+    "usersDesc": "Manage users"
+  },
+  "footer": {
+    "about": "About us",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms of service"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "cineforum": "Cineforum",
+    "proposal": "Proposal",
+    "rankings": "Rankings",
+    "admin": "Admin"
+  }
+}
