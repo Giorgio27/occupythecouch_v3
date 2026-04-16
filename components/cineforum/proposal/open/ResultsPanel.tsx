@@ -51,7 +51,7 @@ export default function ResultsPanel({
                     <div className="text-xs text-muted-foreground">
                       {isWinner
                         ? t("results.winner")
-                        : t("results.topN", { position: idx + 1 })}
+                        : t("results.topN", { position: m.proposal_rank })}
                     </div>
 
                     <div className="mt-1 truncate text-base font-black tracking-tight">
@@ -75,7 +75,8 @@ export default function ResultsPanel({
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-2 py-1 text-xs font-semibold text-foreground/80">
-                        <Medal className="h-4 w-4 text-primary/70" /> #{idx + 1}
+                        <Medal className="h-4 w-4 text-primary/70" /> #
+                        {m.proposal_rank}
                       </span>
                     )}
                   </div>
@@ -141,13 +142,8 @@ export default function ResultsPanel({
               <div className="mb-3 flex items-center justify-between gap-2">
                 <div className="text-sm font-semibold">
                   {t("results.user")}{" "}
-                  <span className="text-muted-foreground">{v.user.id}</span>
+                  <span className="text-muted-foreground">{v.user.name}</span>
                 </div>
-                <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground">
-                  {t("results.ranksCount", {
-                    count: Object.keys(v.movie_selection).length,
-                  })}
-                </span>
               </div>
 
               <div className="space-y-3">

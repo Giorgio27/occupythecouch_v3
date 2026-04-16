@@ -40,13 +40,31 @@
     "howItWorksText": "<strong>Trascina i film</strong> per riordinarli: rilascia nella <strong>metà superiore</strong> per posizionare sopra, nella <strong>metà inferiore</strong> per mettere a pari merito. Oppure usa i bottoni numerati per assegnare direttamente un ranking. Il sistema calcolerà automaticamente il vincitore in base alle preferenze di tutti.",
     "votingClosed": "La votazione è chiusa. I risultati sono visibili qui sotto.",
     "confirmVoteTitle": "Conferma il tuo voto",
+    "updateVoteTitle": "Aggiorna il tuo voto",
     "votingConcludedTitle": "Votazione conclusa",
     "confirmVoteSubtitle": "Il voto viene salvato e i risultati si aggiornano in tempo reale.",
+    "updateVoteSubtitle": "Il tuo voto verrà aggiornato e i risultati si aggiorneranno in tempo reale.",
     "votingConcludedSubtitle": "Grazie per aver partecipato alla votazione!",
     "submitting": "Invio in corso…",
     "confirmButton": "Conferma voto",
+    "updateButton": "Aggiorna voto",
     "rankingTitle": "Classifica attuale",
-    "voteError": "Errore durante il voto. Riprova."
+    "voteError": "Errore durante il voto. Riprova.",
+    "instructions": "Trascina i film negli slot di posizione per classificarli. Puoi mettere più film nella stessa posizione per i pari merito, o lasciare posizioni vuote.",
+    "yourRanking": "La tua classifica",
+    "rankingCount": "{{ranked}} / {{total}} classificati",
+    "unrankedMovies": "Film non classificati",
+    "unrankedCount": "{{count}}",
+    "allFilmsRanked": "Tutti i film classificati!",
+    "readyToSubmit": "Pronto per inviare il tuo voto",
+    "position": "Posizione",
+    "filmsTied": "{{count}} film (pari merito)",
+    "points": "{{count}} pt",
+    "dragFilmHere": "Trascina un film qui",
+    "orUseQuickActions": "o usa le azioni rapide",
+    "addAsTied": "Aggiungi a pari merito",
+    "removeFromRanking": "Rimuovi dalla classifica",
+    "assignToPosition": "Assegna alla posizione {{position}}"
   },
   "closed": {
     "winnerTitle": "Film Vincitore",
@@ -58,12 +76,12 @@
     "scheduledText": "La votazione è conclusa e il film vincitore è stato selezionato. Dopo la data di proiezione, potrai creare una nuova proposta per il prossimo round."
   },
   "results": {
-    "winner": "Winner",
+    "winner": "Vincitore",
     "topN": "Top {{position}}",
-    "rank": "rank",
-    "peekVotes": "Peek other votes",
+    "rank": "posizione",
+    "peekVotes": "Guarda altri voti",
     "votesCount": "({{count}})",
-    "user": "User:",
-    "ranksCount": "{{count}} ranks"
+    "user": "Utente:",
+    "ranksCount": "{{count}} classifiche"
   }
 }

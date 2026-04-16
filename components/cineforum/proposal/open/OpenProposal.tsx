@@ -54,19 +54,38 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
         if (cancelled) return;
         setProposal(p);
 
-        // Initialize: all movies start unranked
-        setUnrankedMovies(p.movies || []);
-
         // Initialize empty positions
         const positions: Record<number, any[]> = {};
         for (let i = 1; i <= (p.movies?.length || 0); i++) {
           positions[i] = [];
         }
-        setRankedMovies(positions);
 
-        // TODO: Load existing vote if available
-        // const my = undefined as any;
-        // if (my?.movie_selection) { ... }
+        // Check if user has already voted and pre-populate
+        if (p.my_vote?.movie_selection) {
+          const movieSelection = p.my_vote.movie_selection;
+          const rankedMovieIds = new Set<string>();
+
+          // Populate ranked positions from existing vote
+          Object.entries(movieSelection).forEach(([position, movieIds]) => {
+            const posNum = Number(position);
+            const movies = (movieIds as string[])
+              .map((id) => p.movies?.find((m: any) => m.id === id))
+              .filter(Boolean);
+            positions[posNum] = movies;
+            movieIds.forEach((id) => rankedMovieIds.add(id));
+          });
+
+          // Remaining movies go to unranked
+          const unranked = (p.movies || []).filter(
+            (m: any) => !rankedMovieIds.has(m.id),
+          );
+          setUnrankedMovies(unranked);
+        } else {
+          // No existing vote: all movies start unranked
+          setUnrankedMovies(p.movies || []);
+        }
+
+        setRankedMovies(positions);
 
         if (p.show_results) {
           const r = await fetchRanking(proposalId);
@@ -154,6 +173,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
   if (loading || !proposal) return <LoadingCard />;
 
   const canVote = !proposal?.closed;
+  const hasExistingVote = !!proposal?.my_vote;
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -246,26 +266,26 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
                   {t("open.howItWorksTitle")}
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Drag films into position slots to rank them. You can place
-                  multiple films in the same position for ties, or leave
-                  positions empty.
+                  {t("open.instructions")}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Two-column layout: Ranking Slots | Unranked Movies */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Ranking Slots - Takes 2 columns on large screens */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-3 lg:space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <ListOrdered className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-bold text-foreground">
-                  Your Ranking
+                  {t("open.yourRanking")}
                 </h3>
                 <span className="text-xs text-muted-foreground ml-auto">
-                  {Object.values(rankedMovies).flat().length} /{" "}
-                  {proposal?.movies?.length || 0} ranked
+                  {t("open.rankingCount", {
+                    ranked: Object.values(rankedMovies).flat().length,
+                    total: proposal?.movies?.length || 0,
+                  })}
                 </span>
               </div>
 
@@ -292,7 +312,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
               <div className="flex items-center gap-2 mb-4 sticky top-4">
                 <Inbox className="h-5 w-5 text-muted-foreground" />
                 <h3 className="text-lg font-bold text-foreground">
-                  Unranked Films
+                  {t("open.unrankedMovies")}
                 </h3>
                 <span className="text-xs text-muted-foreground ml-auto">
                   {unrankedMovies.length}
@@ -304,10 +324,10 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
                   <div className="cine-card p-8 text-center border-dashed border-2 border-border/30">
                     <CheckCircle2 className="h-12 w-12 text-green-500/50 mx-auto mb-3" />
                     <p className="text-sm font-medium text-muted-foreground">
-                      All films ranked!
+                      {t("open.allFilmsRanked")}
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-1">
-                      Ready to submit your vote
+                      {t("open.readyToSubmit")}
                     </p>
                   </div>
                 ) : (
@@ -351,19 +371,23 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-foreground">
                 {canVote
-                  ? t("open.confirmVoteTitle")
+                  ? hasExistingVote
+                    ? t("open.updateVoteTitle")
+                    : t("open.confirmVoteTitle")
                   : t("open.votingConcludedTitle")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {canVote
-                  ? t("open.confirmVoteSubtitle")
+                  ? hasExistingVote
+                    ? t("open.updateVoteSubtitle")
+                    : t("open.confirmVoteSubtitle")
                   : t("open.votingConcludedSubtitle")}
               </p>
             </div>
 
             <Button
               className="cine-btn h-12 px-8 text-base font-semibold shadow-lg hover:shadow-xl"
-              disabled={!canVote || submitting}
+              disabled={!canVote || submitting || unrankedMovies.length > 0}
               onClick={async () => {
                 setSubmitting(true);
                 setVoteSuccess(false);
@@ -389,7 +413,9 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
               ) : (
                 <>
                   <Vote className="h-5 w-5" />
-                  {t("open.confirmButton")}
+                  {hasExistingVote
+                    ? t("open.updateButton")
+                    : t("open.confirmButton")}
                 </>
               )}
             </Button>

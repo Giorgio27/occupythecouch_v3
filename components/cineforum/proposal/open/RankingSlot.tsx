@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Trophy, Plus, Medal } from "lucide-react";
 import MovieVotingCard from "./MovieVotingCard";
 
@@ -23,6 +24,7 @@ export default function RankingSlot({
   onDrop,
   draggingMovieId,
 }: RankingSlotProps) {
+  const { t } = useTranslation("proposal");
   const [isDragOver, setIsDragOver] = React.useState(false);
   const isEmpty = movies.length === 0;
 
@@ -98,24 +100,19 @@ export default function RankingSlot({
         .join(" ")}
     >
       {/* Position Header */}
-      <div className="flex items-center justify-between gap-3 p-3 pb-2 border-b border-border/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 p-3 pb-2 border-b border-border/30">
         <div className="flex items-center gap-2">
           {getPositionIcon()}
           <div>
             <div className="text-sm font-bold text-foreground">
-              {position}° Position
+              {position}° {t("open.position")}
             </div>
             {movies.length > 1 && (
               <div className="text-xs text-muted-foreground">
-                {movies.length} films (tied)
+                {t("open.filmsTied", { count: movies.length })}
               </div>
             )}
           </div>
-        </div>
-
-        {/* Points indicator (Borda count style) */}
-        <div className="text-xs font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-          {totalPositions - position + 1} pts
         </div>
       </div>
 
@@ -134,10 +131,10 @@ export default function RankingSlot({
           >
             <Plus className="h-8 w-8 text-muted-foreground/30 mb-2" />
             <p className="text-sm text-muted-foreground/60 font-medium">
-              Drag a film here
+              {t("open.dragFilmHere")}
             </p>
             <p className="text-xs text-muted-foreground/40 mt-1">
-              or use quick actions
+              {t("open.orUseQuickActions")}
             </p>
           </div>
         ) : (
@@ -161,7 +158,7 @@ export default function RankingSlot({
               <div className="flex items-center justify-center py-3 rounded-lg border-2 border-dashed border-primary bg-primary/5 animate-pulse">
                 <Plus className="h-5 w-5 text-primary mr-2" />
                 <span className="text-sm font-medium text-primary">
-                  Add as tied position
+                  {t("open.addAsTied")}
                 </span>
               </div>
             )}

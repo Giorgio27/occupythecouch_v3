@@ -34,8 +34,8 @@ export default async function handler(
 
   const movieSelection: Record<string, string[]> = {};
   for (const k of Object.keys(lists)) {
-    const arr = (lists[k] || []) as { id: string }[];
-    movieSelection[k] = arr.map((m) => m.id);
+    const arr = (lists[k] || []) as string[];
+    movieSelection[k] = arr;
   }
 
   await prisma.proposalVote.upsert({

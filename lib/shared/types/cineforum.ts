@@ -45,6 +45,10 @@ export type ProposalDetailDTO = {
   winner: ProposalMovieDTO | null;
   closed: boolean;
   votes: ProposalVoteDTO[];
+  my_vote: {
+    id: string;
+    movie_selection: Record<string, string[]>;
+  } | null;
   created_at: string;
   description: string | null;
   title: string;
