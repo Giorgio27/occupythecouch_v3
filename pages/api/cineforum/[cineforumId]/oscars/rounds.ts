@@ -180,6 +180,11 @@ export default async function handler(
                   votes.find((v) => v.user.id === session.user.id)?.rating ||
                   null,
                 proposer,
+                // External ratings
+                imdbRating: movie.imdbRating ?? null,
+                tmdbVote: movie.voteAverage ?? null,
+                tomatometer: movie.tomatometer ?? null,
+                metascore: movie.metascore ?? null,
               };
             }),
         );

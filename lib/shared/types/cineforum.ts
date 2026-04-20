@@ -133,6 +133,11 @@ export type MovieWinnerDTO = {
     userName: string | null;
     rating: number;
   }>;
+  // External ratings
+  imdbRating: number | null;
+  tmdbVote: number | null;
+  tomatometer: number | null;
+  metascore: number | null;
 };
 
 export type RoundBestDTO = {
