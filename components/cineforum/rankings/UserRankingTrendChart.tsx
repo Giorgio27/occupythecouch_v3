@@ -87,8 +87,9 @@ const RankingChartDot = (props: {
   cx?: number;
   cy?: number;
   payload?: RankingChartPoint;
+  isMobile?: boolean;
 }) => {
-  const { cx, cy, payload } = props;
+  const { cx, cy, payload, isMobile } = props;
 
   if (
     typeof cx !== "number" ||
@@ -101,13 +102,20 @@ const RankingChartDot = (props: {
 
   const isWinner = payload.winner;
 
+  if (isMobile && !isWinner) {
+    return null;
+  }
+
+  const dotRadius = isMobile ? 3.5 : 4.5;
+  const winnerRadius = isMobile ? 6 : 8;
+
   return (
     <g>
       {isWinner && (
         <circle
           cx={cx}
           cy={cy}
-          r={8}
+          r={winnerRadius}
           fill="rgba(234, 179, 8, 0.12)"
           stroke="rgba(234, 179, 8, 0.55)"
           strokeWidth={1.5}
@@ -116,7 +124,7 @@ const RankingChartDot = (props: {
       <circle
         cx={cx}
         cy={cy}
-        r={4.5}
+        r={dotRadius}
         fill="var(--primary)"
         stroke="var(--background)"
         strokeWidth={2}
@@ -404,7 +412,7 @@ export default function UserRankingTrendChart({ ranking }: Props) {
                 stroke="var(--primary)"
                 strokeWidth={3}
                 fill={`url(#${gradientId})`}
-                dot={isMobile ? false : <RankingChartDot />}
+                dot={<RankingChartDot isMobile={isMobile} />}
                 activeDot={{
                   r: 6,
                   fill: "var(--primary)",
