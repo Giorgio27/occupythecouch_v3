@@ -52,6 +52,24 @@ export default function MovieVotingCard({
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   /** Offset from the finger's touch point to the card's top-left corner */
   const touchOffsetRef = React.useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  /** Timer ID for the long-press activation delay */
+  const longPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  /** Whether a touch drag is currently active (long-press threshold passed) */
+  const touchDragActiveRef = React.useRef(false);
+  /** Initial touch position to detect movement before long-press fires */
+  const touchStartPosRef = React.useRef<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  /** Visual "pressing" state shown during the long-press hold */
+  const [isTouchPressing, setIsTouchPressing] = React.useState(false);
+
+  /** Long-press threshold in milliseconds */
+  const LONG_PRESS_DELAY = 350;
+  /** Max movement (px) allowed before cancelling the long-press */
+  const LONG_PRESS_MOVE_THRESHOLD = 8;
 
   // ─── Mouse drag (HTML5) ──────────────────────────────────────────────────
   const handleDragStart = (e: React.DragEvent) => {
@@ -92,58 +110,103 @@ export default function MovieVotingCard({
     }
   };
 
+  /** Cancel the long-press timer without activating drag. */
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current !== null) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    setIsTouchPressing(false);
+  };
+
   const handleTouchStart = (e: React.TouchEvent) => {
     // Only handle single-finger touches
     if (e.touches.length !== 1) return;
 
     const touch = e.touches[0];
+    touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
+    touchDragActiveRef.current = false;
 
-    // Build a ghost clone that follows the finger
-    const card = cardRef.current;
-    if (!card) return;
+    // Show pressing feedback immediately
+    setIsTouchPressing(true);
 
-    const rect = card.getBoundingClientRect();
+    // Start long-press timer — drag only activates after the delay
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTimerRef.current = null;
+      setIsTouchPressing(false);
 
-    touchOffsetRef.current = {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top,
-    };
+      const card = cardRef.current;
+      if (!card) return;
 
-    const ghost = card.cloneNode(true) as HTMLDivElement;
-    ghost.style.cssText = `
-      position: fixed;
-      left: ${rect.left}px;
-      top: ${rect.top}px;
-      width: ${rect.width}px;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.85;
-      transform: scale(1.04) rotate(1.5deg);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
-      border-radius: 0.5rem;
-      transition: none;
-    `;
-    document.body.appendChild(ghost);
-    ghostRef.current = ghost;
+      // Snapshot the current touch position (may have moved slightly)
+      const currentTouch = card.ownerDocument.elementFromPoint(
+        touchStartPosRef.current.x,
+        touchStartPosRef.current.y,
+      );
+      void currentTouch; // just to avoid lint warning
+
+      const rect = card.getBoundingClientRect();
+
+      // Use the latest known touch position for offset calculation
+      touchOffsetRef.current = {
+        x: touchStartPosRef.current.x - rect.left,
+        y: touchStartPosRef.current.y - rect.top,
+      };
+
+      const ghost = card.cloneNode(true) as HTMLDivElement;
+      ghost.style.cssText = `
+        position: fixed;
+        left: ${rect.left}px;
+        top: ${rect.top}px;
+        width: ${rect.width}px;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.85;
+        transform: scale(1.04) rotate(1.5deg);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+        border-radius: 0.5rem;
+        transition: none;
+      `;
+      document.body.appendChild(ghost);
+      ghostRef.current = ghost;
+      touchDragActiveRef.current = true;
+
+      // Provide haptic feedback if available
+      if (navigator.vibrate) navigator.vibrate(30);
+    }, LONG_PRESS_DELAY);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!ghostRef.current) return;
     if (e.touches.length !== 1) return;
 
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartPosRef.current.x;
+    const dy = touch.clientY - touchStartPosRef.current.y;
+
+    // If the long-press hasn't fired yet, cancel it if the finger moved too much
+    if (!touchDragActiveRef.current) {
+      if (
+        Math.abs(dx) > LONG_PRESS_MOVE_THRESHOLD ||
+        Math.abs(dy) > LONG_PRESS_MOVE_THRESHOLD
+      ) {
+        cancelLongPress();
+      }
+      // Don't prevent default — allow normal scrolling
+      return;
+    }
+
+    // Drag is active: prevent scroll and move the ghost
     e.preventDefault();
 
-    const touch = e.touches[0];
+    ghostRef.current!.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
+    ghostRef.current!.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
 
-    ghostRef.current.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
-    ghostRef.current.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
-
-    ghostRef.current.style.display = "none";
+    ghostRef.current!.style.display = "none";
     const elementUnder = document.elementFromPoint(
       touch.clientX,
       touch.clientY,
     );
-    ghostRef.current.style.display = "";
+    ghostRef.current!.style.display = "";
 
     const slotUnder = findSlotElement(elementUnder);
 
@@ -161,11 +224,16 @@ export default function MovieVotingCard({
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    cancelLongPress();
     onTouchDragPositionChange?.(null);
-    if (!ghostRef.current) {
+
+    if (!touchDragActiveRef.current || !ghostRef.current) {
+      touchDragActiveRef.current = false;
       clearSlotHighlight();
       return;
     }
+
+    touchDragActiveRef.current = false;
 
     const touch = e.changedTouches[0];
 
@@ -192,6 +260,8 @@ export default function MovieVotingCard({
   };
 
   const handleTouchCancel = () => {
+    cancelLongPress();
+    touchDragActiveRef.current = false;
     onTouchDragPositionChange?.(null);
     removeGhost();
     clearSlotHighlight();
@@ -225,6 +295,10 @@ export default function MovieVotingCard({
           : "bg-card border-primary/30 hover:border-primary/60",
         // On touch devices, ranked cards get a subtle interactive cursor hint
         !isInUnranked ? "cursor-pointer" : "",
+        // Long-press visual feedback: scale up and highlight border while holding
+        isTouchPressing
+          ? "scale-[1.02] border-primary/70 shadow-md shadow-primary/20"
+          : "",
       ]
         .filter(Boolean)
         .join(" ")}
