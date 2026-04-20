@@ -271,8 +271,20 @@
   background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 1.5rem;
+  padding: 0.5rem;
   transition: all 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .cine-card {
+    padding: 0.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .cine-card {
+    padding: 1.5rem;
+  }
 }
 
 .cine-card:hover {
