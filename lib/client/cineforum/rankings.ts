@@ -4,6 +4,7 @@ import type {
   UsersRankingResponseDTO,
   DirectorRankingDTO,
   CountriesRankingResponseDTO,
+  TimelineResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -65,5 +66,19 @@ export async function fetchCountriesRankings(
 ): Promise<CountriesRankingResponseDTO> {
   return jsonFetch<CountriesRankingResponseDTO>(
     `/api/cineforum/${cineforumId}/rankings/countries`,
+  );
+}
+
+/**
+ * Fetches the release-year timeline for winner movies in a cineforum.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @returns Promise resolving to the timeline data grouped by year
+ */
+export async function fetchTimelineRankings(
+  cineforumId: string,
+): Promise<TimelineResponseDTO> {
+  return jsonFetch<TimelineResponseDTO>(
+    `/api/cineforum/${cineforumId}/rankings/timeline`,
   );
 }

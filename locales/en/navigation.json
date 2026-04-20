@@ -28,7 +28,9 @@
     "directors": "Directors ranking",
     "directorsDesc": "Director rankings",
     "countries": "World ranking",
-    "countriesDesc": "Country rankings"
+    "countriesDesc": "Country rankings",
+    "timeline": "Year timeline",
+    "timelineDesc": "Release year distribution"
   },
   "admin": {
     "title": "Admin",

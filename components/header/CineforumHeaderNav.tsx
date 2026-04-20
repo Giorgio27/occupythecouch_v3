@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
   Globe,
+  CalendarDays,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -319,6 +320,12 @@ export default function CineforumHeaderNav() {
           href: `/cineforum/${cineforumId}/rankings/countries`,
           icon: Earth,
           description: t("rankings.countriesDesc"),
+        },
+        {
+          label: t("rankings.timeline"),
+          href: `/cineforum/${cineforumId}/rankings/timeline`,
+          icon: CalendarDays,
+          description: t("rankings.timelineDesc"),
         },
       ]
     : [];

@@ -28,7 +28,9 @@
     "directors": "Classifica registi",
     "directorsDesc": "Classifica registi",
     "countries": "Classifica paesi",
-    "countriesDesc": "Classifica paesi"
+    "countriesDesc": "Classifica paesi",
+    "timeline": "Timeline anni",
+    "timelineDesc": "Distribuzione anni di uscita"
   },
   "admin": {
     "title": "Admin",

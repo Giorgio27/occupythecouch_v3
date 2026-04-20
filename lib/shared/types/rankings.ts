@@ -186,3 +186,25 @@ export type DeviantMoviesResponseDTO = {
   body: UserVoteDetailDTO[];
   status: string;
 };
+
+// Timeline types
+export type TimelineMovieDTO = {
+  id: string;
+  title: string;
+  director: string | null;
+  round: string;
+  roundDate: string | null;
+  poster: string | null;
+  genres: unknown;
+};
+
+export type TimelineYearDTO = {
+  year: number;
+  count: number;
+  movies: TimelineMovieDTO[];
+};
+
+export type TimelineResponseDTO = {
+  body: TimelineYearDTO[];
+  status: string;
+};
