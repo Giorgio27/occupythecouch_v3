@@ -99,7 +99,9 @@ const DistributionTooltip = ({ active, payload }: DistributionTooltipProps) => {
       </div>
       <div className="text-sm text-foreground">
         <span className="font-semibold">{data.count}</span>{" "}
-        {data.count === 1 ? "film" : "film"}
+        {data.count === 1
+          ? "film votato con questo voto"
+          : "film votati con questo voto"}
       </div>
     </div>
   );
@@ -129,9 +131,9 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   const [deviantLoading, setDeviantLoading] = useState(false);
 
   // Sorting state for love received table
-  const [receivedSortBy, setReceivedSortBy] = useState<"user" | "average">(
-    "average",
-  );
+  const [receivedSortBy, setReceivedSortBy] = useState<
+    "user" | "average" | "delta"
+  >("average");
   const [receivedSortDir, setReceivedSortDir] = useState<"asc" | "desc">(
     "desc",
   );
@@ -396,6 +398,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
 
   // Sort love received
   const sortedLoveReceived = useMemo(() => {
+    const selectedUser = users.find((u) => u.user_id === selectedUserId);
     const sorted = [...loveReceivedData];
     sorted.sort((a, b) => {
       let comparison = 0;
@@ -403,11 +406,22 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
         comparison = a.user.localeCompare(b.user);
       } else if (receivedSortBy === "average") {
         comparison = a.average - b.average;
+      } else if (receivedSortBy === "delta") {
+        const baseAvg = selectedUser?.average_rating ?? 0;
+        const deltaA = a.average - baseAvg;
+        const deltaB = b.average - baseAvg;
+        comparison = deltaA - deltaB;
       }
       return receivedSortDir === "asc" ? comparison : -comparison;
     });
     return sorted;
-  }, [loveReceivedData, receivedSortBy, receivedSortDir]);
+  }, [
+    loveReceivedData,
+    receivedSortBy,
+    receivedSortDir,
+    users,
+    selectedUserId,
+  ]);
 
   // Sort love given
   const sortedLoveGiven = useMemo(() => {
@@ -434,7 +448,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
 
   // Toggle sort handlers
   const toggleReceivedSort = useCallback(
-    (column: "user" | "average") => {
+    (column: "user" | "average" | "delta") => {
       if (receivedSortBy === column) {
         setReceivedSortDir(receivedSortDir === "asc" ? "desc" : "asc");
       } else {
@@ -1016,8 +1030,18 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                         )}
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Delta
+                    <th
+                      className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => toggleReceivedSort("delta")}
+                    >
+                      <div className="flex items-center justify-end">
+                        Delta
+                        {renderSortIcon(
+                          "delta",
+                          receivedSortBy,
+                          receivedSortDir,
+                        )}
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -1034,24 +1058,21 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                     return (
                       <Fragment key={row.userId}>
                         <tr
-                          className={`border-b border-border hover:bg-secondary/50 transition-colors ${
-                            row.isSelectedUser ? "bg-primary/5" : ""
+                          onClick={() => toggleExpandedRow(row.userId)}
+                          className={`border-b border-border transition-colors cursor-pointer ${
+                            row.isSelectedUser
+                              ? "bg-primary/5 hover:bg-primary/10"
+                              : "hover:bg-secondary/50"
                           } ${isExpanded ? "border-b-0" : ""}`}
                         >
                           <td className="px-4 py-3.5 text-sm">
-                            <button
-                              onClick={() => toggleExpandedRow(row.userId)}
-                              className="p-1 hover:bg-secondary rounded transition-colors"
-                              aria-label={
-                                isExpanded ? "Chiudi dettagli" : "Apri dettagli"
-                              }
-                            >
+                            <div className="p-1">
                               {isExpanded ? (
                                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
                               ) : (
                                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
                               )}
-                            </button>
+                            </div>
                           </td>
                           <td className="px-4 py-3.5 text-sm font-medium text-foreground">
                             {row.user}
@@ -1325,24 +1346,21 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
                     return (
                       <Fragment key={row.userId}>
                         <tr
-                          className={`border-b border-border hover:bg-secondary/50 transition-colors ${
-                            row.isSelectedUser ? "bg-primary/5" : ""
+                          onClick={() => toggleExpandedGivenRow(row.userId)}
+                          className={`border-b border-border transition-colors cursor-pointer ${
+                            row.isSelectedUser
+                              ? "bg-primary/5 hover:bg-primary/10"
+                              : "hover:bg-secondary/50"
                           } ${isExpanded ? "border-b-0" : ""}`}
                         >
                           <td className="px-4 py-3.5 text-sm">
-                            <button
-                              onClick={() => toggleExpandedGivenRow(row.userId)}
-                              className="p-1 hover:bg-secondary rounded transition-colors"
-                              aria-label={
-                                isExpanded ? "Chiudi dettagli" : "Apri dettagli"
-                              }
-                            >
+                            <div className="p-1">
                               {isExpanded ? (
                                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
                               ) : (
                                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
                               )}
-                            </button>
+                            </div>
                           </td>
                           <td className="px-4 py-3.5 text-sm font-medium text-foreground">
                             {row.user}
@@ -1538,10 +1556,13 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
           <RatingDistributionSkeleton />
         ) : ratingDistribution.length > 0 ? (
           <div className="cine-card p-6 mb-8">
-            <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+            <h3 className="font-bold text-primary mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Distribuzione Voti
             </h3>
+            <p className="text-xs text-muted-foreground mb-4">
+              Quanti film hai votato con ciascun voto
+            </p>
 
             <div className="h-75 sm:h-87.5">
               <ResponsiveContainer width="100%" height="100%">
