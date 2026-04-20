@@ -10,6 +10,12 @@ interface RankingSlotProps {
   onMoviePositionChange: (movieId: string, newPosition: number | null) => void;
   onDrop: (position: number, movieId: string) => void;
   draggingMovieId: string | null;
+  /** Controlled touch-drag-over highlight (set by parent touch logic) */
+  isTouchDragOver?: boolean;
+  /** Passed through to MovieVotingCard for touch drop handling */
+  onTouchDrop?: (movieId: string, position: number) => void;
+  /** Passed through to MovieVotingCard to report which slot is under the finger */
+  onTouchDragPositionChange?: (position: number | null) => void;
 }
 
 /**
@@ -23,10 +29,16 @@ export default function RankingSlot({
   onMoviePositionChange,
   onDrop,
   draggingMovieId,
+  isTouchDragOver = false,
+  onTouchDrop,
+  onTouchDragPositionChange,
 }: RankingSlotProps) {
   const { t } = useTranslation("proposal");
   const [isDragOver, setIsDragOver] = React.useState(false);
   const isEmpty = movies.length === 0;
+
+  // Combined drag-over state: mouse drag OR touch drag
+  const isHighlighted = isDragOver || isTouchDragOver;
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -87,9 +99,11 @@ export default function RankingSlot({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      data-ranking-slot="true"
+      data-position={position}
       className={[
         "relative rounded-xl border-2 transition-all duration-300",
-        isDragOver && draggingMovieId
+        isHighlighted && (draggingMovieId || isTouchDragOver)
           ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 scale-[1.02]"
           : isEmpty
             ? "border-dashed border-border/40 bg-muted/20"
@@ -122,7 +136,7 @@ export default function RankingSlot({
           <div
             className={[
               "flex flex-col items-center justify-center py-8 rounded-lg transition-all duration-300",
-              isDragOver && draggingMovieId
+              isHighlighted && (draggingMovieId || isTouchDragOver)
                 ? "bg-primary/5 border-2 border-dashed border-primary"
                 : "border-2 border-dashed border-border/20",
             ]
@@ -150,11 +164,13 @@ export default function RankingSlot({
                 }
                 isDragging={draggingMovieId === movie.id}
                 isInUnranked={false}
+                onTouchDrop={onTouchDrop}
+                onTouchDragPositionChange={onTouchDragPositionChange}
               />
             ))}
 
             {/* Drop zone indicator when dragging over non-empty slot */}
-            {isDragOver && draggingMovieId && (
+            {isHighlighted && (draggingMovieId || isTouchDragOver) && (
               <div className="flex items-center justify-center py-3 rounded-lg border-2 border-dashed border-primary bg-primary/5 animate-pulse">
                 <Plus className="h-5 w-5 text-primary mr-2" />
                 <span className="text-sm font-medium text-primary">
@@ -167,7 +183,7 @@ export default function RankingSlot({
       </div>
 
       {/* Drag over overlay */}
-      {isDragOver && draggingMovieId && (
+      {isHighlighted && (draggingMovieId || isTouchDragOver) && (
         <div className="absolute inset-0 rounded-xl bg-primary/5 pointer-events-none animate-pulse" />
       )}
     </div>

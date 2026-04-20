@@ -40,6 +40,10 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
   const [draggingMovieId, setDraggingMovieId] = React.useState<string | null>(
     null,
   );
+  /** Position number currently highlighted by a touch drag, or null */
+  const [touchDragOverPosition, setTouchDragOverPosition] = React.useState<
+    number | null
+  >(null);
 
   const [ranking, setRanking] = React.useState<any | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
@@ -142,9 +146,15 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
     }
   };
 
-  // Handle drop on a position slot
+  // Handle drop on a position slot (mouse drag & drop)
   const handleDropOnPosition = (position: number, movieId: string) => {
     moveMovieToPosition(movieId, position);
+  };
+
+  // Handle drop via touch drag
+  const handleTouchDrop = (movieId: string, position: number) => {
+    moveMovieToPosition(movieId, position);
+    setTouchDragOverPosition(null);
   };
 
   // Handle drag start
@@ -302,6 +312,9 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
                       onMoviePositionChange={moveMovieToPosition}
                       onDrop={handleDropOnPosition}
                       draggingMovieId={draggingMovieId}
+                      isTouchDragOver={touchDragOverPosition === position}
+                      onTouchDrop={handleTouchDrop}
+                      onTouchDragPositionChange={setTouchDragOverPosition}
                     />
                   ))}
               </div>
@@ -348,6 +361,8 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
                         }
                         isDragging={draggingMovieId === movie.id}
                         isInUnranked={true}
+                        onTouchDrop={handleTouchDrop}
+                        onTouchDragPositionChange={setTouchDragOverPosition}
                       />
                     </div>
                   ))

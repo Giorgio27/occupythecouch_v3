@@ -10,11 +10,16 @@ interface MovieVotingCardProps {
   onPositionChange: (position: number | null) => void;
   isDragging?: boolean;
   isInUnranked?: boolean;
+  /** Called when the user drops this card onto a ranking slot via touch */
+  onTouchDrop?: (movieId: string, position: number) => void;
+  /** Called during touchmove with the position number under the finger, or null when not over any slot */
+  onTouchDragPositionChange?: (position: number | null) => void;
 }
 
 /**
  * Draggable movie card for voting interface
  * Can be dragged between position slots or moved via quick action buttons
+ * Supports both mouse drag & drop (HTML5) and touch drag & drop (custom).
  */
 export default function MovieVotingCard({
   movie,
@@ -23,10 +28,20 @@ export default function MovieVotingCard({
   onPositionChange,
   isDragging = false,
   isInUnranked = false,
+  onTouchDrop,
+  onTouchDragPositionChange,
 }: MovieVotingCardProps) {
   const [showQuickActions, setShowQuickActions] = React.useState(false);
   const [showPositionPicker, setShowPositionPicker] = React.useState(false);
 
+  // ─── refs used during a touch drag ───────────────────────────────────────
+  const ghostRef = React.useRef<HTMLDivElement | null>(null);
+  const lastHighlightedSlot = React.useRef<Element | null>(null);
+  const cardRef = React.useRef<HTMLDivElement | null>(null);
+  /** Offset from the finger's touch point to the card's top-left corner */
+  const touchOffsetRef = React.useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // ─── Mouse drag (HTML5) ──────────────────────────────────────────────────
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData(
@@ -38,10 +53,156 @@ export default function MovieVotingCard({
     );
   };
 
+  // ─── Touch drag helpers ──────────────────────────────────────────────────
+
+  /** Find the nearest ancestor (or self) that is a ranking slot. */
+  const findSlotElement = (el: Element | null): Element | null => {
+    while (el) {
+      if (el.getAttribute("data-ranking-slot") === "true") return el;
+      el = el.parentElement;
+    }
+    return null;
+  };
+
+  /** Remove the ghost element from the DOM and clear the ref. */
+  const removeGhost = () => {
+    if (ghostRef.current) {
+      ghostRef.current.remove();
+      ghostRef.current = null;
+    }
+  };
+
+  /** Remove the touch-drag-over highlight from the previously highlighted slot. */
+  const clearSlotHighlight = () => {
+    if (lastHighlightedSlot.current) {
+      lastHighlightedSlot.current.removeAttribute("data-touch-drag-over");
+      lastHighlightedSlot.current = null;
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Only handle single-finger touches
+    if (e.touches.length !== 1) return;
+
+    const touch = e.touches[0];
+
+    // Build a ghost clone that follows the finger
+    const card = cardRef.current;
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+
+    // Record the offset from the finger to the card's top-left corner so the
+    // ghost doesn't jump when the finger moves — it stays "grabbed" at the
+    // same relative point where the user first touched.
+    touchOffsetRef.current = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    };
+
+    const ghost = card.cloneNode(true) as HTMLDivElement;
+    ghost.style.cssText = `
+      position: fixed;
+      left: ${rect.left}px;
+      top: ${rect.top}px;
+      width: ${rect.width}px;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.85;
+      transform: scale(1.04) rotate(1.5deg);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+      border-radius: 0.5rem;
+      transition: none;
+    `;
+    document.body.appendChild(ghost);
+    ghostRef.current = ghost;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!ghostRef.current) return;
+    if (e.touches.length !== 1) return;
+
+    // Prevent page scroll while dragging
+    e.preventDefault();
+
+    const touch = e.touches[0];
+
+    // Move ghost so the finger stays at the same relative position it was
+    // when the drag started (natural "grab" feel)
+    ghostRef.current.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
+    ghostRef.current.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
+
+    // Detect which ranking slot is under the finger
+    // Temporarily hide the ghost so elementFromPoint can see through it
+    ghostRef.current.style.display = "none";
+    const elementUnder = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY,
+    );
+    ghostRef.current.style.display = "";
+
+    const slotUnder = findSlotElement(elementUnder);
+
+    if (slotUnder !== lastHighlightedSlot.current) {
+      clearSlotHighlight();
+      if (slotUnder) {
+        slotUnder.setAttribute("data-touch-drag-over", "true");
+        lastHighlightedSlot.current = slotUnder;
+        const posAttr = slotUnder.getAttribute("data-position");
+        onTouchDragPositionChange?.(posAttr ? Number(posAttr) : null);
+      } else {
+        onTouchDragPositionChange?.(null);
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    onTouchDragPositionChange?.(null);
+    if (!ghostRef.current) {
+      clearSlotHighlight();
+      return;
+    }
+
+    const touch = e.changedTouches[0];
+
+    // Hide ghost to hit-test the element underneath
+    ghostRef.current.style.display = "none";
+    const elementUnder = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY,
+    );
+    ghostRef.current.style.display = "";
+
+    removeGhost();
+    clearSlotHighlight();
+
+    const slotEl = findSlotElement(elementUnder);
+    if (slotEl && onTouchDrop) {
+      const posAttr = slotEl.getAttribute("data-position");
+      if (posAttr) {
+        const position = Number(posAttr);
+        if (!isNaN(position)) {
+          onTouchDrop(movie.id, position);
+        }
+      }
+    }
+  };
+
+  const handleTouchCancel = () => {
+    onTouchDragPositionChange?.(null);
+    removeGhost();
+    clearSlotHighlight();
+  };
+
   return (
     <div
+      ref={cardRef}
       draggable
       onDragStart={handleDragStart}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
       onMouseEnter={() => setShowQuickActions(true)}
       onMouseLeave={() => setShowQuickActions(false)}
       onClick={() => {
