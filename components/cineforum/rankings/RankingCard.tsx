@@ -56,7 +56,7 @@ export default function RankingCard({
   return (
     <div
       className={`
-        group cine-card overflow-hidden
+        group cine-card-fit overflow-hidden
         ${isExpanded ? "ring-1 ring-primary/40 border-primary/50" : ""}
       `}
     >

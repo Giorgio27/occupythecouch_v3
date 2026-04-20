@@ -275,6 +275,46 @@
   transition: all 0.3s ease;
 }
 
+/* cine-card senza padding - per contenuti che gestiscono il proprio padding (es. tabelle) */
+.cine-card-fit {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.cine-card-fit:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  background-color: var(--card-hover);
+}
+
+/* cine-card con padding ridotto su mobile */
+.cine-card-mobile {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .cine-card-mobile {
+    padding: 0.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .cine-card-mobile {
+    padding: 1.5rem;
+  }
+}
+
+.cine-card-mobile:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  background-color: var(--card-hover);
+}
+
 .cine-card:hover {
   border-color: color-mix(in srgb, var(--primary) 50%, transparent);
   background-color: var(--card-hover);

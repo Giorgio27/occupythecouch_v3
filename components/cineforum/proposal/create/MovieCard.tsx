@@ -41,7 +41,7 @@ export default function MovieCard({
   return (
     <button
       onClick={() => onToggle(movie)}
-      className={`cine-card hover-lift text-left flex items-center gap-2 sm:gap-3 transition-all duration-300 ${
+      className={`cine-card-mobile hover-lift text-left flex items-center gap-2 sm:gap-3 transition-all duration-300 ${
         isSelected
           ? "border-primary/50 bg-primary/5"
           : "hover:border-primary/30"

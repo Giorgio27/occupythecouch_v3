@@ -698,7 +698,7 @@ export default function UsersRankingPage({
               </div>
             ) : (
               <div
-                className="cine-card overflow-hidden animate-fade-in-up"
+                className="cine-card-fit overflow-hidden animate-fade-in-up"
                 style={{ animationDelay: "300ms" }}
               >
                 <div className="overflow-x-auto">
@@ -784,7 +784,7 @@ export default function UsersRankingPage({
         {/* Platform Comparison Section - Only show when Delta is selected */}
         {selectedSupplier.id === "delta" && displayedRankings.length > 0 && (
           <div
-            className="cine-card overflow-hidden mt-8 animate-fade-in-up"
+            className="cine-card-fit overflow-hidden mt-8 animate-fade-in-up"
             style={{ animationDelay: "400ms" }}
           >
             <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-amber-500/5">
