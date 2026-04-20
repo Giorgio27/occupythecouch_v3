@@ -235,19 +235,27 @@ export default function MovieVotingCard({
 
     touchDragActiveRef.current = false;
 
-    const touch = e.changedTouches[0];
+    // Prefer the slot already tracked during touchmove (most reliable on mobile).
+    // Fall back to elementFromPoint only if no slot was highlighted.
+    const trackedSlot = lastHighlightedSlot.current;
 
-    ghostRef.current.style.display = "none";
-    const elementUnder = document.elementFromPoint(
-      touch.clientX,
-      touch.clientY,
-    );
-    ghostRef.current.style.display = "";
+    let slotEl: Element | null = trackedSlot;
+
+    if (!slotEl) {
+      // Fallback: hide ghost so it doesn't block hit-testing
+      const touch = e.changedTouches[0];
+      ghostRef.current.style.display = "none";
+      const elementUnder = document.elementFromPoint(
+        touch.clientX,
+        touch.clientY,
+      );
+      ghostRef.current.style.display = "";
+      slotEl = findSlotElement(elementUnder);
+    }
 
     removeGhost();
     clearSlotHighlight();
 
-    const slotEl = findSlotElement(elementUnder);
     if (slotEl && onTouchDrop) {
       const posAttr = slotEl.getAttribute("data-position");
       if (posAttr) {
