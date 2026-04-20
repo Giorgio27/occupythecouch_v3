@@ -66,6 +66,16 @@ export default function MovieVotingCard({
   /** Visual "pressing" state shown during the long-press hold */
   const [isTouchPressing, setIsTouchPressing] = React.useState(false);
 
+  // Stable refs for callbacks so native listeners always see the latest values
+  const onTouchDropRef = React.useRef(onTouchDrop);
+  const onTouchDragPositionChangeRef = React.useRef(onTouchDragPositionChange);
+  React.useEffect(() => {
+    onTouchDropRef.current = onTouchDrop;
+  }, [onTouchDrop]);
+  React.useEffect(() => {
+    onTouchDragPositionChangeRef.current = onTouchDragPositionChange;
+  }, [onTouchDragPositionChange]);
+
   /** Long-press threshold in milliseconds */
   const LONG_PRESS_DELAY = 350;
   /** Max movement (px) allowed before cancelling the long-press */
@@ -119,171 +129,170 @@ export default function MovieVotingCard({
     setIsTouchPressing(false);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Only handle single-finger touches
-    if (e.touches.length !== 1) return;
+  // ─── Native (non-passive) touch listeners ────────────────────────────────
+  // React registers touch handlers as passive by default on modern browsers,
+  // which prevents preventDefault() from working and can cause touchend to be
+  // swallowed. We attach native listeners with { passive: false } instead.
+  React.useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
 
-    const touch = e.touches[0];
-    touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
-    touchDragActiveRef.current = false;
-
-    // Show pressing feedback immediately
-    setIsTouchPressing(true);
-
-    // Start long-press timer — drag only activates after the delay
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTimerRef.current = null;
-      setIsTouchPressing(false);
-
-      const card = cardRef.current;
-      if (!card) return;
-
-      // Snapshot the current touch position (may have moved slightly)
-      const currentTouch = card.ownerDocument.elementFromPoint(
-        touchStartPosRef.current.x,
-        touchStartPosRef.current.y,
-      );
-      void currentTouch; // just to avoid lint warning
-
-      const rect = card.getBoundingClientRect();
-
-      // Use the latest known touch position for offset calculation
-      touchOffsetRef.current = {
-        x: touchStartPosRef.current.x - rect.left,
-        y: touchStartPosRef.current.y - rect.top,
-      };
-
-      const ghost = card.cloneNode(true) as HTMLDivElement;
-      ghost.style.cssText = `
-        position: fixed;
-        left: ${rect.left}px;
-        top: ${rect.top}px;
-        width: ${rect.width}px;
-        pointer-events: none;
-        z-index: 9999;
-        opacity: 0.85;
-        transform: scale(1.04) rotate(1.5deg);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.35);
-        border-radius: 0.5rem;
-        transition: none;
-      `;
-      document.body.appendChild(ghost);
-      ghostRef.current = ghost;
-      touchDragActiveRef.current = true;
-
-      // Provide haptic feedback if available
-      if (navigator.vibrate) navigator.vibrate(30);
-    }, LONG_PRESS_DELAY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return;
-
-    const touch = e.touches[0];
-    const dx = touch.clientX - touchStartPosRef.current.x;
-    const dy = touch.clientY - touchStartPosRef.current.y;
-
-    // If the long-press hasn't fired yet, cancel it if the finger moved too much
-    if (!touchDragActiveRef.current) {
-      if (
-        Math.abs(dx) > LONG_PRESS_MOVE_THRESHOLD ||
-        Math.abs(dy) > LONG_PRESS_MOVE_THRESHOLD
-      ) {
-        cancelLongPress();
-      }
-      // Don't prevent default — allow normal scrolling
-      return;
-    }
-
-    // Drag is active: prevent scroll and move the ghost
-    e.preventDefault();
-
-    ghostRef.current!.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
-    ghostRef.current!.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
-
-    ghostRef.current!.style.display = "none";
-    const elementUnder = document.elementFromPoint(
-      touch.clientX,
-      touch.clientY,
-    );
-    ghostRef.current!.style.display = "";
-
-    const slotUnder = findSlotElement(elementUnder);
-
-    if (slotUnder !== lastHighlightedSlot.current) {
-      clearSlotHighlight();
-      if (slotUnder) {
-        slotUnder.setAttribute("data-touch-drag-over", "true");
-        lastHighlightedSlot.current = slotUnder;
-        const posAttr = slotUnder.getAttribute("data-position");
-        onTouchDragPositionChange?.(posAttr ? Number(posAttr) : null);
-      } else {
-        onTouchDragPositionChange?.(null);
-      }
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    cancelLongPress();
-    onTouchDragPositionChange?.(null);
-
-    if (!touchDragActiveRef.current || !ghostRef.current) {
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
       touchDragActiveRef.current = false;
-      clearSlotHighlight();
-      return;
-    }
+      setIsTouchPressing(true);
 
-    touchDragActiveRef.current = false;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTimerRef.current = null;
+        setIsTouchPressing(false);
 
-    // Prefer the slot already tracked during touchmove (most reliable on mobile).
-    // Fall back to elementFromPoint only if no slot was highlighted.
-    const trackedSlot = lastHighlightedSlot.current;
+        const rect = card.getBoundingClientRect();
+        touchOffsetRef.current = {
+          x: touchStartPosRef.current.x - rect.left,
+          y: touchStartPosRef.current.y - rect.top,
+        };
 
-    let slotEl: Element | null = trackedSlot;
+        const ghost = card.cloneNode(true) as HTMLDivElement;
+        ghost.style.cssText = `
+          position: fixed;
+          left: ${rect.left}px;
+          top: ${rect.top}px;
+          width: ${rect.width}px;
+          pointer-events: none;
+          z-index: 9999;
+          opacity: 0.85;
+          transform: scale(1.04) rotate(1.5deg);
+          box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+          border-radius: 0.5rem;
+          transition: none;
+        `;
+        document.body.appendChild(ghost);
+        ghostRef.current = ghost;
+        touchDragActiveRef.current = true;
 
-    if (!slotEl) {
-      // Fallback: hide ghost so it doesn't block hit-testing
-      const touch = e.changedTouches[0];
-      ghostRef.current.style.display = "none";
+        if (navigator.vibrate) navigator.vibrate(30);
+      }, LONG_PRESS_DELAY);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - touchStartPosRef.current.x;
+      const dy = touch.clientY - touchStartPosRef.current.y;
+
+      if (!touchDragActiveRef.current) {
+        if (
+          Math.abs(dx) > LONG_PRESS_MOVE_THRESHOLD ||
+          Math.abs(dy) > LONG_PRESS_MOVE_THRESHOLD
+        ) {
+          // Cancel long-press without triggering React state update from here
+          if (longPressTimerRef.current !== null) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+          }
+          setIsTouchPressing(false);
+        }
+        return; // allow scroll
+      }
+
+      e.preventDefault(); // block scroll while dragging
+
+      const ghost = ghostRef.current;
+      if (!ghost) return;
+
+      ghost.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
+      ghost.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
+
+      ghost.style.display = "none";
       const elementUnder = document.elementFromPoint(
         touch.clientX,
         touch.clientY,
       );
-      ghostRef.current.style.display = "";
-      slotEl = findSlotElement(elementUnder);
-    }
+      ghost.style.display = "";
 
-    removeGhost();
-    clearSlotHighlight();
+      const slotUnder = findSlotElement(elementUnder);
 
-    if (slotEl && onTouchDrop) {
-      const posAttr = slotEl.getAttribute("data-position");
-      if (posAttr) {
-        const position = Number(posAttr);
-        if (!isNaN(position)) {
-          onTouchDrop(movie.id, position);
+      if (slotUnder !== lastHighlightedSlot.current) {
+        clearSlotHighlight();
+        if (slotUnder) {
+          slotUnder.setAttribute("data-touch-drag-over", "true");
+          lastHighlightedSlot.current = slotUnder;
+          const posAttr = slotUnder.getAttribute("data-position");
+          onTouchDragPositionChangeRef.current?.(
+            posAttr ? Number(posAttr) : null,
+          );
+        } else {
+          onTouchDragPositionChangeRef.current?.(null);
         }
       }
-    }
-  };
+    };
 
-  const handleTouchCancel = () => {
-    cancelLongPress();
-    touchDragActiveRef.current = false;
-    onTouchDragPositionChange?.(null);
-    removeGhost();
-    clearSlotHighlight();
-  };
+    const onTouchEnd = (e: TouchEvent) => {
+      // Cancel any pending long-press
+      if (longPressTimerRef.current !== null) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      setIsTouchPressing(false);
+      onTouchDragPositionChangeRef.current?.(null);
+
+      if (!touchDragActiveRef.current) {
+        clearSlotHighlight();
+        return;
+      }
+      touchDragActiveRef.current = false;
+
+      // Use the slot tracked during touchmove as primary source
+      const slotEl = lastHighlightedSlot.current;
+
+      removeGhost();
+      clearSlotHighlight();
+
+      if (slotEl && onTouchDropRef.current) {
+        const posAttr = slotEl.getAttribute("data-position");
+        if (posAttr) {
+          const position = Number(posAttr);
+          if (!isNaN(position)) {
+            onTouchDropRef.current(movie.id, position);
+          }
+        }
+      }
+    };
+
+    const onTouchCancel = () => {
+      if (longPressTimerRef.current !== null) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      setIsTouchPressing(false);
+      touchDragActiveRef.current = false;
+      onTouchDragPositionChangeRef.current?.(null);
+      removeGhost();
+      clearSlotHighlight();
+    };
+
+    card.addEventListener("touchstart", onTouchStart, { passive: true });
+    card.addEventListener("touchmove", onTouchMove, { passive: false });
+    card.addEventListener("touchend", onTouchEnd, { passive: false });
+    card.addEventListener("touchcancel", onTouchCancel, { passive: true });
+
+    return () => {
+      card.removeEventListener("touchstart", onTouchStart);
+      card.removeEventListener("touchmove", onTouchMove);
+      card.removeEventListener("touchend", onTouchEnd);
+      card.removeEventListener("touchcancel", onTouchCancel);
+    };
+    // movie.id is stable per card instance; re-attach only if card DOM node changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movie.id]);
 
   return (
     <div
       ref={cardRef}
       draggable
       onDragStart={handleDragStart}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
       onMouseEnter={() => !isTouchDevice && setShowQuickActions(true)}
       onMouseLeave={() => !isTouchDevice && setShowQuickActions(false)}
       onClick={() => {
