@@ -169,7 +169,7 @@ export default function CreateProposal({
           </div>
 
           {/* Movie Search Section */}
-          <div className="cine-card bg-muted/30 border-primary/10 space-y-4">
+          <div className="cine-card p-5 bg-muted/30 border-primary/10 space-y-4">
             <div className="flex items-center justify-between">
               <Label className="flex items-center gap-2 text-sm md:text-base font-semibold">
                 <Search className="h-4 w-4 md:h-5 md:w-5 text-primary" />
