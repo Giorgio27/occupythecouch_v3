@@ -1,7 +1,8 @@
 import * as React from "react";
-import { GripVertical, Star, X, Clock } from "lucide-react";
+import { GripVertical, Star, X, Clock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 interface MovieVotingCardProps {
   movie: any;
@@ -31,8 +32,19 @@ export default function MovieVotingCard({
   onTouchDrop,
   onTouchDragPositionChange,
 }: MovieVotingCardProps) {
+  const { t } = useTranslation("proposal");
   const [showQuickActions, setShowQuickActions] = React.useState(false);
   const [showPositionPicker, setShowPositionPicker] = React.useState(false);
+
+  // ─── Touch device detection (client-side only to avoid SSR hydration mismatch) ─
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(hover: none) and (pointer: coarse)");
+    setIsTouchDevice(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   // ─── refs used during a touch drag ───────────────────────────────────────
   const ghostRef = React.useRef<HTMLDivElement | null>(null);
@@ -92,9 +104,6 @@ export default function MovieVotingCard({
 
     const rect = card.getBoundingClientRect();
 
-    // Record the offset from the finger to the card's top-left corner so the
-    // ghost doesn't jump when the finger moves — it stays "grabbed" at the
-    // same relative point where the user first touched.
     touchOffsetRef.current = {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top,
@@ -122,18 +131,13 @@ export default function MovieVotingCard({
     if (!ghostRef.current) return;
     if (e.touches.length !== 1) return;
 
-    // Prevent page scroll while dragging
     e.preventDefault();
 
     const touch = e.touches[0];
 
-    // Move ghost so the finger stays at the same relative position it was
-    // when the drag started (natural "grab" feel)
     ghostRef.current.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
     ghostRef.current.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
 
-    // Detect which ranking slot is under the finger
-    // Temporarily hide the ghost so elementFromPoint can see through it
     ghostRef.current.style.display = "none";
     const elementUnder = document.elementFromPoint(
       touch.clientX,
@@ -165,7 +169,6 @@ export default function MovieVotingCard({
 
     const touch = e.changedTouches[0];
 
-    // Hide ghost to hit-test the element underneath
     ghostRef.current.style.display = "none";
     const elementUnder = document.elementFromPoint(
       touch.clientX,
@@ -203,10 +206,15 @@ export default function MovieVotingCard({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchCancel}
-      onMouseEnter={() => setShowQuickActions(true)}
-      onMouseLeave={() => setShowQuickActions(false)}
+      onMouseEnter={() => !isTouchDevice && setShowQuickActions(true)}
+      onMouseLeave={() => !isTouchDevice && setShowQuickActions(false)}
       onClick={() => {
-        if (!isInUnranked) {
+        if (isInUnranked) {
+          // On touch devices, tap toggles the quick-action position picker
+          if (isTouchDevice) {
+            setShowQuickActions((prev) => !prev);
+          }
+        } else {
           setShowPositionPicker((prev) => !prev);
         }
       }}
@@ -215,6 +223,8 @@ export default function MovieVotingCard({
         isInUnranked
           ? "bg-card/80 border-border/60 hover:border-primary/50 hover:bg-card"
           : "bg-card border-primary/30 hover:border-primary/60",
+        // On touch devices, ranked cards get a subtle interactive cursor hint
+        !isInUnranked ? "cursor-pointer" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -301,16 +311,18 @@ export default function MovieVotingCard({
 
         {/* Right side: badges and actions */}
         <div className="flex items-center gap-2 ml-auto sm:ml-0 self-end sm:self-center">
-          {/* Current Position Badge */}
+          {/* Current Position Badge — with ChevronDown hint that it's tappable */}
           {currentPosition !== null && !isInUnranked && (
             <div
               className="shrink-0 flex items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 border border-primary/30 cursor-pointer hover:bg-primary/30 transition-colors"
-              title="Click to move to another position"
+              title={t("open.tapToReorder")}
             >
               <Star className="h-3.5 w-3.5 fill-primary/30 text-primary" />
               <span className="text-xs font-bold text-primary">
                 {currentPosition}°
               </span>
+              {/* Always-visible chevron indicating the badge is interactive */}
+              <ChevronDown className="h-3 w-3 text-primary/70" />
             </div>
           )}
 
@@ -323,7 +335,13 @@ export default function MovieVotingCard({
                 e.stopPropagation();
                 onPositionChange(null);
               }}
-              className="shrink-0 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20 hover:text-destructive"
+              className={[
+                "shrink-0 h-7 w-7 p-0 transition-opacity hover:bg-destructive/20 hover:text-destructive",
+                // On touch devices always show the X; on desktop keep hover-only behaviour
+                isTouchDevice
+                  ? "opacity-100"
+                  : "opacity-0 group-hover:opacity-100",
+              ].join(" ")}
               title="Remove from ranking"
             >
               <X className="h-4 w-4" />
@@ -332,7 +350,16 @@ export default function MovieVotingCard({
         </div>
       </div>
 
-      {/* Quick Action Buttons - Show on hover when in unranked area */}
+      {/* "Tap to rank" always-visible pill — shown on touch devices for unranked cards */}
+      {isInUnranked && isTouchDevice && !showQuickActions && (
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 pointer-events-none">
+          <span className="text-[10px] font-medium text-primary leading-none">
+            {t("open.tapToRank")}
+          </span>
+        </div>
+      )}
+
+      {/* Quick Action Buttons — shown on desktop hover OR on touch tap when in unranked area */}
       {isInUnranked && showQuickActions && (
         <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-background/95 backdrop-blur-sm border border-primary/30 rounded-full px-2 py-1 shadow-lg animate-fade-in z-10">
           {Array.from(
@@ -346,6 +373,8 @@ export default function MovieVotingCard({
               onClick={(e) => {
                 e.stopPropagation();
                 onPositionChange(pos);
+                // Close the picker after selection on touch
+                if (isTouchDevice) setShowQuickActions(false);
               }}
               className="h-7 w-7 p-0 rounded-full text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-all"
               title={`Assign to position ${pos}`}
@@ -355,6 +384,21 @@ export default function MovieVotingCard({
           ))}
           {totalPositions > 5 && (
             <span className="text-xs text-muted-foreground px-1">...</span>
+          )}
+          {/* Close button — useful on touch so users can dismiss without selecting */}
+          {isTouchDevice && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowQuickActions(false);
+              }}
+              className="h-7 w-7 p-0 rounded-full hover:bg-destructive/20 hover:text-destructive transition-all"
+              title="Close"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
           )}
         </div>
       )}
