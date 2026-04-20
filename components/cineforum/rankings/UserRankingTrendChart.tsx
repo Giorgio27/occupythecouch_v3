@@ -280,7 +280,7 @@ export default function UserRankingTrendChart({ ranking }: Props) {
               {latestPoint ? latestPoint.rating.toFixed(2) : "N/A"}
             </div>
             <div className="text-xs text-muted-foreground truncate mt-1">
-              {latestPoint?.round ?? "—"}
+              {latestPoint?.movie ?? "—"}
             </div>
           </div>
         </div>

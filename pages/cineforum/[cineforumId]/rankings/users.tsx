@@ -334,7 +334,7 @@ export default function UsersRankingPage({
   };
 
   const getCardViewMode = (userId: string): "table" | "chart" => {
-    return cardViewMode[userId] || "table";
+    return cardViewMode[userId] || "chart";
   };
 
   if (loading) {
