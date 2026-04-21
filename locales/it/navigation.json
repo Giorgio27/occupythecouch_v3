@@ -30,7 +30,9 @@
     "countries": "Classifica paesi",
     "countriesDesc": "Classifica paesi",
     "timeline": "Timeline anni",
-    "timelineDesc": "Distribuzione anni di uscita"
+    "timelineDesc": "Distribuzione anni di uscita",
+    "proposals": "Storico proposte",
+    "proposalsDesc": "Tutte le proposte passate"
   },
   "admin": {
     "title": "Admin",
@@ -39,7 +41,7 @@
     "teams": "Team",
     "teamsDesc": "Gestisci team",
     "proposals": "Proposte",
-    "proposalsDesc": "Gestisci proposte",
+    "proposalsDesc": "Gestisci proposta corrente",
     "users": "Utenti",
     "usersDesc": "Gestisci utenti"
   },

@@ -30,7 +30,9 @@
     "countries": "World ranking",
     "countriesDesc": "Country rankings",
     "timeline": "Year timeline",
-    "timelineDesc": "Release year distribution"
+    "timelineDesc": "Release year distribution",
+    "proposals": "Proposals history",
+    "proposalsDesc": "All past proposals"
   },
   "admin": {
     "title": "Admin",
@@ -39,7 +41,7 @@
     "teams": "Teams",
     "teamsDesc": "Manage teams",
     "proposals": "Proposals",
-    "proposalsDesc": "Manage proposals",
+    "proposalsDesc": "Manage current proposal",
     "users": "Users",
     "usersDesc": "Manage users"
   },

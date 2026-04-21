@@ -24,6 +24,7 @@ import {
   Moon,
   Globe,
   CalendarDays,
+  History,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -326,6 +327,12 @@ export default function CineforumHeaderNav() {
           href: `/cineforum/${cineforumId}/rankings/timeline`,
           icon: CalendarDays,
           description: t("rankings.timelineDesc"),
+        },
+        {
+          label: t("rankings.proposals"),
+          href: `/cineforum/${cineforumId}/rankings/proposals`,
+          icon: History,
+          description: t("rankings.proposalsDesc"),
         },
       ]
     : [];
