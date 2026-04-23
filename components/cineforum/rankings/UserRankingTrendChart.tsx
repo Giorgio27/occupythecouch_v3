@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { LineChart as LineChartIcon, Sparkles, Trophy } from "lucide-react";
+import { LineChart as LineChartIcon } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -12,126 +12,18 @@ import {
 } from "recharts";
 import EmptyState from "@/components/cineforum/common/EmptyState";
 import type { UserRankingDTO } from "@/lib/shared/types";
+import {
+  RankingChartTooltip,
+  RankingChartDot,
+  type RankingChartPoint,
+} from "./RankingChartTooltip";
 
 type Props = {
   ranking: UserRankingDTO;
 };
 
-type RankingChartPoint = {
-  index: number;
-  round: string;
-  roundIndexLabel: string;
-  xLabel: string;
-  rating: number | null;
-  movie: string;
-  winner: boolean;
-};
-
-type RankingChartTooltipProps = {
-  active?: boolean;
-  payload?: Array<{
-    payload: RankingChartPoint;
-  }>;
-};
-
 const sortRounds = (a: string, b: string) =>
-  a.localeCompare(b, undefined, {
-    numeric: true,
-    sensitivity: "base",
-  });
-
-const RankingChartTooltip = ({ active, payload }: RankingChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
-
-  const point = payload[0]?.payload;
-  if (!point || point.rating === null) return null;
-
-  return (
-    <div
-      className="min-w-[220px] max-w-[280px] rounded-2xl p-3.5"
-      style={{
-        backgroundColor: "var(--popover)",
-        border: "1px solid var(--border)",
-        color: "var(--popover-foreground)",
-        boxShadow: "0 16px 40px rgba(0, 0, 0, 0.28)",
-      }}
-    >
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <div className="text-[11px] sm:text-xs text-muted-foreground">
-          {point.roundIndexLabel} • {point.round}
-        </div>
-
-        {point.winner && (
-          <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-yellow-500">
-            <Trophy className="w-3.5 h-3.5" />
-            Winner
-          </div>
-        )}
-      </div>
-
-      <div className="text-sm font-semibold text-foreground leading-snug mb-3">
-        {point.movie}
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-xs text-muted-foreground">Voto medio</span>
-        <span className="text-sm font-bold text-primary tabular-nums">
-          {point.rating.toFixed(2)}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const RankingChartDot = (props: {
-  cx?: number;
-  cy?: number;
-  payload?: RankingChartPoint;
-  isMobile?: boolean;
-}) => {
-  const { cx, cy, payload, isMobile } = props;
-
-  if (
-    typeof cx !== "number" ||
-    typeof cy !== "number" ||
-    !payload ||
-    payload.rating === null
-  ) {
-    return null;
-  }
-
-  const isWinner = payload.winner;
-
-  if (isMobile && !isWinner) {
-    return null;
-  }
-
-  const dotRadius = isMobile ? 3.5 : 4.5;
-  const winnerRadius = isMobile ? 6 : 8;
-
-  return (
-    <g>
-      {isWinner && (
-        <circle
-          cx={cx}
-          cy={cy}
-          r={winnerRadius}
-          fill="rgba(234, 179, 8, 0.12)"
-          stroke="rgba(234, 179, 8, 0.55)"
-          strokeWidth={1.5}
-        />
-      )}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={dotRadius}
-        fill="var(--primary)"
-        stroke="var(--background)"
-        strokeWidth={2}
-      />
-    </g>
-  );
-};
+  a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 
 export default function UserRankingTrendChart({ ranking }: Props) {
   const [isMobile, setIsMobile] = useState(false);
@@ -143,19 +35,10 @@ export default function UserRankingTrendChart({ ranking }: Props) {
     const handleResize = () => {
       const width = window.innerWidth;
       setIsMobile(width < 640);
-
-      if (width < 1024) {
-        setScreenSize("small");
-      } else if (width < 1280) {
-        setScreenSize("medium");
-      } else {
-        setScreenSize("large");
-      }
+      setScreenSize(width < 1024 ? "small" : width < 1280 ? "medium" : "large");
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -163,7 +46,6 @@ export default function UserRankingTrendChart({ ranking }: Props) {
     const sortedMovieRounds = [...ranking.movie_round_rankings].sort((a, b) =>
       sortRounds(a.round, b.round),
     );
-
     const compactAxis = isMobile || sortedMovieRounds.length > 8;
     const showMovieNames =
       screenSize === "large" && sortedMovieRounds.length <= 8;
@@ -190,8 +72,7 @@ export default function UserRankingTrendChart({ ranking }: Props) {
   const validChartData = useMemo(
     () =>
       chartData.filter(
-        (point): point is RankingChartPoint & { rating: number } =>
-          point.rating !== null,
+        (p): p is RankingChartPoint & { rating: number } => p.rating !== null,
       ),
     [chartData],
   );
@@ -201,7 +82,7 @@ export default function UserRankingTrendChart({ ranking }: Props) {
 
   const averageLine =
     validChartData.length > 0
-      ? validChartData.reduce((sum, point) => sum + point.rating, 0) /
+      ? validChartData.reduce((sum, p) => sum + p.rating, 0) /
         validChartData.length
       : null;
 
@@ -224,7 +105,6 @@ export default function UserRankingTrendChart({ ranking }: Props) {
             Andamento Voti
           </h3>
         </div>
-
         <EmptyState
           title="Nessun film votato"
           subtitle="Questo utente non ha ancora votato alcun film"
@@ -240,7 +120,6 @@ export default function UserRankingTrendChart({ ranking }: Props) {
           <LineChartIcon className="w-4 h-4" />
           Andamento Voti
         </h3>
-
         <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
           <span
             className="inline-block w-2.5 h-2.5 rounded-full"
@@ -259,38 +138,45 @@ export default function UserRankingTrendChart({ ranking }: Props) {
         }}
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
-          <div className="rounded-xl border border-border bg-card/70 p-3">
-            <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-              Media utente
+          {[
+            {
+              label: "Media utente",
+              value: averageLine !== null ? averageLine.toFixed(2) : "N/A",
+              sub: null,
+              large: true,
+            },
+            {
+              label: "Picco migliore",
+              value: bestRatedPoint ? bestRatedPoint.rating.toFixed(2) : "N/A",
+              sub: bestRatedPoint?.movie ?? "—",
+              large: false,
+            },
+            {
+              label: "Ultimo voto",
+              value: latestPoint ? latestPoint.rating.toFixed(2) : "N/A",
+              sub: latestPoint?.movie ?? "—",
+              large: false,
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-border bg-card/70 p-3"
+            >
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                {stat.label}
+              </div>
+              <div
+                className={`${stat.large ? "text-lg font-black text-primary" : "text-sm font-bold text-foreground"} tabular-nums`}
+              >
+                {stat.value}
+              </div>
+              {stat.sub && (
+                <div className="text-xs text-muted-foreground truncate mt-1">
+                  {stat.sub}
+                </div>
+              )}
             </div>
-            <div className="text-lg font-black text-primary tabular-nums">
-              {averageLine !== null ? averageLine.toFixed(2) : "N/A"}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card/70 p-3">
-            <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-              Picco migliore
-            </div>
-            <div className="text-sm font-bold text-foreground tabular-nums">
-              {bestRatedPoint ? bestRatedPoint.rating.toFixed(2) : "N/A"}
-            </div>
-            <div className="text-xs text-muted-foreground truncate mt-1">
-              {bestRatedPoint?.movie ?? "—"}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card/70 p-3">
-            <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-              Ultimo voto
-            </div>
-            <div className="text-sm font-bold text-foreground tabular-nums">
-              {latestPoint ? latestPoint.rating.toFixed(2) : "N/A"}
-            </div>
-            <div className="text-xs text-muted-foreground truncate mt-1">
-              {latestPoint?.movie ?? "—"}
-            </div>
-          </div>
+          ))}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -302,7 +188,6 @@ export default function UserRankingTrendChart({ ranking }: Props) {
               />
               Voto
             </div>
-
             <div className="flex items-center gap-1.5">
               <span className="inline-block w-3 h-3 rounded-full border border-yellow-500/70 bg-yellow-500/15" />
               Round vinto

@@ -4,26 +4,11 @@ import { getServerSession } from "next-auth/next";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { getLocaleFromRequest } from "@/lib/server/get-locale";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Eye,
-  EyeOff,
-  User,
-  Lock,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import ProfileInfoCard from "@/components/profile/ProfileInfoCard";
+import PasswordChangeCard from "@/components/profile/PasswordChangeCard";
 
 type UserProfile = {
   id: string;
@@ -51,14 +36,10 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [showCurrentPw, setShowCurrentPw] = React.useState(false);
-  const [showNewPw, setShowNewPw] = React.useState(false);
-  const [showConfirmPw, setShowConfirmPw] = React.useState(false);
   const [passwordSubmitting, setPasswordSubmitting] = React.useState(false);
   const [passwordSuccess, setPasswordSuccess] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState<string | null>(null);
 
-  // Clear success messages after 3 seconds
   React.useEffect(() => {
     if (profileSuccess) {
       const timer = setTimeout(() => setProfileSuccess(false), 3000);
@@ -85,15 +66,10 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
+      if (!res.ok)
         throw new Error(data.error || t("profile.profileUpdateError"));
-      }
-
       setProfileSuccess(true);
-      // Update session with new name - pass the new name to trigger JWT update
       await updateSession({ name });
     } catch (err) {
       setProfileError(
@@ -110,13 +86,11 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
     setPasswordError(null);
     setPasswordSuccess(false);
 
-    // Validation
     if (newPassword.length < 6) {
       setPasswordError(t("profile.passwordTooShort"));
       setPasswordSubmitting(false);
       return;
     }
-
     if (newPassword !== confirmPassword) {
       setPasswordError(t("profile.passwordMismatch"));
       setPasswordSubmitting(false);
@@ -129,15 +103,10 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
+      if (!res.ok)
         throw new Error(data.error || t("profile.passwordChangeError"));
-      }
-
       setPasswordSuccess(true);
-      // Clear form
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -167,208 +136,31 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
           <p className="mt-2 text-muted-foreground">{t("profile.subtitle")}</p>
         </div>
 
-        {/* Profile Information Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              <CardTitle>{t("profile.infoCardTitle")}</CardTitle>
-            </div>
-            <CardDescription>{t("profile.infoCardDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {profileSuccess && (
-              <div className="mb-4 flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>{t("profile.profileUpdated")}</span>
-              </div>
-            )}
-            {profileError && (
-              <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                <AlertCircle className="h-4 w-4" />
-                <span>{profileError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleProfileSubmit} className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={initialProfile.email}
-                  disabled
-                  className="bg-muted"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("profile.emailReadonly")}
-                </p>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nome</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder={t("profile.namePlaceholder")}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label>{t("profile.memberSince")}</Label>
-                <Input
-                  type="text"
-                  value={createdDate}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-
-              <Button type="submit" disabled={profileSubmitting}>
-                {profileSubmitting
-                  ? t("profile.saving")
-                  : t("profile.saveChanges")}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <ProfileInfoCard
+          email={initialProfile.email}
+          name={name}
+          createdDate={createdDate}
+          onNameChange={setName}
+          onSubmit={handleProfileSubmit}
+          submitting={profileSubmitting}
+          success={profileSuccess}
+          error={profileError}
+        />
 
         <Separator />
 
-        {/* Change Password Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              <CardTitle>{t("profile.passwordCardTitle")}</CardTitle>
-            </div>
-            <CardDescription>{t("profile.passwordCardDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {passwordSuccess && (
-              <div className="mb-4 flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>{t("profile.passwordChanged")}</span>
-              </div>
-            )}
-            {passwordError && (
-              <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                <AlertCircle className="h-4 w-4" />
-                <span>{passwordError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="currentPassword">
-                  {t("profile.currentPassword")}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="currentPassword"
-                    type={showCurrentPw ? "text" : "password"}
-                    autoComplete="current-password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    required
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    aria-label={
-                      showCurrentPw
-                        ? t("profile.hidePassword")
-                        : t("profile.showPassword")
-                    }
-                    onClick={() => setShowCurrentPw((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    {showCurrentPw ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="newPassword">{t("profile.newPassword")}</Label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    type={showNewPw ? "text" : "password"}
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    aria-label={
-                      showNewPw
-                        ? t("profile.hidePassword")
-                        : t("profile.showPassword")
-                    }
-                    onClick={() => setShowNewPw((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    {showNewPw ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("profile.passwordHint")}
-                </p>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">
-                  {t("profile.confirmPassword")}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPw ? "text" : "password"}
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    aria-label={
-                      showConfirmPw
-                        ? t("profile.hidePassword")
-                        : t("profile.showPassword")
-                    }
-                    onClick={() => setShowConfirmPw((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    {showConfirmPw ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <Button type="submit" disabled={passwordSubmitting}>
-                {passwordSubmitting
-                  ? t("profile.updating")
-                  : t("profile.changePassword")}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <PasswordChangeCard
+          currentPassword={currentPassword}
+          newPassword={newPassword}
+          confirmPassword={confirmPassword}
+          onCurrentPasswordChange={setCurrentPassword}
+          onNewPasswordChange={setNewPassword}
+          onConfirmPasswordChange={setConfirmPassword}
+          onSubmit={handlePasswordSubmit}
+          submitting={passwordSubmitting}
+          success={passwordSuccess}
+          error={passwordError}
+        />
       </div>
     </Layout>
   );
@@ -389,31 +181,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const res = await fetch(
       `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/user/profile`,
-      {
-        headers: {
-          cookie: context.req.headers.cookie || "",
-        },
-      },
+      { headers: { cookie: context.req.headers.cookie || "" } },
     );
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch profile");
-    }
-
+    if (!res.ok) throw new Error("Failed to fetch profile");
     const profile = await res.json();
-
     return {
       props: {
         initialProfile: profile,
+        initialLocale: getLocaleFromRequest(context.req),
       },
     };
   } catch (error) {
     console.error("Error fetching profile:", error);
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
+    return { redirect: { destination: "/", permanent: false } };
   }
 };
