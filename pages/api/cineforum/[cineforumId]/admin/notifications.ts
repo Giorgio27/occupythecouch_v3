@@ -32,24 +32,27 @@ export default async function handler(
     if (req.method === "GET") {
       const cineforum = await prisma.cineforum.findUnique({
         where: { id: cineforumId },
-        select: { telegramBotToken: true, telegramChatId: true },
+        select: { telegramBotToken: true, telegramChatId: true, locale: true },
       });
       if (!cineforum) return res.status(404).json({ error: "Not found" });
 
       const payload: TelegramSettingsDTO = {
         botTokenSet: !!cineforum.telegramBotToken,
         chatId: cineforum.telegramChatId,
+        locale: cineforum.locale,
       };
       return res.status(200).json(payload);
     }
 
     // PUT — save settings
     if (req.method === "PUT") {
-      const { botToken, chatId } = req.body as {
+      const { botToken, chatId, locale } = req.body as {
         botToken?: string;
         chatId?: string;
+        locale?: string;
       };
 
+      const validLocales = ["it", "en"];
       await prisma.cineforum.update({
         where: { id: cineforumId },
         data: {
@@ -59,6 +62,8 @@ export default async function handler(
           ...(chatId !== undefined && {
             telegramChatId: chatId.trim() || null,
           }),
+          ...(locale !== undefined &&
+            validLocales.includes(locale) && { locale }),
         },
       });
 
@@ -68,18 +73,35 @@ export default async function handler(
     // POST — send a test message
     const cineforum = await prisma.cineforum.findUnique({
       where: { id: cineforumId },
-      select: { name: true, telegramBotToken: true, telegramChatId: true },
+      select: {
+        name: true,
+        telegramBotToken: true,
+        telegramChatId: true,
+        locale: true,
+      },
     });
     if (!cineforum) return res.status(404).json({ error: "Not found" });
 
     if (!cineforum.telegramBotToken || !cineforum.telegramChatId) {
+      console.error(
+        `[notifications POST] missing credentials for cineforum ${cineforumId}:`,
+        {
+          hasBotToken: !!cineforum.telegramBotToken,
+          hasChatId: !!cineforum.telegramChatId,
+        },
+      );
       return res
         .status(422)
         .json({ error: "Telegram credentials not configured" });
     }
 
+    const testText =
+      cineforum.locale === "en"
+        ? `✅ *Test notification* — ${cineforum.name}\nTelegram notifications are configured correctly!`
+        : `✅ *Test notifica* — ${cineforum.name}\nLe notifiche Telegram sono configurate correttamente!`;
+
     await telegramNotify(
-      `✅ *Test notifica* — ${cineforum.name}\nLe notifiche Telegram sono configurate correttamente!`,
+      testText,
       cineforum.telegramBotToken,
       cineforum.telegramChatId,
     );

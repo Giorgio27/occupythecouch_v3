@@ -104,6 +104,7 @@ model Cineforum {
   // Telegram notification settings (per-cineforum)
   telegramBotToken String?
   telegramChatId   String?
+  locale           String  @default("it") // "it" | "en" — used for Telegram messages
 
   memberships Membership[]
   rounds      Round[]

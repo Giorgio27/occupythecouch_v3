@@ -135,6 +135,8 @@
     "testing": "Sending...",
     "testSuccess": "Test message sent!",
     "testError": "Failed to send test message",
-    "testNotConfigured": "Please configure the bot token and chat ID first"
+    "testNotConfigured": "Please configure the bot token and chat ID first",
+    "localeLabel": "Message language",
+    "localeHint": "The language used for Telegram messages sent by the bot (vote notifications, test messages, etc.)."
   }
 }

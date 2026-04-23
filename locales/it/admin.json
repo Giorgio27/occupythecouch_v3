@@ -135,6 +135,8 @@
     "testing": "Invio in corso...",
     "testSuccess": "Messaggio di test inviato!",
     "testError": "Errore nell'invio del messaggio di test",
-    "testNotConfigured": "Configura prima il bot token e il chat ID"
+    "testNotConfigured": "Configura prima il bot token e il chat ID",
+    "localeLabel": "Lingua dei messaggi",
+    "localeHint": "La lingua usata per i messaggi Telegram inviati dal bot (notifiche voti, test, ecc.)."
   }
 }

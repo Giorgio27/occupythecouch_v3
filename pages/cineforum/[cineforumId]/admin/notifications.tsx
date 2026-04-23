@@ -17,12 +17,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Bell,
   Bot,
   Hash,
   CheckCircle2,
   ExternalLink,
   Send,
+  Globe,
 } from "lucide-react";
 
 interface AdminNotificationsPageProps {
@@ -39,6 +47,7 @@ export default function AdminNotificationsPage({
 
   const [botToken, setBotToken] = useState("");
   const [chatId, setChatId] = useState("");
+  const [locale, setLocale] = useState("it");
   const [botTokenSet, setBotTokenSet] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,6 +64,7 @@ export default function AdminNotificationsPage({
       .then((data) => {
         setBotTokenSet(data.botTokenSet);
         setChatId(data.chatId ?? "");
+        setLocale(data.locale ?? "it");
       })
       .catch(() => setError(t("notifications.loadError")))
       .finally(() => setLoading(false));
@@ -65,7 +75,7 @@ export default function AdminNotificationsPage({
     setError(null);
     setSaved(false);
     try {
-      await saveNotificationSettings(cineforumId, botToken, chatId);
+      await saveNotificationSettings(cineforumId, botToken, chatId, locale);
       setSaved(true);
       if (botToken.trim()) {
         setBotTokenSet(true);
@@ -221,6 +231,29 @@ export default function AdminNotificationsPage({
               />
               <p className="text-xs text-muted-foreground">
                 {t("notifications.chatIdHint")}
+              </p>
+            </div>
+
+            {/* Notification language */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="locale"
+                className="flex items-center gap-2 text-sm font-medium"
+              >
+                <Globe className="h-4 w-4 text-primary/70" />
+                {t("notifications.localeLabel")}
+              </Label>
+              <Select value={locale} onValueChange={setLocale}>
+                <SelectTrigger id="locale" className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="it">🇮🇹 Italiano</SelectItem>
+                  <SelectItem value="en">🇬🇧 English</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("notifications.localeHint")}
               </p>
             </div>
 

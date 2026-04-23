@@ -152,6 +152,8 @@ export type TelegramSettingsDTO = {
   botTokenSet: boolean;
   /** Telegram Chat ID */
   chatId: string | null;
+  /** Cineforum locale used for Telegram messages ("it" | "en") */
+  locale: string;
 };
 
 export type OscarsRoundDTO = {
