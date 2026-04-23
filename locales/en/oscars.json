@@ -1,0 +1,12 @@
+{
+  "title": "Oscars",
+  "subtitle": "Vote for movies from past rounds and discover the winners of each cycle",
+  "error": "An error occurred while loading rounds.",
+  "loading": "Loading rounds...",
+  "empty": {
+    "title": "No rounds available",
+    "description": "There are no closed rounds available for the Oscars yet"
+  },
+  "loadingMore": "Loading more rounds...",
+  "votingError": "Error voting for movie: {{message}}"
+}

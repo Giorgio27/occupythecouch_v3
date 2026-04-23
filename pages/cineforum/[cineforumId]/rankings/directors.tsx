@@ -1,11 +1,16 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import { Film, ChevronDown, ChevronUp } from "lucide-react";
+import { Film } from "lucide-react";
 import { fetchDirectorRankings } from "@/lib/client/cineforum/rankings";
-import { RankingHeader, RankingCard } from "@/components/cineforum/rankings";
+import {
+  DirectorsTableHeader,
+  DirectorCard,
+} from "@/components/cineforum/rankings/directors";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
+import EmptyState from "@/components/cineforum/common/EmptyState";
 import type { DirectorRankingDTO } from "@/lib/shared/types";
 
 type Props = {
@@ -15,15 +20,11 @@ type Props = {
 
 type OrderCriteria = "average_rating" | "count";
 
-const orderCriteriaOptions = [
-  { criteria: "average_rating" as OrderCriteria, name: "Media Voti" },
-  { criteria: "count" as OrderCriteria, name: "Numero Film" },
-];
-
 export default function DirectorsRankingPage({
   cineforumId,
   cineforumName,
 }: Props) {
+  const { t } = useTranslation("rankings");
   const [directors, setDirectors] = useState<DirectorRankingDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderCriteria, setOrderCriteria] =
@@ -46,19 +47,52 @@ export default function DirectorsRankingPage({
     }
   };
 
+  const orderCriteriaOptions: { criteria: OrderCriteria; labelKey: string }[] =
+    [
+      { criteria: "average_rating", labelKey: "directors.sortAvgRating" },
+      { criteria: "count", labelKey: "directors.sortCount" },
+    ];
+
   const sortedDirectors = [...directors].sort((a, b) => {
     if (orderCriteria === "average_rating") {
       return b.average_rating - a.average_rating;
-    } else {
-      return b.count - a.count;
     }
+    return b.count - a.count;
   });
+
+  const getPosition = (index: number): number => {
+    if (index === 0) return 1;
+    const currentValue =
+      orderCriteria === "average_rating"
+        ? sortedDirectors[index].average_rating
+        : sortedDirectors[index].count;
+    const previousValue =
+      orderCriteria === "average_rating"
+        ? sortedDirectors[index - 1].average_rating
+        : sortedDirectors[index - 1].count;
+
+    if (currentValue === previousValue) {
+      for (let i = index - 1; i >= 0; i--) {
+        const iValue =
+          orderCriteria === "average_rating"
+            ? sortedDirectors[i].average_rating
+            : sortedDirectors[i].count;
+        if (iValue === currentValue) {
+          if (i === 0) return 1;
+        } else {
+          return i + 2;
+        }
+      }
+      return 1;
+    }
+    return index + 1;
+  };
 
   if (loading) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingCard text="Caricamento registi..." />
+          <LoadingCard text={t("directors.loading")} />
         </div>
       </CineforumLayout>
     );
@@ -74,11 +108,11 @@ export default function DirectorsRankingPage({
               <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Classifica Registi
+              {t("directors.pageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base mt-2">
-            I registi dei film votati dal tuo cineforum
+            {t("directors.pageSubtitle")}
           </p>
         </div>
 
@@ -88,7 +122,7 @@ export default function DirectorsRankingPage({
             htmlFor="orderCriteria"
             className="block text-sm font-medium mb-2 text-muted-foreground"
           >
-            Ordina per:
+            {t("directors.sortBy")}
           </label>
           <select
             id="orderCriteria"
@@ -98,7 +132,7 @@ export default function DirectorsRankingPage({
           >
             {orderCriteriaOptions.map((option) => (
               <option key={option.criteria} value={option.criteria}>
-                {option.name}
+                {t(option.labelKey)}
               </option>
             ))}
           </select>
@@ -106,149 +140,25 @@ export default function DirectorsRankingPage({
 
         {/* Directors List */}
         {sortedDirectors.length === 0 ? (
-          <div className="cine-card text-center py-12 sm:py-16">
-            <Film className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nessun regista in classifica
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              I registi dei film votati appariranno qui
-            </p>
-          </div>
+          <EmptyState
+            title={t("directors.emptyTitle")}
+            subtitle={t("directors.emptySubtitle")}
+          />
         ) : (
           <div className="space-y-2 sm:space-y-3">
-            {/* Custom Header for Directors */}
-            <div className="cine-card bg-primary text-primary-foreground">
-              <div className="flex items-center gap-2 sm:gap-4 py-3 sm:py-4 px-4 sm:px-6">
-                <div className="w-12 sm:w-16 text-center font-bold text-sm sm:text-base">
-                  #
-                </div>
-                <div className="flex-1 font-bold text-sm sm:text-base">
-                  REGISTI
-                </div>
-                <div className="w-16 sm:w-20 text-center font-bold text-sm sm:text-base">
-                  N°
-                </div>
-                <div className="w-20 sm:w-24 text-right font-bold text-sm sm:text-base">
-                  Voto
-                </div>
-                <div className="w-8 sm:w-10"></div>
-              </div>
-            </div>
+            <DirectorsTableHeader />
 
-            {sortedDirectors.map((director, index) => {
-              const isExpanded = expandedIndex === index;
-
-              // Calculate position with ties
-              let position = 1;
-              if (index > 0) {
-                const currentValue =
-                  orderCriteria === "average_rating"
-                    ? director.average_rating
-                    : director.count;
-                const previousValue =
-                  orderCriteria === "average_rating"
-                    ? sortedDirectors[index - 1].average_rating
-                    : sortedDirectors[index - 1].count;
-
-                if (currentValue === previousValue) {
-                  for (let i = index - 1; i >= 0; i--) {
-                    const iValue =
-                      orderCriteria === "average_rating"
-                        ? sortedDirectors[i].average_rating
-                        : sortedDirectors[i].count;
-                    if (iValue === currentValue) {
-                      position = i + 1;
-                    } else {
-                      break;
-                    }
-                  }
-                } else {
-                  position = index + 1;
+            {sortedDirectors.map((director, index) => (
+              <DirectorCard
+                key={director.name}
+                director={director}
+                position={getPosition(index)}
+                isExpanded={expandedIndex === index}
+                onToggle={() =>
+                  setExpandedIndex(expandedIndex === index ? null : index)
                 }
-              }
-
-              return (
-                <div
-                  key={director.name}
-                  className="cine-card hover:shadow-lg transition-all duration-300"
-                >
-                  <button
-                    onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                    className="w-full"
-                  >
-                    <div className="flex items-center gap-2 sm:gap-4 py-3 sm:py-4 px-4 sm:px-6">
-                      <div className="w-12 sm:w-16 text-center font-bold text-lg sm:text-xl text-gradient">
-                        {position}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <span className="font-semibold text-sm sm:text-base text-foreground">
-                          {director.name}
-                        </span>
-                      </div>
-                      <div className="w-16 sm:w-20 text-center">
-                        <span className="font-bold text-sm sm:text-base text-muted-foreground">
-                          {director.count}
-                        </span>
-                      </div>
-                      <div className="w-20 sm:w-24 text-right">
-                        <span className="font-bold text-sm sm:text-base text-gradient">
-                          {director.average_rating.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="w-8 sm:w-10 flex justify-center">
-                        {isExpanded ? (
-                          <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                        )}
-                      </div>
-                    </div>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="border-t border-border px-4 sm:px-6 py-4 sm:py-6 bg-secondary/30">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-primary mb-4">
-                        Film
-                      </h3>
-
-                      <div className="bg-card rounded-xl border border-border overflow-hidden">
-                        {/* Header */}
-                        <div className="bg-secondary/50 px-4 py-3 border-b border-border">
-                          <div className="flex items-center text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                            <div className="flex-1">Titolo</div>
-                            <div className="w-20 sm:w-24 text-right">Voto</div>
-                          </div>
-                        </div>
-
-                        {/* Rows */}
-                        <div className="divide-y divide-border">
-                          {director.movies
-                            .sort((a, b) => b.average_rating - a.average_rating)
-                            .map((movie, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center px-4 py-3 sm:py-4 hover:bg-secondary/30 transition-colors"
-                              >
-                                <div className="flex-1">
-                                  <span className="text-sm sm:text-base text-foreground font-medium">
-                                    {movie.title}
-                                  </span>
-                                </div>
-                                <div className="w-20 sm:w-24 text-right">
-                                  <span className="font-bold text-sm sm:text-base text-gradient">
-                                    {movie.average_rating.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+              />
+            ))}
           </div>
         )}
       </div>

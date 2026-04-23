@@ -1,1 +1,34 @@
-{}
+{
+  "directors": {
+    "pageTitle": "Directors Ranking",
+    "pageSubtitle": "Directors of movies rated by your cineforum",
+    "loading": "Loading directors...",
+    "sortBy": "Sort by:",
+    "sortAvgRating": "Average Rating",
+    "sortCount": "Number of Films",
+    "emptyTitle": "No directors in ranking",
+    "emptySubtitle": "Directors of rated movies will appear here",
+    "tableHeaderDirectors": "DIRECTORS",
+    "tableHeaderCount": "N°",
+    "tableHeaderRating": "Rating",
+    "moviesSection": "Films",
+    "moviesTitleCol": "Title",
+    "moviesRatingCol": "Rating"
+  },
+  "moviesList": {
+    "pageTitle": "All Movies",
+    "pageSubtitle": "Complete list of movies proposed in your cineforum",
+    "loading": "Loading movies...",
+    "sortBy": "Sort by:",
+    "sortProposals": "Proposals",
+    "sortWins": "Wins",
+    "sortDefeats": "Defeats",
+    "statProposed": "Proposed Movies",
+    "statUnique": "Unique Movies",
+    "statWatched": "Watched Movies",
+    "emptyTitle": "No movies found",
+    "emptySubtitle": "Proposed movies will appear here",
+    "tableHeaderFilm": "MOVIE",
+    "tableHeaderWins": "Wins"
+  }
+}

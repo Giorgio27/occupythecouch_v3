@@ -1,0 +1,12 @@
+{
+  "title": "Oscars",
+  "subtitle": "Vota i film dei round passati e scopri i vincitori di ogni ciclo",
+  "error": "Si è verificato un errore durante il caricamento dei round.",
+  "loading": "Caricamento round in corso...",
+  "empty": {
+    "title": "Nessun round disponibile",
+    "description": "Non ci sono ancora round chiusi disponibili per gli Oscars"
+  },
+  "loadingMore": "Caricamento altri round...",
+  "votingError": "Errore durante il voto del film: {{message}}"
+}

@@ -1,1 +1,34 @@
-{}
+{
+  "directors": {
+    "pageTitle": "Classifica Registi",
+    "pageSubtitle": "I registi dei film votati dal tuo cineforum",
+    "loading": "Caricamento registi...",
+    "sortBy": "Ordina per:",
+    "sortAvgRating": "Media Voti",
+    "sortCount": "Numero Film",
+    "emptyTitle": "Nessun regista in classifica",
+    "emptySubtitle": "I registi dei film votati appariranno qui",
+    "tableHeaderDirectors": "REGISTI",
+    "tableHeaderCount": "N°",
+    "tableHeaderRating": "Voto",
+    "moviesSection": "Film",
+    "moviesTitleCol": "Titolo",
+    "moviesRatingCol": "Voto"
+  },
+  "moviesList": {
+    "pageTitle": "Tutti i Film",
+    "pageSubtitle": "Lista completa dei film proposti nel tuo cineforum",
+    "loading": "Caricamento film...",
+    "sortBy": "Ordina per:",
+    "sortProposals": "Proposte",
+    "sortWins": "Vittorie",
+    "sortDefeats": "Sconfitte",
+    "statProposed": "Film Proposti",
+    "statUnique": "Film Unici",
+    "statWatched": "Film Visti",
+    "emptyTitle": "Nessun film trovato",
+    "emptySubtitle": "I film proposti appariranno qui",
+    "tableHeaderFilm": "FILM",
+    "tableHeaderWins": "Vittorie"
+  }
+}

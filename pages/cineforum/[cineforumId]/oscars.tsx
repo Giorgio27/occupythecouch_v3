@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { GetServerSideProps } from "next";
+import { useTranslation } from "react-i18next";
 import CineforumLayout from "@/components/CineforumLayout";
 import { Trophy, Loader2 } from "lucide-react";
 import OscarsRoundCard from "@/components/cineforum/oscars/OscarsRoundCard";
@@ -28,6 +29,7 @@ export default function OscarsPage({
   cineforumId,
   cineforumName,
 }: OscarsPageProps) {
+  const { t } = useTranslation("oscars");
   const [rounds, setRounds] = useState<OscarsRoundDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,9 @@ export default function OscarsPage({
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch rounds");
+          throw new Error(
+            t("votingError", { message: "Failed to fetch rounds" }),
+          );
         }
 
         const data = await response.json();
@@ -135,14 +139,14 @@ export default function OscarsPage({
           </div>
         </div>
         <p className="text-sm text-muted-foreground max-w-2xl">
-          Vota i film dei round passati e scopri i vincitori di ogni ciclo
+          {t("subtitle")}
         </p>
       </div>
 
       {/* Error State */}
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl mb-6 animate-fade-in">
-          <p className="text-sm font-medium">{error}</p>
+          <p className="text-sm font-medium">{t("error")}</p>
         </div>
       )}
 
@@ -150,9 +154,7 @@ export default function OscarsPage({
       {loading && rounds.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 sm:py-24 animate-fade-in">
           <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-          <p className="text-muted-foreground text-sm">
-            Caricamento round in corso...
-          </p>
+          <p className="text-muted-foreground text-sm">{t("loading")}</p>
         </div>
       )}
 
@@ -162,11 +164,9 @@ export default function OscarsPage({
           <div className="p-4 rounded-full bg-muted/50 mb-4">
             <Trophy className="w-12 h-12 text-muted-foreground/50" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">
-            Nessun round disponibile
-          </h3>
+          <h3 className="text-lg font-semibold mb-2">{t("empty.title")}</h3>
           <p className="text-sm text-muted-foreground text-center max-w-md">
-            Non ci sono ancora round chiusi disponibili per gli Oscars
+            {t("empty.description")}
           </p>
         </div>
       )}
@@ -187,7 +187,7 @@ export default function OscarsPage({
       {loading && rounds.length > 0 && (
         <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground animate-fade-in">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Caricamento altri round...</span>
+          <span>{t("loadingMore")}</span>
         </div>
       )}
     </CineforumLayout>
