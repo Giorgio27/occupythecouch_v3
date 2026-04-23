@@ -43,7 +43,9 @@
     "proposals": "Proposals",
     "proposalsDesc": "Manage current proposal",
     "users": "Users",
-    "usersDesc": "Manage users"
+    "usersDesc": "Manage users",
+    "notifications": "Notifications",
+    "notificationsDesc": "Configure Telegram notifications"
   },
   "footer": {
     "about": "About us",

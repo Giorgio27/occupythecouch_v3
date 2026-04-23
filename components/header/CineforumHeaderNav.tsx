@@ -21,6 +21,7 @@ import {
   LucideIcon,
   CalendarDays,
   History,
+  Bell,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -259,6 +260,11 @@ export default function CineforumHeaderNav() {
             label: t("admin.users"),
             href: `/cineforum/${cineforumId}/admin/users`,
             icon: User,
+          },
+          {
+            label: t("admin.notifications"),
+            href: `/cineforum/${cineforumId}/admin/notifications`,
+            icon: Bell,
           },
         ]
       : [];

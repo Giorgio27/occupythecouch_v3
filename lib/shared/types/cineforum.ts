@@ -147,6 +147,13 @@ export type RoundBestDTO = {
   roundRating: number | null;
 };
 
+export type TelegramSettingsDTO = {
+  /** Telegram Bot Token (masked on GET — only last 4 chars shown) */
+  botTokenSet: boolean;
+  /** Telegram Chat ID */
+  chatId: string | null;
+};
+
 export type OscarsRoundDTO = {
   id: string;
   name: string;
