@@ -8,7 +8,7 @@ import {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") return res.status(405).end();
 
@@ -85,25 +85,41 @@ export default async function handler(
       ? { ownerTeamId: candidate.id }
       : { ownerUserId: candidate.id };
 
-  const proposalRow = await prisma.proposal.create({
-    data: {
-      cineforumId,
-      roundId: lastOpenRound?.id ?? (await ensureDefaultRound(cineforumId)).id,
-      title,
-      description,
-      date: new Date(date),
-      ...ownerField,
-      movies: { createMany: { data: connectMovies, skipDuplicates: true } },
-    },
-    select: { id: true, title: true },
-  });
+  const [proposalRow, cineforum] = await Promise.all([
+    prisma.proposal.create({
+      data: {
+        cineforumId,
+        roundId:
+          lastOpenRound?.id ?? (await ensureDefaultRound(cineforumId)).id,
+        title,
+        description,
+        date: new Date(date),
+        ...ownerField,
+        movies: { createMany: { data: connectMovies, skipDuplicates: true } },
+      },
+      select: { id: true, title: true },
+    }),
+    prisma.cineforum.findUnique({
+      where: { id: cineforumId },
+      select: { telegramBotToken: true, telegramChatId: true },
+    }),
+  ]);
 
+  // TODO(i18n): The Telegram message is currently hardcoded in Italian.
+  // To support per-cineforum locale, add a `telegramLocale` field (e.g. "it"|"en")
+  // to the Cineforum model and use it here to pick the right message template.
+  // This requires a User.preferredLocale field or a cineforum-level setting,
+  // since there is no per-user language stored in the DB today.
   const text =
     `Ciao silvanotti/e\n` +
     `La proposta per il ${new Date(date).toLocaleDateString("it-IT")} è:\n\n` +
     `${title}\n\n` +
     `Per votare: [Sito Cineforum]`;
-  telegramNotify(text).catch(() => {});
+  telegramNotify(
+    text,
+    cineforum?.telegramBotToken ?? null,
+    cineforum?.telegramChatId ?? null,
+  ).catch(() => {});
 
   return res.status(201).json({ ok: true, id: proposalRow.id });
 }

@@ -43,7 +43,9 @@
     "proposals": "Proposte",
     "proposalsDesc": "Gestisci proposta corrente",
     "users": "Utenti",
-    "usersDesc": "Gestisci utenti"
+    "usersDesc": "Gestisci utenti",
+    "notifications": "Notifiche",
+    "notificationsDesc": "Configura notifiche Telegram"
   },
   "footer": {
     "about": "Chi siamo",

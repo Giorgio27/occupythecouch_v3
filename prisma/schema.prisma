@@ -101,6 +101,10 @@ model Cineforum {
   ownerId String?
   owner   User?   @relation("CineforumOwner", fields: [ownerId], references: [id])
 
+  // Telegram notification settings (per-cineforum)
+  telegramBotToken String?
+  telegramChatId   String?
+
   memberships Membership[]
   rounds      Round[]
   teams       Team[]
