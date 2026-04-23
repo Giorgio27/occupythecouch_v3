@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { GetServerSideProps } from "next";
 import { useTranslation } from "react-i18next";
 import CineforumLayout from "@/components/CineforumLayout";
-import { Trophy, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import OscarsRoundCard from "@/components/cineforum/oscars/OscarsRoundCard";
+import OscarsPageHeader from "@/components/cineforum/oscars/OscarsPageHeader";
 import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
+import { Trophy } from "lucide-react";
 
 interface OscarsPageProps {
   cineforumId: string;
@@ -17,12 +19,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if ("redirect" in cineforumProps || "notFound" in cineforumProps) {
     return cineforumProps;
   }
-
-  return {
-    props: {
-      ...cineforumProps.props,
-    },
-  };
+  return { props: { ...cineforumProps.props } };
 };
 
 export default function OscarsPage({
@@ -34,7 +31,6 @@ export default function OscarsPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load rounds progressively (like Rails polling)
   useEffect(() => {
     let offset = 0;
     const limit = 1;
@@ -45,20 +41,15 @@ export default function OscarsPage({
         const response = await fetch(
           `/api/cineforum/${cineforumId}/oscars/rounds?offset=${offset}&limit=${limit}`,
         );
-
         if (!response.ok) {
           throw new Error(
             t("votingError", { message: "Failed to fetch rounds" }),
           );
         }
-
         const data = await response.json();
-
         if (isMounted) {
           setRounds((prev) => [...prev, ...data.body]);
           offset += limit;
-
-          // Continue polling if there are more rounds
           if (data.status === "progress") {
             setTimeout(fetchRounds, 100);
           } else {
@@ -74,7 +65,6 @@ export default function OscarsPage({
     };
 
     fetchRounds();
-
     return () => {
       isMounted = false;
     };
@@ -90,67 +80,33 @@ export default function OscarsPage({
         `/api/cineforum/${cineforumId}/oscars/vote`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            roundId,
-            movieId,
-            rating,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ roundId, movieId, rating }),
         },
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to submit vote");
-      }
-
+      if (!response.ok) throw new Error("Failed to submit vote");
       const updatedRound = await response.json();
-
-      // Update the round in state
       setRounds((prev) =>
         prev.map((r) => (r.id === updatedRound.id ? updatedRound : r)),
       );
     } catch (err) {
       console.error("Error voting:", err);
       alert(
-        `Error in vote movie: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`,
+        `Error in vote movie: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     }
   };
 
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-      {/* Header Section */}
-      <div className="mb-8 animate-fade-in-down">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 rounded-xl bg-linear-to-br from-yellow-500/20 to-amber-500/20 border border-yellow-500/30">
-            <Trophy className="w-6 h-6 text-yellow-600 dark:text-yellow-500" />
-          </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
-              Oscars
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
-              {cineforumName}
-            </p>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground max-w-2xl">
-          {t("subtitle")}
-        </p>
-      </div>
+      <OscarsPageHeader cineforumName={cineforumName} />
 
-      {/* Error State */}
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-xl mb-6 animate-fade-in">
           <p className="text-sm font-medium">{t("error")}</p>
         </div>
       )}
 
-      {/* Loading State - Initial */}
       {loading && rounds.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 sm:py-24 animate-fade-in">
           <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
@@ -158,7 +114,6 @@ export default function OscarsPage({
         </div>
       )}
 
-      {/* Empty State */}
       {rounds.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-16 sm:py-24 animate-fade-in">
           <div className="p-4 rounded-full bg-muted/50 mb-4">
@@ -171,7 +126,6 @@ export default function OscarsPage({
         </div>
       )}
 
-      {/* Rounds List */}
       <div className="space-y-4 sm:space-y-5">
         {rounds.map((round, index) => (
           <OscarsRoundCard
@@ -183,7 +137,6 @@ export default function OscarsPage({
         ))}
       </div>
 
-      {/* Loading State - Progressive */}
       {loading && rounds.length > 0 && (
         <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground animate-fade-in">
           <Loader2 className="w-4 h-4 animate-spin" />
