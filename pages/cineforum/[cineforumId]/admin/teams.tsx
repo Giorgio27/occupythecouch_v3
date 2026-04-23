@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
@@ -29,6 +30,7 @@ export default function AdminTeamsPage({
   initialStatus,
   users,
 }: AdminTeamsPageProps) {
+  const { t } = useTranslation("admin");
   const { isAdmin, isLoading } = useAdminAccess(cineforumId);
 
   const [teams, setTeams] = useState<Team[]>(initialTeams);
@@ -56,7 +58,7 @@ export default function AdminTeamsPage({
       setOffset(nextOffset);
       setStatus(response.status);
     } catch (err) {
-      setError("Failed to load more teams");
+      setError(t("teams.loadMoreError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -65,7 +67,7 @@ export default function AdminTeamsPage({
 
   const handleCreateTeam = async () => {
     if (!cineforumId || !newTeamName || selectedTeamUsers.length === 0) {
-      setError("Please fill in all fields");
+      setError(t("teams.fillAllFields"));
       return;
     }
 
@@ -84,7 +86,7 @@ export default function AdminTeamsPage({
       // Add new team to the top of the list
       setTeams((prev) => [newTeam, ...prev]);
     } catch (err) {
-      setError("Failed to create team");
+      setError(t("teams.createError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -95,7 +97,7 @@ export default function AdminTeamsPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
-          Loading...
+          {t("teams.loading")}
         </div>
       </CineforumLayout>
     );
@@ -111,10 +113,11 @@ export default function AdminTeamsPage({
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Teams admin</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t("teams.pageTitle")}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Manage teams for this cineforum: create new teams and assign
-            members.
+            {t("teams.pageSubtitle")}
           </p>
         </div>
 
@@ -128,12 +131,14 @@ export default function AdminTeamsPage({
         {/* Create team form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Create new team</CardTitle>
+            <CardTitle className="text-base">
+              {t("teams.createCardTitle")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-1">
-                <Label htmlFor="teamName">Team Name</Label>
+                <Label htmlFor="teamName">{t("teams.teamNameLabel")}</Label>
                 <Input
                   id="teamName"
                   value={newTeamName}
@@ -142,7 +147,7 @@ export default function AdminTeamsPage({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="teamUsers">Team Members</Label>
+                <Label htmlFor="teamUsers">{t("teams.teamMembersLabel")}</Label>
                 <div className="flex flex-col gap-2 rounded-md border bg-card p-3">
                   {users.map((user) => (
                     <label
@@ -179,7 +184,7 @@ export default function AdminTeamsPage({
                 }
                 className="w-full md:w-auto"
               >
-                {loading ? "Creating..." : "Create Team"}
+                {loading ? t("teams.creating") : t("teams.createButton")}
               </Button>
             </div>
           </CardContent>
@@ -188,12 +193,12 @@ export default function AdminTeamsPage({
         {/* Teams list */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Teams</CardTitle>
+            <CardTitle className="text-base">{t("teams.teamsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {teams.length === 0 && !loading && (
               <p className="text-sm text-muted-foreground">
-                No teams yet. Create the first one above.
+                {t("teams.noTeams")}
               </p>
             )}
 
@@ -208,19 +213,19 @@ export default function AdminTeamsPage({
                       <span className="font-medium">{team.name}</span>
                       {team.round && (
                         <span className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">
-                          Round: {team.round.name}
+                          {t("teams.roundLabel")} {team.round.name}
                         </span>
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       <span>
-                        Created:{" "}
+                        {t("teams.createdLabel")}{" "}
                         {new Date(team.created_at).toLocaleDateString()}
                       </span>
                     </div>
                     <div className="mt-2">
                       <h4 className="text-xs font-semibold text-muted-foreground">
-                        Members:
+                        {t("teams.membersLabel")}
                       </h4>
                       <ul className="mt-1 list-disc pl-5 text-xs">
                         {team.users.map((user) => (
@@ -242,7 +247,7 @@ export default function AdminTeamsPage({
                   onClick={handleLoadMore}
                   disabled={loading}
                 >
-                  {loading ? "Loading..." : "Load more"}
+                  {loading ? t("teams.loading") : t("teams.loadMore")}
                 </Button>
               </div>
             )}

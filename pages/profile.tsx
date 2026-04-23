@@ -2,6 +2,7 @@ import * as React from "react";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,8 @@ type ProfilePageProps = {
 };
 
 export default function ProfilePage({ initialProfile }: ProfilePageProps) {
-  const { data: session, update: updateSession } = useSession();
+  const { t, i18n } = useTranslation("auth");
+  const { update: updateSession } = useSession();
 
   // Profile form state
   const [name, setName] = React.useState(initialProfile.name || "");
@@ -87,9 +89,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(
-          data.error || "Errore durante l'aggiornamento del profilo",
-        );
+        throw new Error(data.error || t("profile.profileUpdateError"));
       }
 
       setProfileSuccess(true);
@@ -97,7 +97,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
       await updateSession({ name });
     } catch (err) {
       setProfileError(
-        err instanceof Error ? err.message : "Errore sconosciuto",
+        err instanceof Error ? err.message : t("profile.unknownError"),
       );
     } finally {
       setProfileSubmitting(false);
@@ -112,13 +112,13 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
 
     // Validation
     if (newPassword.length < 6) {
-      setPasswordError("La nuova password deve essere di almeno 6 caratteri");
+      setPasswordError(t("profile.passwordTooShort"));
       setPasswordSubmitting(false);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError("Le password non corrispondono");
+      setPasswordError(t("profile.passwordMismatch"));
       setPasswordSubmitting(false);
       return;
     }
@@ -133,7 +133,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Errore durante il cambio password");
+        throw new Error(data.error || t("profile.passwordChangeError"));
       }
 
       setPasswordSuccess(true);
@@ -143,7 +143,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
       setConfirmPassword("");
     } catch (err) {
       setPasswordError(
-        err instanceof Error ? err.message : "Errore sconosciuto",
+        err instanceof Error ? err.message : t("profile.unknownError"),
       );
     } finally {
       setPasswordSubmitting(false);
@@ -151,7 +151,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
   }
 
   const createdDate = new Date(initialProfile.createdAt).toLocaleDateString(
-    "it-IT",
+    i18n.language,
     {
       year: "numeric",
       month: "long",
@@ -163,10 +163,8 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
     <Layout>
       <div className="mx-auto max-w-2xl space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Profilo Utente</h1>
-          <p className="mt-2 text-muted-foreground">
-            Gestisci le informazioni del tuo account
-          </p>
+          <h1 className="text-3xl font-bold">{t("profile.title")}</h1>
+          <p className="mt-2 text-muted-foreground">{t("profile.subtitle")}</p>
         </div>
 
         {/* Profile Information Card */}
@@ -174,17 +172,15 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
           <CardHeader>
             <div className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              <CardTitle>Informazioni Profilo</CardTitle>
+              <CardTitle>{t("profile.infoCardTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              Aggiorna il tuo nome e le informazioni del profilo
-            </CardDescription>
+            <CardDescription>{t("profile.infoCardDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {profileSuccess && (
               <div className="mb-4 flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Profilo aggiornato con successo</span>
+                <span>{t("profile.profileUpdated")}</span>
               </div>
             )}
             {profileError && (
@@ -205,7 +201,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
                   className="bg-muted"
                 />
                 <p className="text-xs text-muted-foreground">
-                  L'email non può essere modificata
+                  {t("profile.emailReadonly")}
                 </p>
               </div>
 
@@ -214,14 +210,14 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Il tuo nome"
+                  placeholder={t("profile.namePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label>Membro dal</Label>
+                <Label>{t("profile.memberSince")}</Label>
                 <Input
                   type="text"
                   value={createdDate}
@@ -231,7 +227,9 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
               </div>
 
               <Button type="submit" disabled={profileSubmitting}>
-                {profileSubmitting ? "Salvataggio..." : "Salva Modifiche"}
+                {profileSubmitting
+                  ? t("profile.saving")
+                  : t("profile.saveChanges")}
               </Button>
             </form>
           </CardContent>
@@ -244,17 +242,15 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Lock className="h-5 w-5" />
-              <CardTitle>Cambia Password</CardTitle>
+              <CardTitle>{t("profile.passwordCardTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              Aggiorna la tua password per mantenere il tuo account sicuro
-            </CardDescription>
+            <CardDescription>{t("profile.passwordCardDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {passwordSuccess && (
               <div className="mb-4 flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Password cambiata con successo</span>
+                <span>{t("profile.passwordChanged")}</span>
               </div>
             )}
             {passwordError && (
@@ -266,7 +262,9 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
 
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="currentPassword">Password Corrente</Label>
+                <Label htmlFor="currentPassword">
+                  {t("profile.currentPassword")}
+                </Label>
                 <div className="relative">
                   <Input
                     id="currentPassword"
@@ -280,7 +278,9 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
                   <button
                     type="button"
                     aria-label={
-                      showCurrentPw ? "Nascondi password" : "Mostra password"
+                      showCurrentPw
+                        ? t("profile.hidePassword")
+                        : t("profile.showPassword")
                     }
                     onClick={() => setShowCurrentPw((s) => !s)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
@@ -295,7 +295,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="newPassword">Nuova Password</Label>
+                <Label htmlFor="newPassword">{t("profile.newPassword")}</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
@@ -309,7 +309,9 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
                   <button
                     type="button"
                     aria-label={
-                      showNewPw ? "Nascondi password" : "Mostra password"
+                      showNewPw
+                        ? t("profile.hidePassword")
+                        : t("profile.showPassword")
                     }
                     onClick={() => setShowNewPw((s) => !s)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
@@ -322,12 +324,14 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Minimo 6 caratteri
+                  {t("profile.passwordHint")}
                 </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Conferma Nuova Password</Label>
+                <Label htmlFor="confirmPassword">
+                  {t("profile.confirmPassword")}
+                </Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -341,7 +345,9 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
                   <button
                     type="button"
                     aria-label={
-                      showConfirmPw ? "Nascondi password" : "Mostra password"
+                      showConfirmPw
+                        ? t("profile.hidePassword")
+                        : t("profile.showPassword")
                     }
                     onClick={() => setShowConfirmPw((s) => !s)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
@@ -356,7 +362,9 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
               </div>
 
               <Button type="submit" disabled={passwordSubmitting}>
-                {passwordSubmitting ? "Aggiornamento..." : "Cambia Password"}
+                {passwordSubmitting
+                  ? t("profile.updating")
+                  : t("profile.changePassword")}
               </Button>
             </form>
           </CardContent>

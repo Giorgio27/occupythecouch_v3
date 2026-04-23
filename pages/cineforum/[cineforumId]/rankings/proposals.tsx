@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { GetServerSideProps } from "next";
+import { useTranslation } from "react-i18next";
 import prisma from "@/lib/prisma";
 import CineforumLayout from "@/components/CineforumLayout";
 import {
@@ -22,6 +23,8 @@ import { InfiniteScroll } from "@/components/ui/infinite-scroll";
 import { Film, Trophy, Sparkles } from "lucide-react";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
+const NO_ROUND_KEY = "__no_round__";
+
 interface ProposalsHistoryPageProps {
   cineforumId: string;
   cineforumName: string;
@@ -33,6 +36,7 @@ export default function ProposalsHistoryPage({
   cineforumName,
   initialData,
 }: ProposalsHistoryPageProps) {
+  const { t, i18n } = useTranslation("rankings");
   const [proposals, setProposals] = useState<ProposalDetailDTO[]>(
     initialData.proposals,
   );
@@ -50,7 +54,7 @@ export default function ProposalsHistoryPage({
   const proposalsByRound = useMemo(() => {
     const grouped = new Map<string, ProposalDetailDTO[]>();
     proposals.forEach((proposal) => {
-      const roundKey = proposal.round || "Nessun round";
+      const roundKey = proposal.round || NO_ROUND_KEY;
       if (!grouped.has(roundKey)) grouped.set(roundKey, []);
       grouped.get(roundKey)!.push(proposal);
     });
@@ -73,7 +77,7 @@ export default function ProposalsHistoryPage({
       setProposals((prev) => [...prev, ...data.proposals]);
       setPagination(data.pagination);
     } catch (err) {
-      setError("Errore nel caricamento delle proposte");
+      setError(t("proposals.loadError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -99,10 +103,10 @@ export default function ProposalsHistoryPage({
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Storico proposte
+            {t("proposals.pageTitle")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Tutte le proposte del cineforum, raggruppate per round.
+            {t("proposals.pageSubtitle")}
           </p>
         </div>
 
@@ -126,7 +130,9 @@ export default function ProposalsHistoryPage({
                 <div className="flex items-center gap-3">
                   <div className="h-px flex-1 bg-border" />
                   <h2 className="text-lg font-semibold text-foreground">
-                    {group.round}
+                    {group.round === NO_ROUND_KEY
+                      ? t("proposals.noRound")
+                      : group.round}
                   </h2>
                   <div className="h-px flex-1 bg-border" />
                 </div>
@@ -151,8 +157,10 @@ export default function ProposalsHistoryPage({
                           <div className="flex shrink-0 items-center gap-2">
                             <span className="hidden text-sm text-muted-foreground sm:inline">
                               {proposal.date
-                                ? new Date(proposal.date).toLocaleDateString()
-                                : "Nessuna data"}
+                                ? new Date(proposal.date).toLocaleDateString(
+                                    i18n.language,
+                                  )
+                                : t("proposals.noDate")}
                             </span>
                             <span
                               className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
@@ -161,7 +169,9 @@ export default function ProposalsHistoryPage({
                                   : "border border-amber-100 bg-amber-50 text-amber-700"
                               }`}
                             >
-                              {proposal.closed ? "Chiusa" : "Aperta"}
+                              {proposal.closed
+                                ? t("proposals.statusClosed")
+                                : t("proposals.statusOpen")}
                             </span>
                           </div>
                         </div>
@@ -183,7 +193,7 @@ export default function ProposalsHistoryPage({
                           {proposal.date && (
                             <p className="text-sm text-muted-foreground">
                               {new Date(proposal.date).toLocaleDateString(
-                                "it-IT",
+                                i18n.language,
                                 {
                                   weekday: "long",
                                   year: "numeric",
@@ -197,7 +207,9 @@ export default function ProposalsHistoryPage({
                           {/* Movies */}
                           <div className="space-y-2">
                             <Label className="text-xs font-semibold text-muted-foreground">
-                              Film ({proposal.movies.length})
+                              {t("proposals.moviesCount", {
+                                count: proposal.movies.length,
+                              })}
                             </Label>
                             <div className="space-y-2">
                               {proposal.movies.map((movie) => {
@@ -242,8 +254,10 @@ export default function ProposalsHistoryPage({
                                           {isWinner && (
                                             <p className="mb-1 text-xs font-semibold text-primary">
                                               {isTiedWinner
-                                                ? `Vincitore (pari con altri ${winnersCount - 1})`
-                                                : "Vincitore"}
+                                                ? t("proposals.winnerTied", {
+                                                    count: winnersCount - 1,
+                                                  })
+                                                : t("proposals.winner")}
                                             </p>
                                           )}
                                           <p
@@ -265,7 +279,7 @@ export default function ProposalsHistoryPage({
                                       {rankedMovie && (
                                         <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs">
                                           <span className="font-semibold">
-                                            rank
+                                            {t("proposals.rankLabel")}
                                           </span>
                                           <span className="text-primary">
                                             {rankedMovie.proposal_rank}
@@ -285,14 +299,15 @@ export default function ProposalsHistoryPage({
                             proposal.votes.length > 0 && (
                               <div className="space-y-3">
                                 <Label className="text-xs font-semibold text-muted-foreground">
-                                  Risultati votazione ({proposal.votes.length}{" "}
-                                  voti)
+                                  {t("proposals.votingResults", {
+                                    count: proposal.votes.length,
+                                  })}
                                 </Label>
                                 <div className="rounded-lg border border-border/70 bg-card/50 p-3">
                                   <div className="flex items-center gap-2 mb-3">
                                     <Sparkles className="h-4 w-4 text-primary" />
                                     <span className="text-sm font-semibold">
-                                      Voti individuali
+                                      {t("proposals.individualVotes")}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
                                       ({proposal.votes.length})
@@ -314,7 +329,7 @@ export default function ProposalsHistoryPage({
                                               Object.keys(vote.movie_selection)
                                                 .length
                                             }{" "}
-                                            ranks
+                                            {t("proposals.ranksLabel")}
                                           </span>
                                         </div>
                                         <div className="space-y-2">
@@ -391,7 +406,7 @@ export default function ProposalsHistoryPage({
             loader={
               <div className="flex justify-center py-8">
                 <div className="text-sm text-muted-foreground">
-                  Caricamento proposte...
+                  {t("proposals.loading")}
                 </div>
               </div>
             }
@@ -400,7 +415,7 @@ export default function ProposalsHistoryPage({
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-sm text-muted-foreground">
-                Nessuna proposta trovata per questo cineforum.
+                {t("proposals.emptyTitle")}
               </p>
             </CardContent>
           </Card>

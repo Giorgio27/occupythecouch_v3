@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { GetServerSideProps } from "next";
@@ -59,6 +60,7 @@ export default function AdminProposalsPage({
   cineforumName,
   currentProposal: initialProposal,
 }: AdminProposalsPageProps) {
+  const { t } = useTranslation("admin");
   const { isAdmin, isLoading: isLoadingAccess } = useAdminAccess(cineforumId);
 
   const [proposal, setProposal] = useState<ProposalDetailDTO | null>(
@@ -118,7 +120,7 @@ export default function AdminProposalsPage({
       setShowCloseDialog(false);
       setSelectedWinnerId(null);
     } catch (err) {
-      setError("Failed to close proposal");
+      setError(t("proposals.closeError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -135,8 +137,11 @@ export default function AdminProposalsPage({
         proposal.id,
       );
       setProposal(reopened);
-    } catch (err: any) {
-      setError(err.message || "Failed to reopen proposal");
+    } catch (err: unknown) {
+      setError(
+        (err instanceof Error ? err.message : null) ??
+          t("proposals.reopenError"),
+      );
       console.error(err);
     } finally {
       setLoading(false);
@@ -156,7 +161,7 @@ export default function AdminProposalsPage({
       );
       setProposal(updated);
     } catch (err) {
-      setError("Failed to update proposal");
+      setError(t("proposals.updateError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -208,7 +213,7 @@ export default function AdminProposalsPage({
       setProposal(updated);
       cancelEditing();
     } catch (err) {
-      setError("Failed to update proposal");
+      setError(t("proposals.updateError"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -243,7 +248,7 @@ export default function AdminProposalsPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
-          Loading...
+          {t("proposals.loading") || t("rounds.loading")}
         </div>
       </CineforumLayout>
     );
@@ -262,10 +267,10 @@ export default function AdminProposalsPage({
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight">
-              Gestione proposta
+              {t("proposals.pageTitle")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Proposta corrente del cineforum.
+              {t("proposals.pageSubtitle")}
             </p>
           </div>
           <Link
@@ -273,7 +278,9 @@ export default function AdminProposalsPage({
             className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
           >
             <History className="h-4 w-4" />
-            <span className="hidden sm:inline">Storico</span>
+            <span className="hidden sm:inline">
+              {t("proposals.historyLink")}
+            </span>
           </Link>
         </div>
 
@@ -289,7 +296,7 @@ export default function AdminProposalsPage({
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-sm text-muted-foreground">
-                Nessuna proposta attiva per questo cineforum.
+                {t("proposals.noProposal")}
               </p>
             </CardContent>
           </Card>
@@ -310,7 +317,7 @@ export default function AdminProposalsPage({
                 <span className="text-sm text-muted-foreground">
                   {displayDate
                     ? new Date(displayDate).toLocaleDateString()
-                    : "Nessuna data"}
+                    : t("proposals.noDate")}
                 </span>
                 <span
                   className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
@@ -319,7 +326,9 @@ export default function AdminProposalsPage({
                       : "border border-amber-100 bg-amber-50 text-amber-700"
                   }`}
                 >
-                  {proposal.closed ? "Chiusa" : "Aperta"}
+                  {proposal.closed
+                    ? t("proposals.statusClosed")
+                    : t("proposals.statusOpen")}
                 </span>
               </div>
             </div>
@@ -336,7 +345,7 @@ export default function AdminProposalsPage({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <Calendar className="h-3 w-3" />
-                  Data
+                  {t("proposals.dateLabel")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -348,13 +357,13 @@ export default function AdminProposalsPage({
                 ) : (
                   <p className="text-sm">
                     {displayDate
-                      ? new Date(displayDate).toLocaleDateString("it-IT", {
+                      ? new Date(displayDate).toLocaleDateString(undefined, {
                           weekday: "long",
                           year: "numeric",
                           month: "long",
                           day: "numeric",
                         })
-                      : "Nessuna data impostata"}
+                      : t("proposals.noDateSet")}
                   </p>
                 )}
               </div>
@@ -363,7 +372,9 @@ export default function AdminProposalsPage({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-muted-foreground">
-                    Film ({displayMovies.length})
+                    {t("proposals.moviesCount", {
+                      count: displayMovies.length,
+                    })}
                   </Label>
                   {isEditing && (
                     <Button
@@ -372,7 +383,7 @@ export default function AdminProposalsPage({
                       onClick={() => setShowMovieSearch(!showMovieSearch)}
                     >
                       <Plus className="mr-1 h-3 w-3" />
-                      Aggiungi film
+                      {t("proposals.addMovie")}
                     </Button>
                   )}
                 </div>
@@ -383,7 +394,7 @@ export default function AdminProposalsPage({
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Cerca un film..."
+                          placeholder={t("proposals.searchMoviePlaceholder")}
                           value={movieSearchQuery}
                           onChange={(e) => setMovieSearchQuery(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && searchMovies()}
@@ -474,8 +485,10 @@ export default function AdminProposalsPage({
                               {!isEditing && isWinner && (
                                 <p className="mb-1 text-xs font-semibold text-primary">
                                   {isTiedWinner
-                                    ? `Vincitore (pari con altri ${winnersCount - 1})`
-                                    : "Vincitore"}
+                                    ? t("proposals.winnerTied", {
+                                        count: winnersCount - 1,
+                                      })
+                                    : t("proposals.winner")}
                                 </p>
                               )}
                               <p
@@ -496,7 +509,9 @@ export default function AdminProposalsPage({
                           </div>
                           {!isEditing && rankedMovie && (
                             <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs">
-                              <span className="font-semibold">rank</span>
+                              <span className="font-semibold">
+                                {t("proposals.ranksLabel")}
+                              </span>
                               <span className="text-primary">
                                 {rankedMovie.proposal_rank}
                               </span>
@@ -523,7 +538,9 @@ export default function AdminProposalsPage({
               {!isEditing && proposal.votes && proposal.votes.length > 0 && (
                 <div className="space-y-3">
                   <Label className="text-xs font-semibold text-muted-foreground">
-                    Risultati votazione ({proposal.votes.length} voti)
+                    {t("proposals.votingResults", {
+                      count: proposal.votes.length,
+                    })}
                   </Label>
                   <details className="rounded-lg border border-border/70 bg-card/50 p-3">
                     <summary className="cursor-pointer list-none">
@@ -531,7 +548,7 @@ export default function AdminProposalsPage({
                         <div className="inline-flex items-center gap-2">
                           <Sparkles className="h-4 w-4 text-primary" />
                           <span className="text-sm font-semibold">
-                            Voti individuali
+                            {t("proposals.individualVotes")}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             ({proposal.votes.length})
@@ -601,21 +618,29 @@ export default function AdminProposalsPage({
               {/* Additional Info */}
               <div className="grid gap-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Proprietario:</span>
+                  <span className="text-muted-foreground">
+                    {t("proposals.ownerLabel")}
+                  </span>
                   <span className="font-medium">
                     {proposal.owner?.type} –{" "}
                     {proposal.owner?.name ?? proposal.owner?.id.slice(0, 8)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Risultati:</span>
+                  <span className="text-muted-foreground">
+                    {t("proposals.resultsLabel")}
+                  </span>
                   <span className="font-medium">
-                    {proposal.show_results ? "Visibili" : "Nascosti"}
+                    {proposal.show_results
+                      ? t("proposals.resultsVisible")
+                      : t("proposals.resultsHidden")}
                   </span>
                 </div>
                 {proposal.winner && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Vincitore:</span>
+                    <span className="text-muted-foreground">
+                      {t("proposals.winnerLabel")}
+                    </span>
                     <span className="font-medium">{proposal.winner.title}</span>
                   </div>
                 )}
@@ -630,7 +655,7 @@ export default function AdminProposalsPage({
                       disabled={loading || editMovies.length === 0}
                       size="sm"
                     >
-                      Salva modifiche
+                      {t("proposals.saveChanges")}
                     </Button>
                     <Button
                       onClick={cancelEditing}
@@ -638,7 +663,7 @@ export default function AdminProposalsPage({
                       variant="outline"
                       size="sm"
                     >
-                      Annulla
+                      {t("proposals.cancel")}
                     </Button>
                   </>
                 ) : (
@@ -664,16 +689,16 @@ export default function AdminProposalsPage({
                               variant="outline"
                               size="sm"
                             >
-                              Modifica
+                              {t("proposals.edit")}
                             </Button>
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
                           {proposal.closed
-                            ? "Impossibile modificare una proposta chiusa"
+                            ? t("proposals.cannotEdit")
                             : proposal.votes && proposal.votes.length > 0
-                              ? "Impossibile modificare una proposta con voti"
-                              : "Modifica proposta"}
+                              ? t("proposals.cannotEditWithVotes")
+                              : t("proposals.edit")}
                         </TooltipContent>
                       </Tooltip>
 
@@ -690,14 +715,14 @@ export default function AdminProposalsPage({
                               variant={proposal.closed ? "outline" : "default"}
                               size="sm"
                             >
-                              Chiudi
+                              {t("proposals.close")}
                             </Button>
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
                           {proposal.closed
-                            ? "Già chiusa"
-                            : "Chiudi e seleziona il vincitore"}
+                            ? t("proposals.statusClosed")
+                            : t("proposals.closeDialogTitle")}
                         </TooltipContent>
                       </Tooltip>
 
@@ -710,11 +735,11 @@ export default function AdminProposalsPage({
                               variant="outline"
                               size="sm"
                             >
-                              Riapri
+                              {t("proposals.reopen")}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Riapri questa proposta per la votazione
+                            {t("proposals.reopen")}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -730,12 +755,11 @@ export default function AdminProposalsPage({
                               }
                               size="sm"
                             >
-                              {proposal.show_results ? "Nascondi" : "Mostra"}{" "}
-                              risultati
+                              {t("proposals.toggleResults")}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Mostra/nascondi visibilità risultati
+                            {t("proposals.toggleResults")}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -751,9 +775,9 @@ export default function AdminProposalsPage({
         <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Chiudi proposta</DialogTitle>
+              <DialogTitle>{t("proposals.closeDialogTitle")}</DialogTitle>
               <DialogDescription>
-                Seleziona il film vincitore per chiudere questa proposta.
+                {t("proposals.selectWinner")}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-4">
@@ -804,13 +828,15 @@ export default function AdminProposalsPage({
                 onClick={() => setShowCloseDialog(false)}
                 disabled={loading}
               >
-                Annulla
+                {t("proposals.cancel")}
               </Button>
               <Button
                 onClick={handleCloseProposal}
                 disabled={loading || !selectedWinnerId}
               >
-                {loading ? "Chiusura..." : "Chiudi proposta"}
+                {loading
+                  ? t("proposals.closing")
+                  : t("proposals.closeDialogTitle")}
               </Button>
             </DialogFooter>
           </DialogContent>

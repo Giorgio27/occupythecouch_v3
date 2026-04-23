@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { createCineforum } from "@/lib/client/cineforum";
 import { CineforumDTO } from "@/lib/shared/types";
 import { Button } from "@/components/ui/button";
@@ -112,6 +113,7 @@ function FloatingElements() {
 }
 
 export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
+  const { t } = useTranslation("cineforum");
   const router = useRouter();
   const heroSection = useInView(0.1);
   const cardsSection = useInView(0.1);
@@ -143,7 +145,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
     setError(null);
     const clean = name.trim();
     if (clean.length < 2) {
-      setError("Dai un nome un filo piu lungo (min 2 caratteri).");
+      setError(t("home.nameTooShort"));
       return;
     }
 
@@ -165,9 +167,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
       });
     } catch (err: unknown) {
       const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Errore durante la creazione del cineforum.";
+        err instanceof Error ? err.message : t("home.createError");
       setError(errorMessage);
     }
   }
@@ -218,7 +218,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
               <div className="flex justify-center mb-6 sm:mb-8 animate-fade-in-down">
                 <div className="cine-badge animate-shine group cursor-default text-xs sm:text-sm">
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover:animate-spin-slow" />
-                  <span>I tuoi cineforum</span>
+                  <span>{t("home.badge")}</span>
                 </div>
               </div>
 
@@ -226,11 +226,11 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
               <div className="text-center space-y-4 sm:space-y-6 ">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight sm:leading-tight md:leading-tight text-balance">
                   <span className="inline-block animate-fade-in-up">
-                    Scegli, vota,
+                    {t("home.headline1")}
                   </span>
                   <br />
                   <span className="text-gradient inline-block animate-scale-in-bounce delay-200">
-                    guarda insieme
+                    {t("home.headline2")}
                   </span>
                 </h1>
 
@@ -238,10 +238,10 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                   className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-md sm:max-w-lg mx-auto leading-relaxed animate-fade-in-up delay-300 opacity-0 px-2 sm:px-0"
                   style={{ animationFillMode: "forwards" }}
                 >
-                  Entra in un cineforum esistente oppure creane uno nuovo.
+                  {t("home.subtitle")}
                   <br className="hidden sm:block" />
                   <span className="text-foreground/80 font-medium">
-                    Zero attrito, solo cinema.
+                    {t("home.subtitleBold")}
                   </span>
                 </p>
               </div>
@@ -260,7 +260,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                       {total}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {total === 1 ? "Cineforum" : "Cineforum"}
+                      {t("home.statLabel")}
                     </p>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-green-500">
-                        Creato!
+                        {t("home.justCreated")}
                       </p>
                     </div>
                   </div>
@@ -299,7 +299,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                   <Input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Cerca per nome o descrizione..."
+                    placeholder={t("home.searchPlaceholder")}
                     className="pl-10 bg-secondary/50 border-border/50 focus:border-primary/50 transition-colors"
                   />
                 </div>
@@ -316,12 +316,12 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                           size="icon"
                           className="h-8 w-8 rounded-full"
                           onClick={() => setView("grid")}
-                          aria-label="Vista griglia"
+                          aria-label={t("home.gridAriaLabel")}
                         >
                           <LayoutGrid className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Griglia</TooltipContent>
+                      <TooltipContent>{t("home.gridView")}</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
@@ -332,12 +332,12 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                           size="icon"
                           className="h-8 w-8 rounded-full"
                           onClick={() => setView("list")}
-                          aria-label="Vista lista"
+                          aria-label={t("home.listAriaLabel")}
                         >
                           <LayoutList className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Lista</TooltipContent>
+                      <TooltipContent>{t("home.listView")}</TooltipContent>
                     </Tooltip>
                   </div>
 
@@ -346,7 +346,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                     <DialogTrigger asChild>
                       <Button className="cine-btn h-10 px-5 text-sm">
                         <Plus className="h-4 w-4 mr-2" />
-                        Crea cineforum
+                        {t("home.createButton")}
                       </Button>
                     </DialogTrigger>
 
@@ -356,18 +356,19 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Clapperboard className="h-5 w-5 text-primary" />
                           </div>
-                          Nuovo cineforum
+                          {t("home.dialogTitle")}
                         </DialogTitle>
                         <DialogDesc className="text-muted-foreground">
-                          Un nome chiaro = inviti piu facili. Puoi cambiare
-                          tutto dopo.
+                          {t("home.dialogDesc")}
                         </DialogDesc>
                       </DialogHeader>
 
                       <div className="space-y-4 py-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium">Nome</label>
+                            <label className="text-sm font-medium">
+                              {t("home.nameLabel")}
+                            </label>
                             <span className="text-xs text-muted-foreground">
                               {name.trim().length}/40
                             </span>
@@ -377,7 +378,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                             onChange={(e) =>
                               setName(e.target.value.slice(0, 40))
                             }
-                            placeholder="Es. Venerdi Noir"
+                            placeholder={t("home.namePlaceholder")}
                             className="bg-secondary/50 border-border/50 focus:border-primary/50"
                             autoFocus
                             onKeyDown={(e) => {
@@ -392,7 +393,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                         {/* Presets */}
                         <div className="space-y-2">
                           <label className="text-xs text-muted-foreground">
-                            Suggerimenti
+                            {t("home.presetsLabel")}
                           </label>
                           <div className="flex flex-wrap gap-2">
                             {namePresets.map((p) => (
@@ -422,7 +423,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                           onClick={() => setOpen(false)}
                           className="rounded-full"
                         >
-                          Annulla
+                          {t("home.cancel")}
                         </Button>
                         <Button
                           type="button"
@@ -431,7 +432,7 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                           className="cine-btn"
                         >
                           <Plus className="h-4 w-4 mr-2" />
-                          {isPending ? "Creazione..." : "Crea"}
+                          {isPending ? t("home.creating") : t("home.create")}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -489,6 +490,8 @@ function EmptyState({
   onClearSearch: () => void;
   onOpenCreate: () => void;
 }) {
+  const { t } = useTranslation("cineforum");
+
   return (
     <div className="cine-card text-center py-12 sm:py-16 md:py-20 relative overflow-hidden">
       {/* Background accent */}
@@ -500,13 +503,13 @@ function EmptyState({
         </div>
 
         <h3 className="text-xl sm:text-2xl font-bold mb-3 text-foreground">
-          {total === 0 ? "Crea il tuo primo cineforum" : "Nessun risultato"}
+          {total === 0 ? t("empty.firstTitle") : t("empty.noResultsTitle")}
         </h3>
 
         <p className="text-muted-foreground text-sm sm:text-base mb-8 max-w-md mx-auto">
           {total === 0
-            ? "Invita i tuoi amici e inizia a scegliere film insieme. Il resto viene da se."
-            : "Prova a cambiare la ricerca o crea un nuovo cineforum."}
+            ? t("empty.firstSubtitle")
+            : t("empty.noResultsSubtitle")}
         </p>
 
         {/* How it works hints */}
@@ -514,18 +517,18 @@ function EmptyState({
           {[
             {
               icon: Plus,
-              title: "Crea",
-              desc: "Dagli un nome riconoscibile",
+              title: t("empty.hint1Title"),
+              desc: t("empty.hint1Desc"),
             },
             {
               icon: Users,
-              title: "Invita",
-              desc: "Condividi il link con il gruppo",
+              title: t("empty.hint2Title"),
+              desc: t("empty.hint2Desc"),
             },
             {
               icon: Vote,
-              title: "Vota",
-              desc: "Proposte, ranking, decisione",
+              title: t("empty.hint3Title"),
+              desc: t("empty.hint3Desc"),
             },
           ].map((hint, idx) => {
             const Icon = hint.icon;
@@ -547,7 +550,7 @@ function EmptyState({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button onClick={onOpenCreate} className="cine-btn">
             <Plus className="h-4 w-4 mr-2" />
-            Crea un cineforum
+            {t("empty.createButton")}
           </Button>
           {total > 0 && (
             <Button
@@ -555,7 +558,7 @@ function EmptyState({
               onClick={onClearSearch}
               className="cine-btn-ghost"
             >
-              Pulisci ricerca
+              {t("empty.clearSearch")}
             </Button>
           )}
         </div>
@@ -580,6 +583,7 @@ function CineforumCard({
   copiedId: string | null;
   onCopyLink: (id: string) => void;
 }) {
+  const { t } = useTranslation("cineforum");
   const delay = Math.min(index * 80, 400);
 
   return (
@@ -625,7 +629,7 @@ function CineforumCard({
               <p
                 className={`text-muted-foreground ${viewMode === "list" ? "text-sm line-clamp-1" : "text-sm line-clamp-2 mb-4"}`}
               >
-                {cineforum.description || "Nessuna descrizione"}
+                {cineforum.description || t("home.noDescription")}
               </p>
             </div>
           </div>
@@ -662,7 +666,7 @@ function CineforumCard({
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  aria-label="Azioni"
+                  aria-label={t("home.actionsAriaLabel")}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -682,12 +686,14 @@ function CineforumCard({
                   {copiedId === cineforum.id ? (
                     <>
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-green-500">Link copiato!</span>
+                      <span className="text-green-500">
+                        {t("home.linkCopied")}
+                      </span>
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4" />
-                      Copia link
+                      {t("home.copyLink")}
                     </>
                   )}
                 </DropdownMenuItem>
@@ -697,7 +703,7 @@ function CineforumCard({
                 <DropdownMenuItem asChild className="gap-2 cursor-pointer">
                   <Link href={`/cineforum/${cineforum.id}`}>
                     <CalendarClock className="h-4 w-4" />
-                    Vai al cineforum
+                    {t("home.goToCineforum")}
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

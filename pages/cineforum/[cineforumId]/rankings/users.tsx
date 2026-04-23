@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import {
@@ -63,6 +64,7 @@ export default function UsersRankingPage({
   cineforumId,
   cineforumName,
 }: Props) {
+  const { t } = useTranslation("rankings");
   const [rankings, setRankings] = useState<UserRankingDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier>(
@@ -206,7 +208,6 @@ export default function UsersRankingPage({
         const valB = b.average_rating ?? -Infinity;
         comparison = valA - valB;
       } else {
-        // Sorting by delta of a specific supplier
         const cineforumA = a.average_rating ?? 0;
         const cineforumB = b.average_rating ?? 0;
 
@@ -275,11 +276,6 @@ export default function UsersRankingPage({
           withRatings.length
         : 0;
 
-    const totalVotes = filteredByRoundRankings.reduce(
-      (sum, u) => sum + u.movie_round_rankings.length,
-      0,
-    );
-
     const totalWins = filteredByRoundRankings.reduce(
       (sum, u) =>
         sum + u.movie_round_rankings.filter((m) => m.round_winner).length,
@@ -290,7 +286,6 @@ export default function UsersRankingPage({
       totalUsers: filteredByRoundRankings.length,
       activeUsers: withRatings.length,
       avgRating,
-      totalVotes,
       totalWins,
     };
   }, [filteredByRoundRankings]);
@@ -341,7 +336,7 @@ export default function UsersRankingPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingCard text="Caricamento classifiche..." />
+          <LoadingCard text={t("users.loading")} />
         </div>
       </CineforumLayout>
     );
@@ -350,20 +345,22 @@ export default function UsersRankingPage({
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="py-6 sm:py-8">
+        {/* Page Header */}
         <div className="mb-8 sm:mb-10 animate-fade-in-up">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10 glow-red-soft">
               <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Classifica Utenti
+              {t("users.pageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Voti medi degli utenti del cineforum
+            {t("users.pageSubtitle")}
           </p>
         </div>
 
+        {/* Stats */}
         <div
           className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 animate-fade-in-up"
           style={{ animationDelay: "100ms" }}
@@ -373,7 +370,9 @@ export default function UsersRankingPage({
               <Users className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Utenti</p>
+              <p className="text-xs text-muted-foreground">
+                {t("users.statUsers")}
+              </p>
               <p className="text-lg font-bold text-foreground">
                 {stats.totalUsers}
               </p>
@@ -385,7 +384,9 @@ export default function UsersRankingPage({
               <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Attivi</p>
+              <p className="text-xs text-muted-foreground">
+                {t("users.statActive")}
+              </p>
               <p className="text-lg font-bold text-foreground">
                 {stats.activeUsers}
               </p>
@@ -397,7 +398,9 @@ export default function UsersRankingPage({
               <Award className="w-5 h-5 text-amber-500" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Media</p>
+              <p className="text-xs text-muted-foreground">
+                {t("users.statAverage")}
+              </p>
               <p className="text-lg font-bold text-foreground">
                 {stats.avgRating.toFixed(2)}
               </p>
@@ -409,7 +412,9 @@ export default function UsersRankingPage({
               <Trophy className="w-5 h-5 text-yellow-500" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Vittorie</p>
+              <p className="text-xs text-muted-foreground">
+                {t("users.statWins")}
+              </p>
               <p className="text-lg font-bold text-foreground">
                 {stats.totalWins}
               </p>
@@ -417,6 +422,7 @@ export default function UsersRankingPage({
           </div>
         </div>
 
+        {/* Controls */}
         <div
           className="flex flex-col gap-4 mb-6 animate-fade-in-up"
           style={{ animationDelay: "200ms" }}
@@ -433,7 +439,7 @@ export default function UsersRankingPage({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Cerca utente..."
+                  placeholder={t("users.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card text-foreground
@@ -451,10 +457,10 @@ export default function UsersRankingPage({
                         ? "bg-primary text-primary-foreground border-primary"
                         : "border-border bg-card text-foreground hover:bg-secondary hover:border-primary/50"
                     }`}
-                  title="Filtri"
+                  title={t("users.filters")}
                 >
                   <SlidersHorizontal className="w-4 h-4" />
-                  <span className="hidden lg:inline">Filtri</span>
+                  <span className="hidden lg:inline">{t("users.filters")}</span>
                 </button>
               )}
               {selectedSupplier.id !== "delta" && (
@@ -463,19 +469,23 @@ export default function UsersRankingPage({
                     onClick={() => setViewMode("cards")}
                     className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
                     ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                    title="Cards"
+                    title={t("users.viewCards")}
                   >
                     <LayoutGrid className="w-4 h-4" />
-                    <span className="hidden lg:inline">Cards</span>
+                    <span className="hidden lg:inline">
+                      {t("users.viewCards")}
+                    </span>
                   </button>
                   <button
                     onClick={() => setViewMode("table")}
                     className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
                     ${viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                    title="Tabella"
+                    title={t("users.viewTable")}
                   >
                     <List className="w-4 h-4" />
-                    <span className="hidden lg:inline">Tabella</span>
+                    <span className="hidden lg:inline">
+                      {t("users.viewTable")}
+                    </span>
                   </button>
                 </div>
               )}
@@ -486,7 +496,7 @@ export default function UsersRankingPage({
             <div className="cine-card p-4 animate-fade-in">
               <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-4">
                 <Film className="w-4 h-4 text-primary" />
-                Filtra per Round:
+                {t("users.filterByRound")}
                 <span className="text-primary font-bold">
                   {allRounds[roundRange[0] - 1]} →{" "}
                   {allRounds[roundRange[1] - 1]}
@@ -496,7 +506,7 @@ export default function UsersRankingPage({
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-muted-foreground mb-2 block">
-                    Inizio:{" "}
+                    {t("users.filterFrom")}{" "}
                     <span className="font-medium text-foreground">
                       {allRounds[roundRange[0] - 1]}
                     </span>
@@ -519,7 +529,7 @@ export default function UsersRankingPage({
 
                 <div>
                   <label className="text-xs text-muted-foreground mb-2 block">
-                    Fine:{" "}
+                    {t("users.filterTo")}{" "}
                     <span className="font-medium text-foreground">
                       {allRounds[roundRange[1] - 1]}
                     </span>
@@ -546,6 +556,7 @@ export default function UsersRankingPage({
           )}
         </div>
 
+        {/* Cards / Table view */}
         {displayedRankings.length > 0 && selectedSupplier.id !== "delta" && (
           <>
             {viewMode === "cards" ? (
@@ -594,7 +605,7 @@ export default function UsersRankingPage({
                                 ${getCardViewMode(ranking.id) === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
                             >
                               <TableIcon className="w-3.5 h-3.5" />
-                              Tabella
+                              {t("users.viewTable")}
                             </button>
                             <button
                               onClick={() => setCardMode(ranking.id, "chart")}
@@ -602,7 +613,7 @@ export default function UsersRankingPage({
                                 ${getCardViewMode(ranking.id) === "chart" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
                             >
                               <LineChartIcon className="w-3.5 h-3.5" />
-                              Grafico
+                              {t("users.viewChart")}
                             </button>
                           </div>
                         </div>
@@ -611,13 +622,13 @@ export default function UsersRankingPage({
                           <div>
                             <h3 className="font-bold text-primary mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
                               <Film className="w-4 h-4" />
-                              Film Votati
+                              {t("users.moviesVoted")}
                             </h3>
 
                             {ranking.movie_round_rankings.length === 0 ? (
                               <EmptyState
-                                title="Nessun film votato"
-                                subtitle="Questo utente non ha ancora votato alcun film"
+                                title={t("users.noMoviesVoted")}
+                                subtitle={t("users.noMoviesVotedSubtitle")}
                               />
                             ) : (
                               <div className="space-y-2">
@@ -661,7 +672,7 @@ export default function UsersRankingPage({
 
                         <div className="pt-4 border-t border-border">
                           <h4 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wide">
-                            Medie per Sito
+                            {t("users.platformComparison")}
                           </h4>
                           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                             {[
@@ -709,16 +720,16 @@ export default function UsersRankingPage({
                           #
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Utente
+                          {t("users.colUser")}
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Media
+                          {t("users.colAverage")}
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Film
+                          {t("users.colMovies")}
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Vittorie
+                          {t("users.colWins")}
                         </th>
                       </tr>
                     </thead>
@@ -792,19 +803,16 @@ export default function UsersRankingPage({
                 <div className="p-2 rounded-lg bg-primary/10">
                   <BarChart3 className="w-5 h-5 text-primary" />
                 </div>
-                Confronto Piattaforme
+                {t("users.comparisonTitle")}
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Analisi comparativa delle medie di voto tra Cineforum e le
-                piattaforme esterne. Il{" "}
-                <strong className="text-foreground">Delta</strong> indica quanto
-                Cineforum vota più alto o più basso rispetto alle piattaforme:{" "}
+                {t("users.comparisonSubtitle")}{" "}
                 <span className="text-green-500 font-semibold">
-                  valori positivi
+                  {t("users.positiveValues")}
                 </span>{" "}
                 indicano che Cineforum vota più alto,{" "}
                 <span className="text-red-500 font-semibold">
-                  valori negativi
+                  {t("users.negativeValues")}
                 </span>{" "}
                 indicano che Cineforum vota più basso.
               </p>
@@ -819,7 +827,7 @@ export default function UsersRankingPage({
                       onClick={() => toggleDeltaSort("user")}
                     >
                       <div className="flex items-center">
-                        Utente
+                        {t("users.colUser")}
                         {renderDeltaSortIcon("user")}
                       </div>
                     </th>
@@ -833,7 +841,7 @@ export default function UsersRankingPage({
                           {renderDeltaSortIcon("cineforum")}
                         </div>
                         <span className="text-[10px] font-normal text-muted-foreground">
-                          (riferimento)
+                          {t("users.referenceLabel")}
                         </span>
                       </div>
                     </th>
@@ -853,8 +861,12 @@ export default function UsersRankingPage({
                           )}
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-2 text-[10px] font-normal">
-                          <span className="text-foreground">Media</span>
-                          <span className="text-amber-500">Delta</span>
+                          <span className="text-foreground">
+                            {t("users.colMedia")}
+                          </span>
+                          <span className="text-amber-500">
+                            {t("users.colDeltaLabel")}
+                          </span>
                         </div>
                       </th>
                     ))}
@@ -961,7 +973,7 @@ export default function UsersRankingPage({
                     <td className="px-4 py-4 text-sm font-bold text-foreground sticky left-0 bg-gradient-to-r from-primary/10 to-amber-500/10 z-10">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-primary" />
-                        Media Globale
+                        {t("users.globalAverage")}
                       </div>
                     </td>
                     <td className="px-4 py-4 text-center bg-primary/10">
@@ -1067,36 +1079,36 @@ export default function UsersRankingPage({
             <div className="p-4 border-t border-border bg-secondary/20">
               <div className="flex flex-wrap items-center gap-4 text-xs">
                 <span className="font-semibold text-foreground">
-                  Legenda Delta:
+                  {t("users.deltaLegend")}
                 </span>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-600"></div>
                   <span className="text-muted-foreground">
-                    Cineforum molto più alto (&gt; +0.5)
+                    {t("users.deltaHighDesc")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span className="text-muted-foreground">
-                    Cineforum più alto (+0.1 a +0.5)
+                    {t("users.deltaHighMedDesc")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
                   <span className="text-muted-foreground">
-                    Simile (-0.1 a +0.1)
+                    {t("users.deltaNeutralDesc")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   <span className="text-muted-foreground">
-                    Cineforum più basso (-0.5 a -0.1)
+                    {t("users.deltaLowMedDesc")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-600"></div>
                   <span className="text-muted-foreground">
-                    Cineforum molto più basso (&lt; -0.5)
+                    {t("users.deltaLowDesc")}
                   </span>
                 </div>
               </div>
@@ -1110,14 +1122,12 @@ export default function UsersRankingPage({
               <Users className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              {searchQuery
-                ? "Nessun risultato"
-                : "Nessun utente nella classifica"}
+              {searchQuery ? t("users.noResults") : t("users.emptyTitle")}
             </h3>
             <p className="text-muted-foreground">
               {searchQuery
-                ? `Nessun utente corrisponde a "${searchQuery}"`
-                : "Gli utenti appariranno qui dopo aver espresso i loro voti."}
+                ? t("users.noResultsQuery", { query: searchQuery })
+                : t("users.emptySubtitle")}
             </p>
           </div>
         )}

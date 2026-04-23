@@ -2,6 +2,7 @@
 
 import { GetServerSideProps } from "next";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import { Globe, Trophy, TrendingUp, MapPin } from "lucide-react";
@@ -44,7 +45,16 @@ const COLORS = [
 ];
 
 // Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+}) => {
+  const { t } = useTranslation("rankings");
   if (active && payload && payload.length) {
     return (
       <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl">
@@ -54,7 +64,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         </div>
         <p className="text-muted-foreground text-sm">
           <span className="text-primary font-bold">{payload[0].value}</span>{" "}
-          film
+          {t("countries.tooltipMovies")}
         </p>
       </div>
     );
@@ -66,6 +76,7 @@ export default function CountriesRankingPage({
   cineforumId,
   cineforumName,
 }: Props) {
+  const { t } = useTranslation("rankings");
   const [countries, setCountries] = useState<CountryData[]>([]);
   const [uniqueFilmsCount, setUniqueFilmsCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -99,7 +110,7 @@ export default function CountriesRankingPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingCard text="Caricamento paesi..." />
+          <LoadingCard text={t("countries.loading")} />
         </div>
       </CineforumLayout>
     );
@@ -115,11 +126,11 @@ export default function CountriesRankingPage({
               <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Ranking Nazioni
+              {t("countries.pageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Distribuzione geografica dei film votati dal tuo cineforum
+            {t("countries.pageSubtitle")}
           </p>
         </div>
 
@@ -132,7 +143,7 @@ export default function CountriesRankingPage({
             >
               <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm mb-1">
                 <Globe className="w-4 h-4" />
-                <span>Paesi</span>
+                <span>{t("countries.statCountries")}</span>
               </div>
               <p className="text-2xl sm:text-3xl font-black text-gradient">
                 {countries.length}
@@ -145,7 +156,7 @@ export default function CountriesRankingPage({
             >
               <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm mb-1">
                 <TrendingUp className="w-4 h-4" />
-                <span>Film Totali</span>
+                <span>{t("countries.statTotalMovies")}</span>
               </div>
               <p className="text-2xl sm:text-3xl font-black text-foreground">
                 {uniqueFilmsCount}
@@ -159,7 +170,7 @@ export default function CountriesRankingPage({
               >
                 <div className="flex items-center gap-2 text-muted-foreground text-xs sm:text-sm mb-1">
                   <Trophy className="w-4 h-4 text-yellow-500" />
-                  <span>Top Paese</span>
+                  <span>{t("countries.statTopCountry")}</span>
                 </div>
                 <p className="text-lg sm:text-xl font-bold text-foreground truncate">
                   {topCountry[0]}
@@ -176,11 +187,10 @@ export default function CountriesRankingPage({
               <Globe className="w-8 h-8 text-primary/60" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nessun dato disponibile
+              {t("countries.emptyTitle")}
             </h3>
             <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-              I dati sui paesi di produzione appariranno qui quando ci saranno
-              film votati
+              {t("countries.emptySubtitle")}
             </p>
           </div>
         ) : (
@@ -193,7 +203,7 @@ export default function CountriesRankingPage({
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-1 h-6 bg-primary rounded-full" />
                 <h2 className="text-lg font-bold text-foreground">
-                  Film per Paese di Produzione
+                  {t("countries.chartTitle")}
                 </h2>
               </div>
 
@@ -268,7 +278,7 @@ export default function CountriesRankingPage({
                 <div className="relative px-4 sm:px-6 py-4 flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-white/90" />
                   <h2 className="text-lg font-bold text-white">
-                    Dettaglio per Paese
+                    {t("countries.tableTitle")}
                   </h2>
                 </div>
               </div>
@@ -278,16 +288,16 @@ export default function CountriesRankingPage({
                   <thead className="bg-secondary/50 border-b border-border">
                     <tr>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                        #
+                        {t("countries.colRank")}
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Paese
+                        {t("countries.colCountry")}
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Film
+                        {t("countries.colMovies")}
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Percentuale
+                        {t("countries.colPercentage")}
                       </th>
                     </tr>
                   </thead>

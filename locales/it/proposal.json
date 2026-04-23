@@ -24,10 +24,10 @@
     "createButton": "Crea proposta",
     "alertFillFields": "Compila tutti i campi e seleziona almeno un film",
     "alertCreationFailed": "Creazione fallita. Riprova.",
-    "searchPlaceholder": "Type a title",
-    "searchButton": "Search",
-    "searching": "Searching…",
-    "selectedMovies": "Selected movies"
+    "searchPlaceholder": "Scrivi un titolo",
+    "searchButton": "Cerca",
+    "searching": "Ricerca in corso…",
+    "selectedMovies": "Film selezionati"
   },
   "open": {
     "badge": "Votazione aperta",

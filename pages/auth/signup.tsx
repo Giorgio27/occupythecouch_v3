@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { signIn } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function SignUpPage() {
+  const { t } = useTranslation("auth");
   const router = useRouter();
   const [email, setEmail] = React.useState("");
   const [name, setName] = React.useState("");
@@ -31,7 +33,7 @@ export default function SignUpPage() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error || "Signup fallito");
+        throw new Error(body?.error || t("signup.signupFailed"));
       }
 
       // Optional: auto-login after signup
@@ -44,8 +46,8 @@ export default function SignUpPage() {
 
       if (loginRes?.ok) router.push("/");
       else router.push("/auth/signin");
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("signup.signupFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -55,9 +57,9 @@ export default function SignUpPage() {
     <div className="mx-auto grid min-h-dvh w-full max-w-md place-items-center px-4 py-8">
       <Card className="w-full">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Crea account</CardTitle>
+          <CardTitle className="text-2xl">{t("signup.title")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Inizia a creare cineforum e invita i tuoi amici.
+            {t("signup.subtitle")}
           </p>
         </CardHeader>
         <CardContent>
@@ -72,7 +74,7 @@ export default function SignUpPage() {
               <Input
                 id="name"
                 type="text"
-                placeholder="Il tuo nome"
+                placeholder={t("signup.namePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -84,7 +86,7 @@ export default function SignUpPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="tu@esempio.com"
+                placeholder={t("signup.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -105,7 +107,9 @@ export default function SignUpPage() {
                 />
                 <button
                   type="button"
-                  aria-label={showPw ? "Nascondi password" : "Mostra password"}
+                  aria-label={
+                    showPw ? t("signup.hidePassword") : t("signup.showPassword")
+                  }
                   onClick={() => setShowPw((s) => !s)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
                 >
@@ -119,17 +123,17 @@ export default function SignUpPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "Creazione…" : "Crea account"}
+              {submitting ? t("signup.submitting") : t("signup.submit")}
             </Button>
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Hai già un account?{" "}
+            {t("signup.hasAccount")}{" "}
             <Link
               href="/auth/signin"
               className="font-medium underline underline-offset-4"
             >
-              Accedi
+              {t("signup.signinLink")}
             </Link>
           </p>
         </CardContent>

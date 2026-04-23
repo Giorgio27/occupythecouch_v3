@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { GetServerSideProps } from "next";
 import CineforumLayout from "@/components/CineforumLayout";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
@@ -50,6 +51,7 @@ export default function CineforumRoundsAdminPage({
   cineforumId,
   cineforumName,
 }: RoundsAdminPageProps) {
+  const { t, i18n } = useTranslation("admin");
   const { isAdmin, isLoading, session } = useAdminAccess(cineforumId);
 
   const [rounds, setRounds] = React.useState<RoundSummaryDTO[]>([]);
@@ -93,7 +95,7 @@ export default function CineforumRoundsAdminPage({
       setRounds((prev) => (reset ? data.rounds : [...prev, ...data.rounds]));
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? "Error loading rounds");
+      setError(e.message ?? t("rounds.loading"));
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export default function CineforumRoundsAdminPage({
     e.preventDefault();
     if (!cineforumId) return;
     if (!name || !date) {
-      setError("Name and date are required");
+      setError(t("rounds.nameLabel") + " / " + t("rounds.dateLabel"));
       return;
     }
     setCreating(true);
@@ -124,7 +126,7 @@ export default function CineforumRoundsAdminPage({
       await loadPage(0, true);
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? "Error creating round");
+      setError(e.message ?? t("rounds.createButton"));
     } finally {
       setCreating(false);
     }
@@ -148,19 +150,19 @@ export default function CineforumRoundsAdminPage({
           const parts: string[] = [];
           if (openProposals?.length) {
             parts.push(
-              `Open proposals: ${openProposals.map((p) => p.title).join(", ")}`,
+              `${t("rounds.openProposals")} ${openProposals.map((p) => p.title).join(", ")}`,
             );
           }
           if (proposalsWithoutWinner?.length) {
             parts.push(
-              `Proposals without winner: ${proposalsWithoutWinner
+              `${t("rounds.proposalsWithoutWinner")} ${proposalsWithoutWinner
                 .map((p) => p.title)
                 .join(", ")}`,
             );
           }
           if (proposalsWithoutVotes?.length) {
             parts.push(
-              `Proposals without votes: ${proposalsWithoutVotes
+              `${t("rounds.proposalsWithoutVotes")} ${proposalsWithoutVotes
                 .map((p) => p.title)
                 .join(", ")}`,
             );
@@ -168,7 +170,7 @@ export default function CineforumRoundsAdminPage({
 
           setError(
             result.error ||
-              "Round cannot be closed. " + (parts.join(" · ") || ""),
+              t("rounds.closeRound") + ". " + (parts.join(" · ") || ""),
           );
         } else {
           throw new Error(result.error);
@@ -180,7 +182,7 @@ export default function CineforumRoundsAdminPage({
       await loadPage(0, true);
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? "Error closing round");
+      setError(e.message ?? t("rounds.closeRound"));
     } finally {
       setClosingId(null);
     }
@@ -190,7 +192,7 @@ export default function CineforumRoundsAdminPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
-          Loading...
+          {t("rounds.loading")}
         </div>
       </CineforumLayout>
     );
@@ -207,11 +209,10 @@ export default function CineforumRoundsAdminPage({
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Rounds admin
+            {t("rounds.pageTitle")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage rounds for this cineforum: create new ones, close them and
-            trigger rankings computation.
+            {t("rounds.pageSubtitle")}
           </p>
         </div>
 
@@ -225,7 +226,9 @@ export default function CineforumRoundsAdminPage({
         {/* Create round form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Create new round</CardTitle>
+            <CardTitle className="text-base">
+              {t("rounds.createCardTitle")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form
@@ -233,7 +236,7 @@ export default function CineforumRoundsAdminPage({
               className="flex flex-col gap-4 md:flex-row md:items-end"
             >
               <div className="flex-1 space-y-1">
-                <Label htmlFor="round-name">Name</Label>
+                <Label htmlFor="round-name">{t("rounds.nameLabel")}</Label>
                 <Input
                   id="round-name"
                   value={name}
@@ -242,7 +245,7 @@ export default function CineforumRoundsAdminPage({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="round-date">Date</Label>
+                <Label htmlFor="round-date">{t("rounds.dateLabel")}</Label>
                 <Input
                   id="round-date"
                   type="date"
@@ -263,17 +266,16 @@ export default function CineforumRoundsAdminPage({
                           disabled={isCreateDisabled}
                           className="w-full md:w-auto"
                         >
-                          {creating ? "Creating..." : "Create"}
+                          {creating
+                            ? t("rounds.creating")
+                            : t("rounds.createButton")}
                         </Button>
                       </span>
                     </TooltipTrigger>
 
                     {hasOpenRound && (
                       <TooltipContent side="top">
-                        <p>
-                          You need to close the current open round before
-                          creating a new one.
-                        </p>
+                        <p>{t("rounds.openRoundWarning")}</p>
                       </TooltipContent>
                     )}
                   </Tooltip>
@@ -286,22 +288,26 @@ export default function CineforumRoundsAdminPage({
         {/* Rounds list */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Rounds</CardTitle>
+            <CardTitle className="text-base">
+              {t("rounds.roundsTitle")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {rounds.length === 0 && !loading && (
               <p className="text-sm text-muted-foreground">
-                No rounds yet. Create the first one above.
+                {t("rounds.noRounds")}
               </p>
             )}
 
             <div className="flex flex-col gap-3">
               {rounds.map((round) => {
                 const dateLabel = round.date
-                  ? new Date(round.date).toLocaleDateString("it-IT")
-                  : "No date";
+                  ? new Date(round.date).toLocaleDateString(i18n.language)
+                  : t("rounds.noDate");
                 const chooserLabel =
-                  round.chooser?.name ?? round.chooser?.email ?? "No chooser";
+                  round.chooser?.name ??
+                  round.chooser?.email ??
+                  t("rounds.noChooser");
 
                 return (
                   <div
@@ -319,18 +325,22 @@ export default function CineforumRoundsAdminPage({
                               : "bg-amber-50 text-amber-700 border border-amber-100",
                           )}
                         >
-                          {round.closed ? "Closed" : "Open"}
+                          {round.closed
+                            ? t("rounds.statusClosed")
+                            : t("rounds.statusOpen")}
                         </span>
                         {round.oscarable && (
                           <span className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">
-                            Oscarable
+                            {t("rounds.oscarable")}
                           </span>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         <span>{dateLabel}</span>
                         <span className="mx-1">·</span>
-                        <span>Chooser: {chooserLabel}</span>
+                        <span>
+                          {t("rounds.chooserLabel")} {chooserLabel}
+                        </span>
                       </div>
                     </div>
 
@@ -343,8 +353,8 @@ export default function CineforumRoundsAdminPage({
                           disabled={closingId === round.id}
                         >
                           {closingId === round.id
-                            ? "Closing..."
-                            : "Close round"}
+                            ? t("rounds.closing")
+                            : t("rounds.closeRound")}
                         </Button>
                       )}
                     </div>
@@ -362,7 +372,7 @@ export default function CineforumRoundsAdminPage({
                   onClick={() => loadPage(page + 1)}
                   disabled={loading}
                 >
-                  {loading ? "Loading..." : "Load more"}
+                  {loading ? t("rounds.loading") : t("rounds.loadMore")}
                 </Button>
               </div>
             )}

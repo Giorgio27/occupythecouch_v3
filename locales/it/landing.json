@@ -1,1 +1,44 @@
-{}
+{
+  "hero": {
+    "badge": "La democrazia del cinema",
+    "headline1": "Scegli film con gli",
+    "headline2": "amici",
+    "subtitle": "Crea un round, invita gli amici a proporre film, votate insieme.",
+    "subtitleBold": "Il migliore vince.",
+    "subtitleEnd": "Niente discussioni, solo cinema.",
+    "ctaCreate": "Crea il tuo cineforum",
+    "ctaHowItWorks": "Come funziona",
+    "statDemocratic": "Democratico",
+    "statDiscussions": "Discussioni",
+    "statMovieNights": "Serate film"
+  },
+  "howItWorks": {
+    "title": "Come funziona",
+    "subtitle": "Quattro semplici passaggi per organizzare la serata film perfetta con i tuoi amici.",
+    "step1Title": "Crea cineforum",
+    "step1Desc": "Dai un nome al gruppo e invita i tuoi amici",
+    "step2Title": "Round di proposte",
+    "step2Desc": "Ognuno propone i film che vuole vedere",
+    "step3Title": "Votazione",
+    "step3Desc": "Tutti votano il preferito. Vince il migliore",
+    "step4Title": "Guarda insieme",
+    "step4Desc": "Il film vincente diventa la scelta del gruppo"
+  },
+  "why": {
+    "title": "Perché CineForum",
+    "subtitle": "Perché le serate film dovrebbero essere divertenti, non una battaglia.",
+    "feature1Title": "Democrazia vera",
+    "feature1Desc": "Niente dittatura del leader. Il film lo sceglie il gruppo, tutti votano in modo uguale.",
+    "feature2Title": "Zero discussioni",
+    "feature2Desc": "Niente litigate su quale film guardare. Il sistema di voto è trasparente e giusto.",
+    "feature3Title": "Puro e semplice",
+    "feature3Desc": "Un'app fatta solo per scegliere film con gli amici. Niente distrazioni."
+  },
+  "cta": {
+    "badge": "Inizia ora",
+    "title": "Inizia gratis adesso",
+    "subtitle": "Niente carte, niente promesse.",
+    "subtitleBold": "Solo film con gli amici.",
+    "button": "Crea il tuo cineforum"
+  }
+}

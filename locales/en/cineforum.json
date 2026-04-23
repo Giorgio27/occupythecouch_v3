@@ -1,1 +1,46 @@
-{}
+{
+  "home": {
+    "badge": "Your cineforums",
+    "headline1": "Choose, vote,",
+    "headline2": "watch together",
+    "subtitle": "Join an existing cineforum or create a new one.",
+    "subtitleBold": "Zero friction, just cinema.",
+    "statLabel": "Cineforum",
+    "justCreated": "Created!",
+    "searchPlaceholder": "Search by name or description...",
+    "gridView": "Grid",
+    "listView": "List",
+    "gridAriaLabel": "Grid view",
+    "listAriaLabel": "List view",
+    "createButton": "Create cineforum",
+    "dialogTitle": "New cineforum",
+    "dialogDesc": "A clear name = easier invites. You can change everything later.",
+    "nameLabel": "Name",
+    "namePlaceholder": "E.g. Friday Noir",
+    "presetsLabel": "Suggestions",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create",
+    "noDescription": "No description",
+    "actionsAriaLabel": "Actions",
+    "linkCopied": "Link copied!",
+    "copyLink": "Copy link",
+    "goToCineforum": "Go to cineforum",
+    "nameTooShort": "Give it a slightly longer name (min 2 characters).",
+    "createError": "Error creating cineforum."
+  },
+  "empty": {
+    "firstTitle": "Create your first cineforum",
+    "noResultsTitle": "No results",
+    "firstSubtitle": "Invite your friends and start choosing movies together. The rest follows.",
+    "noResultsSubtitle": "Try changing the search or create a new cineforum.",
+    "hint1Title": "Create",
+    "hint1Desc": "Give it a recognisable name",
+    "hint2Title": "Invite",
+    "hint2Desc": "Share the link with the group",
+    "hint3Title": "Vote",
+    "hint3Desc": "Proposals, ranking, decision",
+    "createButton": "Create a cineforum",
+    "clearSearch": "Clear search"
+  }
+}

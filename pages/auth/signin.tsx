@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { signIn } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function SignInPage() {
+  const { t } = useTranslation("auth");
   const router = useRouter();
   const callbackUrl = (router.query.callbackUrl as string) || "/";
   const errorQuery = router.query.error as string | undefined;
@@ -22,9 +24,11 @@ export default function SignInPage() {
   React.useEffect(() => {
     if (!errorQuery) return;
     setError(
-      errorQuery === "CredentialsSignin" ? "Credenziali non valide" : errorQuery
+      errorQuery === "CredentialsSignin"
+        ? t("signin.invalidCredentials")
+        : errorQuery,
     );
-  }, [errorQuery]);
+  }, [errorQuery, t]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,16 +44,16 @@ export default function SignInPage() {
 
     if (!res) return;
     if (res.ok) router.push(callbackUrl);
-    else setError("Credenziali non valide");
+    else setError(t("signin.invalidCredentials"));
   }
 
   return (
     <div className="mx-auto grid min-h-dvh w-full max-w-md place-items-center px-4 py-8">
       <Card className="w-full">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Accedi</CardTitle>
+          <CardTitle className="text-2xl">{t("signin.title")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Entra per vedere i tuoi cineforum o crearne di nuovi.
+            {t("signin.subtitle")}
           </p>
         </CardHeader>
         <CardContent>
@@ -65,7 +69,7 @@ export default function SignInPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="tu@esempio.com"
+                placeholder={t("signin.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -86,7 +90,9 @@ export default function SignInPage() {
                 />
                 <button
                   type="button"
-                  aria-label={showPw ? "Nascondi password" : "Mostra password"}
+                  aria-label={
+                    showPw ? t("signin.hidePassword") : t("signin.showPassword")
+                  }
                   onClick={() => setShowPw((s) => !s)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
                 >
@@ -100,17 +106,17 @@ export default function SignInPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "Accesso in corso…" : "Accedi"}
+              {submitting ? t("signin.submitting") : t("signin.submit")}
             </Button>
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Non hai un account?{" "}
+            {t("signin.noAccount")}{" "}
             <Link
               href="/auth/signup"
               className="font-medium underline underline-offset-4"
             >
-              Registrati
+              {t("signin.signupLink")}
             </Link>
           </p>
         </CardContent>

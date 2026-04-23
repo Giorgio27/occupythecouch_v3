@@ -1,1 +1,46 @@
-{}
+{
+  "home": {
+    "badge": "I tuoi cineforum",
+    "headline1": "Scegli, vota,",
+    "headline2": "guarda insieme",
+    "subtitle": "Entra in un cineforum esistente oppure creane uno nuovo.",
+    "subtitleBold": "Zero attrito, solo cinema.",
+    "statLabel": "Cineforum",
+    "justCreated": "Creato!",
+    "searchPlaceholder": "Cerca per nome o descrizione...",
+    "gridView": "Griglia",
+    "listView": "Lista",
+    "gridAriaLabel": "Vista griglia",
+    "listAriaLabel": "Vista lista",
+    "createButton": "Crea cineforum",
+    "dialogTitle": "Nuovo cineforum",
+    "dialogDesc": "Un nome chiaro = inviti più facili. Puoi cambiare tutto dopo.",
+    "nameLabel": "Nome",
+    "namePlaceholder": "Es. Venerdì Noir",
+    "presetsLabel": "Suggerimenti",
+    "cancel": "Annulla",
+    "creating": "Creazione...",
+    "create": "Crea",
+    "noDescription": "Nessuna descrizione",
+    "actionsAriaLabel": "Azioni",
+    "linkCopied": "Link copiato!",
+    "copyLink": "Copia link",
+    "goToCineforum": "Vai al cineforum",
+    "nameTooShort": "Dai un nome un filo più lungo (min 2 caratteri).",
+    "createError": "Errore durante la creazione del cineforum."
+  },
+  "empty": {
+    "firstTitle": "Crea il tuo primo cineforum",
+    "noResultsTitle": "Nessun risultato",
+    "firstSubtitle": "Invita i tuoi amici e inizia a scegliere film insieme. Il resto viene da sé.",
+    "noResultsSubtitle": "Prova a cambiare la ricerca o crea un nuovo cineforum.",
+    "hint1Title": "Crea",
+    "hint1Desc": "Dagli un nome riconoscibile",
+    "hint2Title": "Invita",
+    "hint2Desc": "Condividi il link con il gruppo",
+    "hint3Title": "Vota",
+    "hint3Desc": "Proposte, ranking, decisione",
+    "createButton": "Crea un cineforum",
+    "clearSearch": "Pulisci ricerca"
+  }
+}

@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import { Trophy, Film, Users, Star } from "lucide-react";
@@ -31,6 +32,7 @@ export default function MoviesRankingPage({
   cineforumId,
   cineforumName,
 }: Props) {
+  const { t } = useTranslation("rankings");
   const [rankings, setRankings] = useState<MovieRankingDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier>(
@@ -84,7 +86,7 @@ export default function MoviesRankingPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingCard text="Caricamento classifiche..." />
+          <LoadingCard text={t("movies.loading")} />
         </div>
       </CineforumLayout>
     );
@@ -100,11 +102,11 @@ export default function MoviesRankingPage({
               <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Classifica Film
+              {t("movies.pageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base mt-2">
-            Tutti i film votati dal tuo cineforum, ordinati per rating
+            {t("movies.pageSubtitle")}
           </p>
         </div>
 
@@ -120,15 +122,15 @@ export default function MoviesRankingPage({
           <div className="cine-card text-center py-12 sm:py-16">
             <Film className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nessun film in classifica
+              {t("movies.emptyTitle")}
             </h3>
             <p className="text-muted-foreground text-sm">
-              I film votati appariranno qui
+              {t("movies.emptySubtitle")}
             </p>
           </div>
         ) : (
           <div className="space-y-2 sm:space-y-3">
-            <RankingHeader title="FILM" />
+            <RankingHeader title={t("movies.tableHeaderFilm")} />
 
             {sortedRankings.map((ranking, index) => {
               const isExpanded = expandedIndex === index;
@@ -145,7 +147,9 @@ export default function MoviesRankingPage({
                   badges={
                     ranking.round_winner && (
                       <span
-                        title={`Vincitore del ciclo: ${ranking.round}`}
+                        title={t("movies.winnerTitle", {
+                          round: ranking.round,
+                        })}
                         className="flex items-center"
                       >
                         <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
@@ -158,7 +162,7 @@ export default function MoviesRankingPage({
                     <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg border border-border">
                       <Star className="w-4 h-4 text-primary" />
                       <span className="text-sm text-muted-foreground">
-                        Ciclo:
+                        {t("movies.roundLabel")}
                       </span>
                       <span className="font-bold text-foreground">
                         {ranking.round}
@@ -169,15 +173,17 @@ export default function MoviesRankingPage({
                     <div className="space-y-3">
                       <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
                         <Users className="w-4 h-4" />
-                        Voti Utenti
+                        {t("movies.userVotesTitle")}
                       </h3>
 
                       <div className="bg-card rounded-xl border border-border overflow-hidden">
                         {/* Header */}
                         <div className="bg-secondary/50 px-4 py-3 border-b border-border">
                           <div className="flex items-center text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                            <div className="flex-1">Utente</div>
-                            <div className="w-20 sm:w-24 text-right">Voto</div>
+                            <div className="flex-1">{t("movies.colUser")}</div>
+                            <div className="w-20 sm:w-24 text-right">
+                              {t("movies.colRating")}
+                            </div>
                           </div>
                         </div>
 
@@ -206,7 +212,7 @@ export default function MoviesRankingPage({
 
                     {/* Supplier Ratings Comparison */}
                     <ComparisonTable
-                      title="Confronto Siti"
+                      title={t("movies.comparisonTitle")}
                       rows={[
                         {
                           label: "Cineforum",

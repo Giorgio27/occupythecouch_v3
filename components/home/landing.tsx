@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -121,6 +122,7 @@ function FloatingElements() {
 }
 
 export function Landing() {
+  const { t } = useTranslation("landing");
   const howItWorksSection = useInView(0.2);
   const whySection = useInView(0.2);
   const ctaSection = useInView(0.3);
@@ -156,7 +158,7 @@ export function Landing() {
           <div className="flex justify-center mb-6 sm:mb-8 md:mb-10 animate-fade-in-down">
             <div className="cine-badge animate-shine group cursor-default text-xs sm:text-sm">
               <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 group-hover:animate-spin-slow" />
-              <span>La democrazia del cinema</span>
+              <span>{t("hero.badge")}</span>
             </div>
           </div>
 
@@ -164,11 +166,11 @@ export function Landing() {
           <div className="text-center space-y-4 sm:space-y-6 md:space-y-8">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter leading-[0.9] text-balance">
               <span className="inline-block animate-fade-in-up">
-                Scegli film con gli
+                {t("hero.headline1")}
               </span>
               <br />
               <span className="text-gradient inline-block animate-scale-in-bounce delay-300 relative">
-                amici
+                {t("hero.headline2")}
                 <span className="absolute -right-5 sm:-right-6 md:-right-8 -top-2 sm:-top-3 md:-top-4 animate-bounce-gentle delay-500">
                   <Star className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary fill-primary/30" />
                 </span>
@@ -179,12 +181,12 @@ export function Landing() {
               className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xs sm:max-w-md md:max-w-xl lg:max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-400 opacity-0 px-2 sm:px-0"
               style={{ animationFillMode: "forwards" }}
             >
-              Crea un round, invita gli amici a proporre film, votate insieme.
+              {t("hero.subtitle")}
               <br className="hidden sm:block" />
               <span className="text-foreground/80 font-medium">
-                Il migliore vince.
+                {t("hero.subtitleBold")}
               </span>{" "}
-              Niente discussioni, solo cinema.
+              {t("hero.subtitleEnd")}
             </p>
           </div>
 
@@ -198,7 +200,7 @@ export function Landing() {
                 size="lg"
                 className="cine-btn text-base sm:text-lg h-12 sm:h-14 px-6 sm:px-8 w-full sm:w-auto"
               >
-                <span>Crea il tuo cineforum</span>
+                <span>{t("hero.ctaCreate")}</span>
                 <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
             </Link>
@@ -213,7 +215,7 @@ export function Landing() {
               }}
             >
               <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 group-hover:scale-110" />
-              <span>Come funziona</span>
+              <span>{t("hero.ctaHowItWorks")}</span>
             </Button>
           </div>
 
@@ -223,9 +225,9 @@ export function Landing() {
             style={{ animationFillMode: "forwards" }}
           >
             {[
-              { value: "100%", label: "Democratico", icon: Vote },
-              { value: "0", label: "Discussioni", icon: Heart },
-              { value: "∞", label: "Serate film", icon: Film },
+              { value: "100%", label: t("hero.statDemocratic"), icon: Vote },
+              { value: "0", label: t("hero.statDiscussions"), icon: Heart },
+              { value: "∞", label: t("hero.statMovieNights"), icon: Film },
             ].map((stat, idx) => (
               <div key={idx} className="text-center group cursor-default">
                 <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
@@ -259,11 +261,10 @@ export function Landing() {
             className={`transition-all duration-700 ${howItWorksSection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
             <h2 className="cine-title mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl">
-              Come funziona
+              {t("howItWorks.title")}
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg mb-10 sm:mb-12 md:mb-16 max-w-xl">
-              Quattro semplici passaggi per organizzare la serata film perfetta
-              con i tuoi amici.
+              {t("howItWorks.subtitle")}
             </p>
           </div>
 
@@ -271,26 +272,26 @@ export function Landing() {
             {[
               {
                 number: "1",
-                title: "Crea cineforum",
-                description: "Dai un nome al gruppo e invita i tuoi amici",
+                title: t("howItWorks.step1Title"),
+                description: t("howItWorks.step1Desc"),
                 icon: Users,
               },
               {
                 number: "2",
-                title: "Round di proposte",
-                description: "Ognuno propone i film che vuole vedere",
+                title: t("howItWorks.step2Title"),
+                description: t("howItWorks.step2Desc"),
                 icon: Popcorn,
               },
               {
                 number: "3",
-                title: "Votazione",
-                description: "Tutti votano il preferito. Vince il migliore",
+                title: t("howItWorks.step3Title"),
+                description: t("howItWorks.step3Desc"),
                 icon: Vote,
               },
               {
                 number: "4",
-                title: "Guarda insieme",
-                description: "Il film vincente diventa la scelta del gruppo",
+                title: t("howItWorks.step4Title"),
+                description: t("howItWorks.step4Desc"),
                 icon: Trophy,
               },
             ].map((step, idx) => {
@@ -356,11 +357,10 @@ export function Landing() {
             className={`transition-all duration-700 ${whySection.isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
             <h2 className="cine-title mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl">
-              Perche CineForum
+              {t("why.title")}
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg mb-10 sm:mb-12 md:mb-16 max-w-xl">
-              Perche le serate film dovrebbero essere divertenti, non una
-              battaglia.
+              {t("why.subtitle")}
             </p>
           </div>
 
@@ -368,23 +368,20 @@ export function Landing() {
             {[
               {
                 icon: Vote,
-                title: "Democrazia vera",
-                description:
-                  "Niente dittatura del leader. Il film lo sceglie il gruppo, tutti votano in modo uguale.",
+                title: t("why.feature1Title"),
+                description: t("why.feature1Desc"),
                 accent: "bg-primary/10",
               },
               {
                 icon: Heart,
-                title: "Zero discussioni",
-                description:
-                  "Niente litigate su quale film guardare. Il sistema di voto e trasparente e giusto.",
+                title: t("why.feature2Title"),
+                description: t("why.feature2Desc"),
                 accent: "bg-cine-red-soft/10",
               },
               {
                 icon: Clapperboard,
-                title: "Puro e semplice",
-                description:
-                  "Un'app fatta solo per scegliere film con gli amici. Niente distrazioni.",
+                title: t("why.feature3Title"),
+                description: t("why.feature3Desc"),
                 accent: "bg-primary/10",
               },
             ].map((feature, idx) => {
@@ -449,17 +446,17 @@ export function Landing() {
             <div className="relative">
               <div className="inline-flex items-center gap-1.5 sm:gap-2 text-primary text-xs sm:text-sm font-medium mb-4 sm:mb-5 md:mb-6">
                 <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>Inizia ora</span>
+                <span>{t("cta.badge")}</span>
               </div>
 
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-3 sm:mb-4 md:mb-5 text-foreground tracking-tight text-balance">
-                Inizia gratis adesso
+                {t("cta.title")}
               </h2>
               <p className="text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8 md:mb-10 max-w-xs sm:max-w-sm md:max-w-md mx-auto leading-relaxed">
-                Niente carte, niente promesse.
+                {t("cta.subtitle")}
                 <br />
                 <span className="text-foreground/80">
-                  Solo film con gli amici.
+                  {t("cta.subtitleBold")}
                 </span>
               </p>
               <Link href="/auth/signup" className="inline-block group">
@@ -467,7 +464,7 @@ export function Landing() {
                   size="lg"
                   className="cine-btn text-base sm:text-lg h-12 sm:h-14 px-8 sm:px-10 md:px-12 animate-glow-pulse"
                 >
-                  <span>Crea il tuo cineforum</span>
+                  <span>{t("cta.button")}</span>
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               </Link>

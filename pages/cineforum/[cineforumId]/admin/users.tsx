@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 import { GetServerSideProps } from "next";
 import CineforumLayout from "@/components/CineforumLayout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -40,6 +41,7 @@ export default function CineforumUsersAdminPage({
   cineforumId,
   cineforumName,
 }: UsersAdminPageProps) {
+  const { t, i18n } = useTranslation("admin");
   const { isAdmin, isLoading, session } = useAdminAccess(cineforumId);
 
   const [users, setUsers] = React.useState<CineforumUserDTO[]>([]);
@@ -71,7 +73,7 @@ export default function CineforumUsersAdminPage({
       setUsers(data.users);
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? "Error loading users");
+      setError(e.message ?? t("users.loading"));
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ export default function CineforumUsersAdminPage({
     e.preventDefault();
     if (!cineforumId) return;
     if (!email || !password) {
-      setError("Email and password are required");
+      setError(t("users.emailLabel") + " / " + t("users.passwordLabel"));
       return;
     }
     setInviting(true);
@@ -100,7 +102,7 @@ export default function CineforumUsersAdminPage({
       await loadUsers();
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? "Error inviting user");
+      setError(e.message ?? t("users.inviteButton"));
     } finally {
       setInviting(false);
     }
@@ -115,7 +117,7 @@ export default function CineforumUsersAdminPage({
       await loadUsers();
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? "Error updating user role");
+      setError(e.message ?? t("users.makeAdmin"));
     } finally {
       setActioningUserId(null);
     }
@@ -124,7 +126,7 @@ export default function CineforumUsersAdminPage({
   async function onToggleDisabled(userId: string, currentlyDisabled: boolean) {
     if (!cineforumId) return;
     const action = currentlyDisabled ? "enable" : "disable";
-    if (!confirm(`Are you sure you want to ${action} this user?`)) {
+    if (!confirm(t("users.confirmToggle", { action }))) {
       return;
     }
     setActioningUserId(userId);
@@ -134,7 +136,7 @@ export default function CineforumUsersAdminPage({
       await loadUsers();
     } catch (e: any) {
       console.error(e);
-      setError(e.message ?? `Error ${action}ing user`);
+      setError(e.message ?? t("users.disable"));
     } finally {
       setActioningUserId(null);
     }
@@ -144,7 +146,7 @@ export default function CineforumUsersAdminPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="mx-auto max-w-xl px-4 py-6 text-sm text-muted-foreground">
-          Loading...
+          {t("users.loading")}
         </div>
       </CineforumLayout>
     );
@@ -160,10 +162,11 @@ export default function CineforumUsersAdminPage({
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Users admin</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t("users.pageTitle")}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Manage users for this cineforum: invite new members, change roles,
-            and remove users.
+            {t("users.pageSubtitle")}
           </p>
         </div>
 
@@ -179,14 +182,14 @@ export default function CineforumUsersAdminPage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <UserPlus className="h-4 w-4" />
-              Invite new user
+              {t("users.inviteCardTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={onInvite} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="user-email">Email *</Label>
+                  <Label htmlFor="user-email">{t("users.emailLabel")}</Label>
                   <Input
                     id="user-email"
                     type="email"
@@ -197,7 +200,7 @@ export default function CineforumUsersAdminPage({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="user-name">Name</Label>
+                  <Label htmlFor="user-name">{t("users.nameLabel")}</Label>
                   <Input
                     id="user-name"
                     value={name}
@@ -209,7 +212,9 @@ export default function CineforumUsersAdminPage({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="user-password">Password *</Label>
+                  <Label htmlFor="user-password">
+                    {t("users.passwordLabel")}
+                  </Label>
                   <Input
                     id="user-password"
                     type="password"
@@ -219,11 +224,11 @@ export default function CineforumUsersAdminPage({
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Set a temporary password for the user
+                    {t("users.passwordPlaceholder")}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="user-role">Role *</Label>
+                  <Label htmlFor="user-role">{t("users.roleLabel")}</Label>
                   <select
                     id="user-role"
                     value={role}
@@ -232,8 +237,8 @@ export default function CineforumUsersAdminPage({
                     }
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
-                    <option value="MEMBER">Member</option>
-                    <option value="ADMIN">Admin</option>
+                    <option value="MEMBER">{t("users.roleMember")}</option>
+                    <option value="ADMIN">{t("users.roleAdmin")}</option>
                   </select>
                 </div>
               </div>
@@ -243,7 +248,7 @@ export default function CineforumUsersAdminPage({
                 disabled={inviting}
                 className="w-full md:w-auto"
               >
-                {inviting ? "Inviting..." : "Invite user"}
+                {inviting ? t("users.inviting") : t("users.inviteButton")}
               </Button>
             </form>
           </CardContent>
@@ -253,18 +258,20 @@ export default function CineforumUsersAdminPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Members ({users.length})
+              {t("users.membersTitle", { count: users.length })}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {users.length === 0 && !loading && (
               <p className="text-sm text-muted-foreground">
-                No users yet. Invite the first one above.
+                {t("users.noUsers")}
               </p>
             )}
 
             {loading && (
-              <p className="text-sm text-muted-foreground">Loading users...</p>
+              <p className="text-sm text-muted-foreground">
+                {t("users.loading")}
+              </p>
             )}
 
             <div className="flex flex-col gap-3">
@@ -289,7 +296,7 @@ export default function CineforumUsersAdminPage({
                         {user.isOwner && (
                           <span className="inline-flex items-center gap-1 rounded-full border border-purple-100 bg-purple-50 px-2 py-0.5 text-[11px] font-medium text-purple-700">
                             <Crown className="h-3 w-3" />
-                            Owner
+                            {t("users.roleOwner")}
                           </span>
                         )}
                         {!user.isOwner && (
@@ -306,18 +313,20 @@ export default function CineforumUsersAdminPage({
                             ) : (
                               <User className="h-3 w-3" />
                             )}
-                            {user.role === "ADMIN" ? "Admin" : "Member"}
+                            {user.role === "ADMIN"
+                              ? t("users.roleAdmin")
+                              : t("users.roleMember")}
                           </span>
                         )}
                         {user.disabled && (
                           <span className="inline-flex items-center gap-1 rounded-full border border-red-100 bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700">
                             <Ban className="h-3 w-3" />
-                            Disabled
+                            {t("users.roleDisabled")}
                           </span>
                         )}
                         {isCurrentUser && (
                           <span className="text-xs text-muted-foreground">
-                            (you)
+                            {t("users.youLabel")}
                           </span>
                         )}
                       </div>
@@ -327,9 +336,9 @@ export default function CineforumUsersAdminPage({
                           <>
                             <span className="mx-1">·</span>
                             <span>
-                              Joined{" "}
+                              {t("users.joinedLabel")}{" "}
                               {new Date(user.joinedAt).toLocaleDateString(
-                                "en-US",
+                                i18n.language,
                                 {
                                   year: "numeric",
                                   month: "short",
@@ -351,7 +360,7 @@ export default function CineforumUsersAdminPage({
                             onClick={() => onUpdateRole(user.id, "ADMIN")}
                             disabled={isActioning}
                           >
-                            {isActioning ? "..." : "Make admin"}
+                            {isActioning ? "..." : t("users.makeAdmin")}
                           </Button>
                         )}
                         {!user.disabled && user.role === "ADMIN" && (
@@ -361,7 +370,7 @@ export default function CineforumUsersAdminPage({
                             onClick={() => onUpdateRole(user.id, "MEMBER")}
                             disabled={isActioning}
                           >
-                            {isActioning ? "..." : "Make member"}
+                            {isActioning ? "..." : t("users.makeMember")}
                           </Button>
                         )}
                         {!isCurrentUser && (
@@ -381,12 +390,16 @@ export default function CineforumUsersAdminPage({
                             {user.disabled ? (
                               <>
                                 <UserCheck className="h-4 w-4" />
-                                <span className="ml-1">Enable</span>
+                                <span className="ml-1">
+                                  {t("users.enable")}
+                                </span>
                               </>
                             ) : (
                               <>
                                 <Ban className="h-4 w-4" />
-                                <span className="ml-1">Disable</span>
+                                <span className="ml-1">
+                                  {t("users.disable")}
+                                </span>
                               </>
                             )}
                           </Button>

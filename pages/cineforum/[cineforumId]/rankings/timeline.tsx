@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
@@ -146,6 +147,7 @@ function DecadeSection({
   selectedYear: number | null;
   onYearClick: (year: number) => void;
 }) {
+  const { t } = useTranslation("rankings");
   const [collapsed, setCollapsed] = useState(false);
   const totalMovies = years.reduce((s, y) => s + y.count, 0);
 
@@ -161,7 +163,7 @@ function DecadeSection({
             {decadeLabel(decade)}
           </span>
           <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-            {totalMovies} film
+            {totalMovies} {t("timeline.decadeMovies")}
           </span>
         </div>
         {collapsed ? (
@@ -201,7 +203,7 @@ function DecadeSection({
                     <div key={y.year}>
                       <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary mb-4">
                         <CalendarDays className="w-4 h-4" />
-                        Film del {y.year}
+                        {t("timeline.yearMoviesTitle", { year: y.year })}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {y.movies.map((movie) => (
@@ -224,6 +226,7 @@ export default function TimelineRankingPage({
   cineforumId,
   cineforumName,
 }: Props) {
+  const { t } = useTranslation("rankings");
   const [data, setData] = useState<TimelineYearDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -280,7 +283,7 @@ export default function TimelineRankingPage({
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="flex justify-center items-center min-h-[400px]">
-          <LoadingCard text="Caricamento timeline..." />
+          <LoadingCard text={t("timeline.loading")} />
         </div>
       </CineforumLayout>
     );
@@ -296,11 +299,11 @@ export default function TimelineRankingPage({
               <CalendarDays className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Timeline Film
+              {t("timeline.pageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base mt-2">
-            Distribuzione degli anni di uscita dei film vincitori delle proposte
+            {t("timeline.pageSubtitle")}
           </p>
         </div>
 
@@ -308,10 +311,10 @@ export default function TimelineRankingPage({
           <div className="cine-card text-center py-12 sm:py-16">
             <CalendarDays className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nessun film disponibile
+              {t("timeline.emptyTitle")}
             </h3>
             <p className="text-muted-foreground text-sm">
-              I film vincitori delle proposte appariranno qui
+              {t("timeline.emptySubtitle")}
             </p>
           </div>
         ) : (
@@ -323,7 +326,7 @@ export default function TimelineRankingPage({
                   {totalMovies}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Film visti
+                  {t("timeline.statMoviesSeen")}
                 </p>
               </div>
               <div className="cine-card px-5 py-4 text-center">
@@ -331,7 +334,7 @@ export default function TimelineRankingPage({
                   {totalYears}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Anni diversi
+                  {t("timeline.statYears")}
                 </p>
               </div>
               <div className="cine-card px-5 py-4 text-center col-span-2 sm:col-span-1">
@@ -341,7 +344,7 @@ export default function TimelineRankingPage({
                     : "—"}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Arco temporale
+                  {t("timeline.statTimespan")}
                 </p>
               </div>
             </div>
@@ -349,7 +352,7 @@ export default function TimelineRankingPage({
             {/* Global bar chart overview */}
             <div className="cine-card px-4 sm:px-6 py-5 mb-8">
               <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
-                Panoramica globale — clicca un anno per i dettagli
+                {t("timeline.globalOverview")}
               </h2>
               <div
                 className="flex items-end gap-0.5 sm:gap-1 overflow-x-auto pb-2"
@@ -380,7 +383,7 @@ export default function TimelineRankingPage({
                       <div key={y.year}>
                         <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary mb-4">
                           <CalendarDays className="w-4 h-4" />
-                          Film del {y.year}
+                          {t("timeline.yearMoviesTitle", { year: y.year })}
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                           {y.movies.map((movie) => (
@@ -396,7 +399,7 @@ export default function TimelineRankingPage({
             {/* Decade sections */}
             <div className="space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                Per decennio
+                {t("timeline.byDecade")}
               </h2>
               {decades.map(({ decade, years }) => (
                 <DecadeSection
