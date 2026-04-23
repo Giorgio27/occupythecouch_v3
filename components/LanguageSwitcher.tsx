@@ -7,6 +7,9 @@ export function LanguageSwitcher() {
 
   const toggleLanguage = () => {
     const newLang = i18n.language === "it" ? "en" : "it";
+    // Persist in both localStorage (client-side detection) and a cookie
+    // (server-side detection for SSR hydration consistency).
+    document.cookie = `i18nextLng=${newLang};path=/;max-age=31536000;SameSite=Lax`;
     i18n.changeLanguage(newLang);
   };
 

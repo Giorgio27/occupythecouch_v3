@@ -28,14 +28,23 @@ const NAME_PRESETS = [
 
 type CreateCineforumDialogProps = {
   onCreated: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export default function CreateCineforumDialog({
   onCreated,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: CreateCineforumDialogProps) {
   const { t } = useTranslation("cineforum");
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  const setOpen = isControlled
+    ? (externalOnOpenChange ?? setInternalOpen)
+    : setInternalOpen;
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();

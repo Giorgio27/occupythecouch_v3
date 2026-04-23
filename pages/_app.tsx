@@ -9,6 +9,13 @@ import { ThemeProvider } from "@/lib/client/contexts/ThemeContext";
 import "../styles/globals.css";
 
 export default function App({ Component, pageProps }: AppProps) {
+  // Sync i18n language with the locale determined server-side from the cookie.
+  // This must run synchronously (before render) so SSR and client produce the
+  // same HTML and React hydration succeeds without a mismatch warning.
+  if (pageProps.initialLocale && i18n.language !== pageProps.initialLocale) {
+    i18n.changeLanguage(pageProps.initialLocale);
+  }
+
   return (
     <SessionProvider session={pageProps.session}>
       <I18nextProvider i18n={i18n}>

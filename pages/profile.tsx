@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { getLocaleFromRequest } from "@/lib/server/get-locale";
 import Layout from "@/components/Layout";
 import { Separator } from "@/components/ui/separator";
 import ProfileInfoCard from "@/components/profile/ProfileInfoCard";
@@ -184,7 +185,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     );
     if (!res.ok) throw new Error("Failed to fetch profile");
     const profile = await res.json();
-    return { props: { initialProfile: profile } };
+    return {
+      props: {
+        initialProfile: profile,
+        initialLocale: getLocaleFromRequest(context.req),
+      },
+    };
   } catch (error) {
     console.error("Error fetching profile:", error);
     return { redirect: { destination: "/", permanent: false } };

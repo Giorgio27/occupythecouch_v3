@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
-import { useTheme } from "@/lib/client/contexts/ThemeContext";
 import UserProfileMenu from "./UserProfileMenu";
 import CineforumMobileMenu from "./CineforumMobileMenu";
 import { useTranslation } from "react-i18next";
@@ -150,7 +149,6 @@ export default function CineforumHeaderNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { t, i18n } = useTranslation(["navigation", "common"]);
-  const { theme } = useTheme();
   const [openMenu, setOpenMenu] = useState<"ranking-stats" | "admin" | null>(
     null,
   );

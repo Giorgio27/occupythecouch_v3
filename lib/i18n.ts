@@ -66,9 +66,11 @@ i18n
       escapeValue: false, // React already escapes
     },
     detection: {
-      order: ["localStorage", "navigator"], // Check localStorage first, then browser
-      caches: ["localStorage"], // Save preference to localStorage
+      order: ["cookie", "localStorage", "navigator"], // cookie first so SSR and client agree
+      caches: ["cookie", "localStorage"], // persist to both
+      lookupCookie: "i18nextLng",
       lookupLocalStorage: "i18nextLng",
+      cookieOptions: { path: "/", maxAge: 31536000, sameSite: "lax" },
     },
     debug: process.env.NODE_ENV === "development",
     saveMissing: true, // Log missing keys in development

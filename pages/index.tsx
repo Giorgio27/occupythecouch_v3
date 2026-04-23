@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
+import { getLocaleFromRequest } from "@/lib/server/get-locale";
 import Layout from "@/components/Layout";
 import { CineforumDTO } from "@/lib/shared/types";
 import { AuthedHome } from "@/components/home/auth";
@@ -17,7 +18,9 @@ type Props =
 export async function getServerSideProps(ctx: any) {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
   if (!session?.user?.id) {
-    return { props: { authed: false } };
+    return {
+      props: { authed: false, initialLocale: getLocaleFromRequest(ctx.req) },
+    };
   }
 
   const cineforums = await prisma.cineforum.findMany({
@@ -38,7 +41,13 @@ export async function getServerSideProps(ctx: any) {
     orderBy: { updatedAt: "desc" },
   });
 
-  return { props: { authed: true, cineforums } };
+  return {
+    props: {
+      authed: true,
+      cineforums,
+      initialLocale: getLocaleFromRequest(ctx.req),
+    },
+  };
 }
 
 export default function Home(props: Props) {

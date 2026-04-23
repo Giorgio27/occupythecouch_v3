@@ -259,7 +259,11 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                     </Tooltip>
                   </div>
 
-                  <CreateCineforumDialog onCreated={handleCreated} />
+                  <CreateCineforumDialog
+                    onCreated={handleCreated}
+                    open={createOpen}
+                    onOpenChange={setCreateOpen}
+                  />
                 </div>
               </div>
             </div>

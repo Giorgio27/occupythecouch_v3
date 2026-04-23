@@ -2,10 +2,12 @@ import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
+import { getLocaleFromRequest, SupportedLocale } from "@/lib/server/get-locale";
 
 export type CineforumLayoutServerProps = {
   cineforumId: string;
   cineforumName: string;
+  initialLocale: SupportedLocale;
 };
 
 /**
@@ -63,6 +65,7 @@ export async function getCineforumLayoutProps(
     props: {
       cineforumId,
       cineforumName: membership.cineforum.name,
+      initialLocale: getLocaleFromRequest(ctx.req),
     },
   };
 }
