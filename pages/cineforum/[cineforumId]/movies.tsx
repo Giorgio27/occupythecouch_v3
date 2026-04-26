@@ -1,5 +1,5 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
@@ -12,7 +12,10 @@ import {
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
 import MoviesPageHeader from "@/components/cineforum/movies/MoviesPageHeader";
-import MoviesSortSelect from "@/components/cineforum/movies/MoviesSortSelect";
+import MoviesFilterTabs, {
+  type MovieFilter,
+} from "@/components/cineforum/movies/MoviesFilterTabs";
+import MoviesSearchInput from "@/components/cineforum/movies/MoviesSearchInput";
 import type { MovieStatsDTO } from "@/lib/shared/types";
 
 type Props = {
@@ -20,14 +23,18 @@ type Props = {
   cineforumName: string;
 };
 
-type OrderCriteria = "proposals" | "wins" | "defeats";
-
 export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
   const { t } = useTranslation("rankings");
   const [movies, setMovies] = useState<MovieStatsDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [orderCriteria, setOrderCriteria] =
-    useState<OrderCriteria>("proposals");
+  const [filter, setFilter] = useState<MovieFilter>("all");
+  const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const handleToggle = useCallback(
+    (id: string) => setExpandedId((prev) => (prev === id ? null : id)),
+    [],
+  );
 
   useEffect(() => {
     loadMovies();
@@ -37,7 +44,12 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
     try {
       setLoading(true);
       const response = await fetchMoviesList(cineforumId);
-      setMovies(response.body);
+      // Sort by proposals desc, then wins desc as tiebreaker
+      const sorted = [...response.body].sort((a, b) => {
+        if (b.proposals !== a.proposals) return b.proposals - a.proposals;
+        return b.wins - a.wins;
+      });
+      setMovies(sorted);
     } catch (error) {
       console.error("Error loading movies:", error);
     } finally {
@@ -45,33 +57,29 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
     }
   };
 
-  const sortedMovies = [...movies].sort((a, b) => {
-    const valueA = a[orderCriteria];
-    const valueB = b[orderCriteria];
-    if (valueB !== valueA) return valueB - valueA;
-    if (orderCriteria !== "wins" && b.wins !== a.wins) return b.wins - a.wins;
-    if (orderCriteria !== "proposals" && b.proposals !== a.proposals)
-      return b.proposals - a.proposals;
-    return 0;
-  });
+  const counts = useMemo(
+    () => ({
+      all: movies.length,
+      watched: movies.filter((m) => m.wins > 0).length,
+      unwatched: movies.filter((m) => m.wins === 0).length,
+    }),
+    [movies],
+  );
 
-  const getPosition = (index: number): number => {
-    if (index === 0) return 1;
-    const currentValue = sortedMovies[index][orderCriteria];
-    const previousValue = sortedMovies[index - 1][orderCriteria];
-    if (currentValue === previousValue) {
-      for (let i = index - 1; i >= 0; i--) {
-        const iValue = sortedMovies[i][orderCriteria];
-        if (iValue === currentValue) {
-          if (i === 0) return 1;
-        } else {
-          return i + 2;
-        }
-      }
-      return 1;
+  const filteredMovies = useMemo(() => {
+    let result = movies;
+
+    if (filter === "watched") result = result.filter((m) => m.wins > 0);
+    else if (filter === "unwatched")
+      result = result.filter((m) => m.wins === 0);
+
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter((m) => m.title.toLowerCase().includes(q));
     }
-    return index + 1;
-  };
+
+    return result;
+  }, [movies, filter, search]);
 
   if (loading) {
     return (
@@ -83,28 +91,50 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
     );
   }
 
+  const isSearching = search.trim().length > 0;
+
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="py-4 sm:py-6 animate-fade-in">
         <MoviesPageHeader />
 
-        {sortedMovies.length > 0 && <MovieStatsSummary movies={sortedMovies} />}
+        {movies.length > 0 && <MovieStatsSummary movies={movies} />}
 
-        <MoviesSortSelect value={orderCriteria} onChange={setOrderCriteria} />
-
-        {sortedMovies.length === 0 ? (
-          <EmptyState
-            title={t("moviesList.emptyTitle")}
-            subtitle={t("moviesList.emptySubtitle")}
+        {/* Controls row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <MoviesFilterTabs
+            value={filter}
+            onChange={(f) => {
+              setFilter(f);
+              setSearch("");
+            }}
+            counts={counts}
           />
+          <MoviesSearchInput value={search} onChange={setSearch} />
+        </div>
+
+        {filteredMovies.length === 0 ? (
+          isSearching ? (
+            <EmptyState
+              title={t("moviesList.emptySearchTitle")}
+              subtitle={t("moviesList.emptySearchSubtitle", { query: search })}
+            />
+          ) : (
+            <EmptyState
+              title={t("moviesList.emptyTitle")}
+              subtitle={t("moviesList.emptySubtitle")}
+            />
+          )
         ) : (
           <div className="space-y-2 sm:space-y-3">
             <MoviesListTableHeader />
-            {sortedMovies.map((movie, index) => (
+            {filteredMovies.map((movie, index) => (
               <MovieListCard
                 key={movie.id}
                 movie={movie}
-                position={getPosition(index)}
+                index={index}
+                isExpanded={expandedId === movie.id}
+                onToggle={() => handleToggle(movie.id)}
               />
             ))}
           </div>
