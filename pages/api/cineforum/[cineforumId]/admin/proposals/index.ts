@@ -64,6 +64,11 @@ export default async function handler(
         ownerUser: true,
         ownerTeam: true,
         winner: true,
+        votes: {
+          include: {
+            user: { select: { id: true, name: true } },
+          },
+        },
       },
     });
 
@@ -104,7 +109,11 @@ export default async function handler(
         image: pm.movie.image,
         imageMedium: pm.movie.imageMedium,
       })),
-      votes: [],
+      votes: proposal.votes.map((v) => ({
+        id: v.id,
+        user: { id: v.user.id, name: v.user.name },
+        movie_selection: v.movieSelection as Record<string, string[]>,
+      })),
       created_at: proposal.createdAt.toISOString(),
       missing_users: [],
       no_votes_left: false,

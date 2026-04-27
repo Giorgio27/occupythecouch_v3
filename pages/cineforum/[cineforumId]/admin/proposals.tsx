@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
@@ -37,17 +37,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExpandableText } from "@/components/ui/expandable-text";
-import {
-  Calendar,
-  Film,
-  Trash2,
-  Plus,
-  Search,
-  Trophy,
-  Sparkles,
-  ChevronDown,
-  History,
-} from "lucide-react";
+import ProposalMovieCard, {
+  ProposalMovieCardMovie,
+} from "@/components/cineforum/proposal/shared/ProposalMovieCard";
+import ProposalVotesAccordion from "@/components/cineforum/proposal/shared/ProposalVotesAccordion";
+import { Calendar, Film, Plus, Search, History } from "lucide-react";
 
 interface AdminProposalsPageProps {
   cineforumId: string;
@@ -100,6 +94,26 @@ export default function AdminProposalsPage({
       setLoadingRanking(false);
     }
   };
+
+  // Auto-load ranking as soon as the proposal id is known
+  useEffect(() => {
+    const proposalId = proposal?.id;
+    if (!proposalId) return;
+    let cancelled = false;
+    setLoadingRanking(true);
+    fetchRanking(proposalId)
+      .then((r) => {
+        if (!cancelled) setRanking(r);
+      })
+      .catch((err) => console.error("Failed to load ranking", err))
+      .finally(() => {
+        if (!cancelled) setLoadingRanking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposal?.id]);
 
   const handleOpenCloseDialog = () => {
     setShowCloseDialog(true);
@@ -256,7 +270,9 @@ export default function AdminProposalsPage({
 
   if (!isAdmin) return null;
 
-  const displayMovies = isEditing ? editMovies : (proposal?.movies ?? []);
+  const displayMovies: ProposalMovieCardMovie[] = isEditing
+    ? editMovies
+    : (proposal?.movies ?? []);
   const displayDate = isEditing ? editDate : proposal?.date;
   const canReopen = proposal?.closed && !proposal?.roundClosed;
 
@@ -286,7 +302,7 @@ export default function AdminProposalsPage({
 
         {/* Error banner */}
         {error && (
-          <div className="rounded-md border border-red-500/40 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="rounded-xl border border-red-500/40 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -301,20 +317,22 @@ export default function AdminProposalsPage({
             </CardContent>
           </Card>
         ) : (
-          <div className="rounded-lg border bg-card">
+          <div className="rounded-xl border bg-card shadow-sm">
             {/* Proposal header bar */}
             <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Film className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold">{proposal.title}</span>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
+                  <Film className="h-4 w-4 text-primary" />
+                </div>
+                <span className="font-semibold truncate">{proposal.title}</span>
                 {proposal.round && (
-                  <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground">
+                  <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground shrink-0">
                     {proposal.round}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-sm text-muted-foreground hidden sm:inline">
                   {displayDate
                     ? new Date(displayDate).toLocaleDateString()
                     : t("proposals.noDate")}
@@ -333,10 +351,10 @@ export default function AdminProposalsPage({
               </div>
             </div>
 
-            <div className="space-y-4 p-4">
+            <div className="space-y-5 p-4">
               {/* Description */}
               {proposal.description && (
-                <div className="rounded-md border bg-muted/50 p-3">
+                <div className="rounded-xl border bg-muted/50 p-3">
                   <ExpandableText text={proposal.description} maxLength={150} />
                 </div>
               )}
@@ -413,7 +431,7 @@ export default function AdminProposalsPage({
                             <button
                               key={movie.id}
                               onClick={() => addMovieFromSearch(movie)}
-                              className="flex w-full items-center gap-3 rounded-md border p-2 text-left transition-colors hover:bg-accent"
+                              className="flex w-full items-center gap-3 rounded-lg border p-2 text-left transition-colors hover:bg-accent"
                             >
                               {movie.i?.[0] && (
                                 <img
@@ -443,92 +461,22 @@ export default function AdminProposalsPage({
                 {/* Movie list */}
                 <div className="space-y-2">
                   {displayMovies.map((movie) => {
-                    const movieImage = movie.imageMedium || movie.i?.[0];
-                    const movieTitle = movie.title || movie.l;
-                    const movieYear = movie.year || movie.y;
-
                     const rankedMovie =
                       !isEditing && ranking
                         ? ranking.sorted_movies.find((m) => m.id === movie.id)
                         : null;
-                    const isWinner = rankedMovie?.proposal_rank === 1;
-                    const winnersCount = ranking
-                      ? ranking.sorted_movies.filter(
-                          (m) => m.proposal_rank === 1,
-                        ).length
-                      : 0;
-                    const isTiedWinner = isWinner && winnersCount > 1;
 
                     return (
-                      <div
+                      <ProposalMovieCard
                         key={movie.id}
-                        className={`flex items-center gap-3 rounded-lg border p-3 ${
-                          isWinner
-                            ? "border-primary/50 bg-primary/10"
-                            : "border-border/70 bg-card/60"
-                        }`}
-                      >
-                        {movieImage ? (
-                          <img
-                            src={movieImage}
-                            alt={movieTitle}
-                            className="h-24 w-16 flex-shrink-0 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-24 w-16 flex-shrink-0 items-center justify-center rounded bg-muted text-xs text-muted-foreground">
-                            No image
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start gap-2">
-                            <div className="min-w-0 flex-1">
-                              {!isEditing && isWinner && (
-                                <p className="mb-1 text-xs font-semibold text-primary">
-                                  {isTiedWinner
-                                    ? t("proposals.winnerTied", {
-                                        count: winnersCount - 1,
-                                      })
-                                    : t("proposals.winner")}
-                                </p>
-                              )}
-                              <p
-                                className="truncate font-semibold"
-                                title={movieTitle}
-                              >
-                                {movieTitle}
-                              </p>
-                              {movieYear && (
-                                <p className="text-sm text-muted-foreground">
-                                  {movieYear}
-                                </p>
-                              )}
-                            </div>
-                            {!isEditing && isWinner && (
-                              <Trophy className="h-5 w-5 flex-shrink-0 text-primary" />
-                            )}
-                          </div>
-                          {!isEditing && rankedMovie && (
-                            <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs">
-                              <span className="font-semibold">
-                                {t("proposals.ranksLabel")}
-                              </span>
-                              <span className="text-primary">
-                                {rankedMovie.proposal_rank}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {isEditing && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeMovie(movie.id)}
-                            className="flex-shrink-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                        movie={movie}
+                        isWinner={
+                          !isEditing && proposal.winner?.id === movie.id
+                        }
+                        rankedMovie={rankedMovie}
+                        tNamespace="admin"
+                        onRemove={isEditing ? removeMovie : undefined}
+                      />
                     );
                   })}
                 </div>
@@ -536,87 +484,22 @@ export default function AdminProposalsPage({
 
               {/* Voting Results */}
               {!isEditing && proposal.votes && proposal.votes.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label className="text-xs font-semibold text-muted-foreground">
                     {t("proposals.votingResults", {
                       count: proposal.votes.length,
                     })}
                   </Label>
-                  <details className="rounded-lg border border-border/70 bg-card/50 p-3">
-                    <summary className="cursor-pointer list-none">
-                      <div className="flex items-center justify-between">
-                        <div className="inline-flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-semibold">
-                            {t("proposals.individualVotes")}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            ({proposal.votes.length})
-                          </span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </summary>
-                    <div className="mt-3 space-y-2">
-                      {proposal.votes.map((vote) => (
-                        <div
-                          key={vote.id}
-                          className="rounded-md border border-border/70 bg-secondary/20 p-3"
-                        >
-                          <div className="mb-2 flex items-center justify-between gap-2">
-                            <div className="text-sm font-semibold">
-                              {vote.user.name ||
-                                `User ${vote.user.id.slice(0, 8)}`}
-                            </div>
-                            <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground">
-                              {Object.keys(vote.movie_selection).length} ranks
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            {Object.keys(vote.movie_selection)
-                              .sort((a, b) => parseInt(a) - parseInt(b))
-                              .map((rank) => {
-                                const movieIds = vote.movie_selection[
-                                  rank
-                                ] as string[];
-                                const movieTitles = movieIds
-                                  .map(
-                                    (id) =>
-                                      proposal.movies.find((m) => m.id === id)
-                                        ?.title,
-                                  )
-                                  .filter(Boolean);
-                                return (
-                                  <div
-                                    key={rank}
-                                    className="flex items-start gap-2"
-                                  >
-                                    <div className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                                      {rank}°
-                                    </div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {movieTitles.map((title, i) => (
-                                        <div
-                                          key={i}
-                                          className="rounded-full border border-border/60 bg-secondary/50 px-2 py-0.5 text-xs"
-                                        >
-                                          {title}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
+                  <ProposalVotesAccordion
+                    votes={proposal.votes}
+                    movies={proposal.movies}
+                    tNamespace="admin"
+                  />
                 </div>
               )}
 
               {/* Additional Info */}
-              <div className="grid gap-2 text-sm">
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-3 grid gap-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
                     {t("proposals.ownerLabel")}
@@ -647,7 +530,7 @@ export default function AdminProposalsPage({
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap gap-2 pt-2">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {isEditing ? (
                   <>
                     <Button
@@ -785,7 +668,7 @@ export default function AdminProposalsPage({
                 <button
                   key={movie.id}
                   onClick={() => setSelectedWinnerId(movie.id)}
-                  className={`flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent ${
+                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors hover:bg-accent ${
                     selectedWinnerId === movie.id
                       ? "border-primary bg-accent"
                       : "border-border"
@@ -795,17 +678,17 @@ export default function AdminProposalsPage({
                     <img
                       src={movie.imageMedium}
                       alt={movie.title}
-                      className="h-16 w-12 rounded object-cover"
+                      className="h-16 w-12 rounded-lg object-cover"
                     />
                   )}
-                  <div className="flex-1">
-                    <p className="font-medium">{movie.title}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{movie.title}</p>
                     <p className="text-sm text-muted-foreground">
                       {movie.year}
                     </p>
                   </div>
                   {selectedWinnerId === movie.id && (
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
                       <svg
                         className="h-3 w-3 text-primary-foreground"
                         fill="none"
@@ -941,6 +824,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         created_at: proposal.createdAt.toISOString(),
         missing_users: [],
         no_votes_left: false,
+        my_vote: null,
       }
     : null;
 

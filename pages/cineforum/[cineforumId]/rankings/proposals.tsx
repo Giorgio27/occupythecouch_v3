@@ -20,8 +20,10 @@ import {
 } from "@/components/ui/accordion";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { InfiniteScroll } from "@/components/ui/infinite-scroll";
-import { Film, Trophy, Sparkles } from "lucide-react";
+import { Film, Trophy } from "lucide-react"; // Trophy kept for winner info block below
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
+import ProposalMovieCard from "@/components/cineforum/proposal/shared/ProposalMovieCard";
+import ProposalVotesAccordion from "@/components/cineforum/proposal/shared/ProposalVotesAccordion";
 
 const NO_ROUND_KEY = "__no_round__";
 
@@ -218,169 +220,26 @@ export default function ProposalsHistoryPage({
                                       (m) => m.id === movie.id,
                                     )
                                   : null;
-                                const isWinner =
-                                  rankedMovie?.proposal_rank === 1;
-                                const winnersCount = rankings[proposal.id]
-                                  ? rankings[proposal.id].sorted_movies.filter(
-                                      (m) => m.proposal_rank === 1,
-                                    ).length
-                                  : 0;
-                                const isTiedWinner =
-                                  isWinner && winnersCount > 1;
 
                                 return (
-                                  <div
+                                  <ProposalMovieCard
                                     key={movie.id}
-                                    className={`flex items-center gap-3 rounded-lg border p-3 ${
-                                      isWinner
-                                        ? "border-primary/50 bg-primary/10"
-                                        : "border-border/70 bg-card/60"
-                                    }`}
-                                  >
-                                    {movie.imageMedium ? (
-                                      <img
-                                        src={movie.imageMedium}
-                                        alt={movie.title}
-                                        className="h-24 w-16 flex-shrink-0 rounded object-cover"
-                                      />
-                                    ) : (
-                                      <div className="flex h-24 w-16 flex-shrink-0 items-center justify-center rounded bg-muted text-xs text-muted-foreground">
-                                        No image
-                                      </div>
-                                    )}
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex items-start gap-2">
-                                        <div className="min-w-0 flex-1">
-                                          {isWinner && (
-                                            <p className="mb-1 text-xs font-semibold text-primary">
-                                              {isTiedWinner
-                                                ? t("proposals.winnerTied", {
-                                                    count: winnersCount - 1,
-                                                  })
-                                                : t("proposals.winner")}
-                                            </p>
-                                          )}
-                                          <p
-                                            className="truncate font-semibold"
-                                            title={movie.title}
-                                          >
-                                            {movie.title}
-                                          </p>
-                                          {movie.year && (
-                                            <p className="text-sm text-muted-foreground">
-                                              {movie.year}
-                                            </p>
-                                          )}
-                                        </div>
-                                        {isWinner && (
-                                          <Trophy className="h-5 w-5 flex-shrink-0 text-primary" />
-                                        )}
-                                      </div>
-                                      {rankedMovie && (
-                                        <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs">
-                                          <span className="font-semibold">
-                                            {t("proposals.rankLabel")}
-                                          </span>
-                                          <span className="text-primary">
-                                            {rankedMovie.proposal_rank}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
+                                    movie={movie}
+                                    isWinner={proposal.winner?.id === movie.id}
+                                    rankedMovie={rankedMovie}
+                                    tNamespace="rankings"
+                                  />
                                 );
                               })}
                             </div>
                           </div>
 
-                          {/* Voting Results — only show if results are public */}
-                          {proposal.show_results &&
-                            proposal.votes &&
-                            proposal.votes.length > 0 && (
-                              <div className="space-y-3">
-                                <Label className="text-xs font-semibold text-muted-foreground">
-                                  {t("proposals.votingResults", {
-                                    count: proposal.votes.length,
-                                  })}
-                                </Label>
-                                <div className="rounded-lg border border-border/70 bg-card/50 p-3">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <Sparkles className="h-4 w-4 text-primary" />
-                                    <span className="text-sm font-semibold">
-                                      {t("proposals.individualVotes")}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      ({proposal.votes.length})
-                                    </span>
-                                  </div>
-                                  <div className="space-y-2">
-                                    {proposal.votes.map((vote) => (
-                                      <div
-                                        key={vote.id}
-                                        className="rounded-md border border-border/70 bg-secondary/20 p-3"
-                                      >
-                                        <div className="mb-2 flex items-center justify-between gap-2">
-                                          <div className="text-sm font-semibold">
-                                            {vote.user.name ||
-                                              `User ${vote.user.id.slice(0, 8)}`}
-                                          </div>
-                                          <span className="rounded-full border border-border/60 bg-secondary/40 px-2 py-0.5 text-xs text-muted-foreground">
-                                            {
-                                              Object.keys(vote.movie_selection)
-                                                .length
-                                            }{" "}
-                                            {t("proposals.ranksLabel")}
-                                          </span>
-                                        </div>
-                                        <div className="space-y-2">
-                                          {Object.keys(vote.movie_selection)
-                                            .sort(
-                                              (a, b) =>
-                                                parseInt(a) - parseInt(b),
-                                            )
-                                            .map((rank) => {
-                                              const movieIds = vote
-                                                .movie_selection[
-                                                rank
-                                              ] as string[];
-                                              const movieTitles = movieIds
-                                                .map(
-                                                  (id) =>
-                                                    proposal.movies.find(
-                                                      (m) => m.id === id,
-                                                    )?.title,
-                                                )
-                                                .filter(Boolean);
-                                              return (
-                                                <div
-                                                  key={rank}
-                                                  className="flex items-start gap-2"
-                                                >
-                                                  <div className="shrink-0 rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                                                    {rank}°
-                                                  </div>
-                                                  <div className="flex flex-wrap gap-1">
-                                                    {movieTitles.map(
-                                                      (title, i) => (
-                                                        <div
-                                                          key={i}
-                                                          className="rounded-full border border-border/60 bg-secondary/50 px-2 py-0.5 text-xs"
-                                                        >
-                                                          {title}
-                                                        </div>
-                                                      ),
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              );
-                                            })}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                          {/* Voting Results */}
+                          <ProposalVotesAccordion
+                            votes={proposal.votes ?? []}
+                            movies={proposal.movies}
+                            tNamespace="rankings"
+                          />
 
                           {/* Winner info */}
                           {proposal.winner && (
@@ -497,14 +356,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             image: pm.movie.image,
             imageMedium: pm.movie.imageMedium,
           })),
-          // Only expose votes if show_results is true
-          votes: proposal.showResults
-            ? proposal.votes.map((v) => ({
-                id: v.id,
-                user: { id: v.user.id, name: v.user.name },
-                movie_selection: v.movieSelection as Record<string, string[]>,
-              }))
-            : [],
+          votes: proposal.votes.map((v) => ({
+            id: v.id,
+            user: { id: v.user.id, name: v.user.name },
+            movie_selection: v.movieSelection as Record<string, string[]>,
+          })),
           created_at: proposal.createdAt.toISOString(),
           missing_users: [],
           no_votes_left: false,
