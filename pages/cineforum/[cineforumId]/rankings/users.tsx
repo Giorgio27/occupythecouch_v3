@@ -601,20 +601,20 @@ export default function UsersRankingPage({
                         <div className="flex justify-end">
                           <div className="flex rounded-lg border border-border overflow-hidden bg-card">
                             <button
-                              onClick={() => setCardMode(ranking.id, "table")}
-                              className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors
-                                ${getCardViewMode(ranking.id) === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                            >
-                              <TableIcon className="w-3.5 h-3.5" />
-                              {t("users.viewTable")}
-                            </button>
-                            <button
                               onClick={() => setCardMode(ranking.id, "chart")}
                               className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors border-l border-border
                                 ${getCardViewMode(ranking.id) === "chart" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
                             >
                               <LineChartIcon className="w-3.5 h-3.5" />
                               {t("users.viewChart")}
+                            </button>
+                            <button
+                              onClick={() => setCardMode(ranking.id, "table")}
+                              className={`px-3 py-1.5 flex items-center gap-2 text-xs font-medium transition-colors
+                                ${getCardViewMode(ranking.id) === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
+                            >
+                              <TableIcon className="w-3.5 h-3.5" />
+                              {t("users.viewTable")}
                             </button>
                           </div>
                         </div>
@@ -668,7 +668,10 @@ export default function UsersRankingPage({
                         )}
 
                         {getCardViewMode(ranking.id) === "chart" && (
-                          <UserRankingTrendChart ranking={ranking} />
+                          <UserRankingTrendChart
+                            ranking={ranking}
+                            supplier={selectedSupplier}
+                          />
                         )}
 
                         <div className="pt-4 border-t border-border">

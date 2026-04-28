@@ -11,7 +11,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import EmptyState from "@/components/cineforum/common/EmptyState";
-import type { UserRankingDTO } from "@/lib/shared/types";
+import type { UserRankingDTO, Supplier } from "@/lib/shared/types";
 import {
   RankingChartTooltip,
   RankingChartDot,
@@ -20,12 +20,13 @@ import {
 
 type Props = {
   ranking: UserRankingDTO;
+  supplier?: Supplier;
 };
 
 const sortRounds = (a: string, b: string) =>
   a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 
-export default function UserRankingTrendChart({ ranking }: Props) {
+export default function UserRankingTrendChart({ ranking, supplier }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const [screenSize, setScreenSize] = useState<"small" | "medium" | "large">(
     "medium",
@@ -41,6 +42,29 @@ export default function UserRankingTrendChart({ ranking }: Props) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const supplierId = supplier?.id ?? "cineforum";
+
+  const getRatingForMrr = (
+    mrr: UserRankingDTO["movie_round_rankings"][number],
+  ): number | null => {
+    switch (supplierId) {
+      case "tmdb":
+        return mrr.tmdb_vote;
+      case "imdb":
+        return mrr.imdb_rating;
+      case "rotten_tomatoes":
+        return mrr.tomatometer;
+      case "metacritic":
+        return mrr.metascore;
+      default:
+        return mrr.average_rating;
+    }
+  };
+
+  const yDomain: [number, number] = [0, 5];
+
+  const yTicks: number[] = [0, 1, 2, 3, 4, 5];
 
   const chartData = useMemo<RankingChartPoint[]>(() => {
     const sortedMovieRounds = [...ranking.movie_round_rankings].sort((a, b) =>
@@ -63,11 +87,12 @@ export default function UserRankingTrendChart({ ranking }: Props) {
           : mrr.movie.length > 18
             ? `${mrr.movie.slice(0, 18)}…`
             : mrr.movie,
-      rating: mrr.average_rating ?? null,
+      rating: getRatingForMrr(mrr),
       movie: mrr.movie,
       winner: Boolean(mrr.round_winner),
     }));
-  }, [ranking.movie_round_rankings, isMobile, screenSize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ranking.movie_round_rankings, isMobile, screenSize, supplierId]);
 
   const validChartData = useMemo(
     () =>
@@ -254,8 +279,8 @@ export default function UserRankingTrendChart({ ranking }: Props) {
               />
 
               <YAxis
-                domain={[0, 5]}
-                ticks={[0, 1, 2, 3, 4, 5]}
+                domain={yDomain}
+                ticks={yTicks}
                 width={isMobile ? 28 : 36}
                 tickLine={false}
                 axisLine={false}
