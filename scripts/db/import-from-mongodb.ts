@@ -366,6 +366,9 @@ async function importData() {
   console.log("\n9️⃣b Aggiornamento MovieVotes con movieRoundRankingId...");
   let updatedVotes = 0;
   for (const mongoMVote of data.movieVotes) {
+    console.log(
+      `   Aggiornando movie vote ${++updatedVotes}/${data.movieVotes.length}...`,
+    );
     if (mongoMVote.movie_round_ranking_id) {
       const movieRoundRankingId = idMap.get(
         mongoMVote.movie_round_ranking_id.toString(),
