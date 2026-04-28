@@ -27,7 +27,9 @@
     "searchPlaceholder": "Scrivi un titolo",
     "searchButton": "Cerca",
     "searching": "Ricerca in corso…",
-    "selectedMovies": "Film selezionati"
+    "selectedMovies": "Film selezionati",
+    "previousWinner": "Già visto",
+    "previousWinnerTooltip": "Questo film ha già vinto una proposta precedente"
   },
   "open": {
     "badge": "Votazione aperta",

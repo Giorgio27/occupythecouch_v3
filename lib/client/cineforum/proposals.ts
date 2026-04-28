@@ -5,23 +5,27 @@ import {
   ProposalRankingDTO,
 } from "@/lib/shared/types";
 
+export type ProposalWinnersDTO = {
+  imdbIds: string[];
+};
+
 export async function fetchProposal(
-  proposalId: string
+  proposalId: string,
 ): Promise<ProposalDetailDTO> {
   return jsonFetch<ProposalDetailDTO>(`/api/cineforum/proposals/${proposalId}`);
 }
 
 export async function fetchRanking(
-  proposalId: string
+  proposalId: string,
 ): Promise<ProposalRankingDTO> {
   return jsonFetch<ProposalRankingDTO>(
-    `/api/cineforum/proposals/ranking/${proposalId}`
+    `/api/cineforum/proposals/ranking/${proposalId}`,
   );
 }
 
 export async function voteProposal<TReturn = { ok: boolean }>(
   proposalId: string,
-  lists: Record<string, any[]>
+  lists: Record<string, any[]>,
 ): Promise<TReturn> {
   return jsonFetch<TReturn>(`/api/cineforum/proposals/votes`, {
     method: "POST",
@@ -40,7 +44,7 @@ export type CreateProposalPayload = {
 };
 
 export async function createProposal<TReturn = { id: string; title: string }>(
-  payload: CreateProposalPayload
+  payload: CreateProposalPayload,
 ): Promise<TReturn> {
   return jsonFetch<TReturn>(`/api/cineforum/proposals`, {
     method: "POST",
@@ -51,6 +55,14 @@ export async function createProposal<TReturn = { id: string; title: string }>(
 
 export async function imdbSearch(query: string): Promise<ImdbSuggestionDTO[]> {
   return jsonFetch<ImdbSuggestionDTO[]>(
-    `/api/cineforum/proposals/movies/input/${encodeURIComponent(query)}`
+    `/api/cineforum/proposals/movies/input/${encodeURIComponent(query)}`,
+  );
+}
+
+export async function fetchProposalWinners(
+  cineforumId: string,
+): Promise<ProposalWinnersDTO> {
+  return jsonFetch<ProposalWinnersDTO>(
+    `/api/cineforum/${cineforumId}/proposals/winners`,
   );
 }

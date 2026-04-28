@@ -20,7 +20,7 @@ import {
 import MovieSearch from "./MovieSearch";
 import MovieCard from "./MovieCard";
 import SelectedMovies from "./SelectedMovies";
-import { createProposal } from "@/lib/client/cineforum";
+import { createProposal, fetchProposalWinners } from "@/lib/client/cineforum";
 
 /** Create Proposal block (IMDb search + simple selection + submit) */
 export default function CreateProposal({
@@ -42,20 +42,32 @@ export default function CreateProposal({
   } | null>(null);
   const [creating, setCreating] = React.useState(false);
 
+  // Set of IMDb IDs that have already won a previous proposal
+  const [previousWinnerImdbIds, setPreviousWinnerImdbIds] = React.useState<
+    Set<string>
+  >(new Set());
+
   React.useEffect(() => {
     if (session?.user && "id" in session.user && session.user.id) {
       setOwner({ id: session.user.id as string, type: "User" });
     }
   }, [session]);
 
+  // Fetch previous winners once on mount
+  React.useEffect(() => {
+    fetchProposalWinners(cineforumId)
+      .then((data) => setPreviousWinnerImdbIds(new Set(data.imdbIds)))
+      .catch(() => {
+        // Non-critical: silently ignore if the fetch fails
+      });
+  }, [cineforumId]);
+
   function toggleMovie(m: any) {
     const isAlreadySelected = selected.some((x) => x.id === m.id);
 
     if (isAlreadySelected) {
-      // Remove from selection
       setSelected((prev) => prev.filter((x) => x.id !== m.id));
     } else {
-      // Add to selection and clear search results
       setSelected((prev) => [...prev, m]);
       setResults([]);
     }
@@ -194,11 +206,13 @@ export default function CreateProposal({
                 <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-2">
                   {results.map((m) => {
                     const isSelected = selected.some((x) => x.id === m.id);
+                    const isPreviousWinner = previousWinnerImdbIds.has(m.id);
                     return (
                       <MovieCard
                         key={m.id}
                         movie={m}
                         isSelected={isSelected}
+                        isPreviousWinner={isPreviousWinner}
                         onToggle={toggleMovie}
                         variant="search"
                       />
@@ -210,7 +224,11 @@ export default function CreateProposal({
           </div>
 
           {/* Selected Movies Display */}
-          <SelectedMovies items={selected} onRemove={toggleMovie} />
+          <SelectedMovies
+            items={selected}
+            onRemove={toggleMovie}
+            previousWinnerIds={previousWinnerImdbIds}
+          />
 
           {/* Validation Message */}
           {!isFormValid &&

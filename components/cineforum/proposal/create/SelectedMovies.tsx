@@ -12,11 +12,13 @@ type Movie = {
 type SelectedMoviesProps = {
   items: Movie[];
   onRemove: (movie: Movie) => void;
+  previousWinnerIds?: Set<string>;
 };
 
 export default function SelectedMovies({
   items,
   onRemove,
+  previousWinnerIds,
 }: SelectedMoviesProps) {
   const { t } = useTranslation("proposal");
 
@@ -36,6 +38,7 @@ export default function SelectedMovies({
             key={m.id}
             movie={m}
             isSelected={true}
+            isPreviousWinner={previousWinnerIds?.has(m.id) ?? false}
             onToggle={onRemove}
             variant="selected"
           />

@@ -28,7 +28,9 @@
     "searchPlaceholder": "Type a title",
     "searchButton": "Search",
     "searching": "Searching…",
-    "selectedMovies": "Selected movies"
+    "selectedMovies": "Selected movies",
+    "previousWinner": "Already seen",
+    "previousWinnerTooltip": "This movie already won a previous proposal"
   },
   "open": {
     "badge": "Voting open",

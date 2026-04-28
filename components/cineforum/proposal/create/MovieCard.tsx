@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CheckCircle2, Plus, X } from "lucide-react";
+import { CheckCircle2, Plus, X, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type Movie = {
@@ -13,6 +13,7 @@ type Movie = {
 type MovieCardProps = {
   movie: Movie;
   isSelected?: boolean;
+  isPreviousWinner?: boolean;
   onToggle: (movie: Movie) => void;
   variant?: "search" | "selected";
 };
@@ -20,17 +21,15 @@ type MovieCardProps = {
 export default function MovieCard({
   movie,
   isSelected = false,
+  isPreviousWinner = false,
   onToggle,
   variant = "search",
 }: MovieCardProps) {
   const { t } = useTranslation("proposal");
-  console.log("images", movie.i);
 
   // Get higher resolution image if available
   const getImageUrl = (movie: Movie) => {
-    // Try to get higher resolution image from i array
     if (movie.i && movie.i.length > 0) {
-      // IMDb images often have size parameters, try to get larger version
       return movie.i[1] ?? movie.i[0] ?? null;
     }
     return null;
@@ -41,20 +40,34 @@ export default function MovieCard({
   return (
     <button
       onClick={() => onToggle(movie)}
-      className={`cine-card-mobile hover-lift text-left flex items-center gap-2 sm:gap-3 transition-all duration-300 ${
-        isSelected
-          ? "border-primary/50 bg-primary/5"
-          : "hover:border-primary/30"
+      title={isPreviousWinner ? t("create.previousWinnerTooltip") : undefined}
+      className={`cine-card-mobile hover-lift text-left flex items-center gap-2 sm:gap-3 transition-all duration-300 relative ${
+        isPreviousWinner
+          ? "border-amber-500/40 bg-amber-500/5"
+          : isSelected
+            ? "border-primary/50 bg-primary/5"
+            : "hover:border-primary/30"
       }`}
     >
-      {imageUrl && (
+      {/* Previous winner ribbon */}
+      {isPreviousWinner && (
+        <div className="absolute top-0 right-0 overflow-hidden w-16 h-16 pointer-events-none">
+          <div className="absolute top-2 -right-4 w-16 rotate-45 bg-amber-500 text-[9px] font-bold text-white text-center py-0.5 shadow-sm">
+            <Eye className="inline h-2.5 w-2.5 -mt-0.5" />
+          </div>
+        </div>
+      )}
+
+      {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt=""
           src={imageUrl}
-          className="h-14 w-10 sm:h-20 sm:w-14 md:h-24 md:w-16 rounded-md object-cover border border-border/60 shadow-sm shrink-0"
+          className={`h-14 w-10 sm:h-20 sm:w-14 md:h-24 md:w-16 rounded-md object-cover border shadow-sm shrink-0 ${
+            isPreviousWinner ? "border-amber-500/40" : "border-border/60"
+          }`}
         />
-      )}
+      ) : null}
 
       <div className="flex-1 min-w-0">
         <div className="truncate text-xs sm:text-sm md:text-base font-semibold text-foreground">
@@ -63,6 +76,16 @@ export default function MovieCard({
         <div className="truncate text-xs text-muted-foreground mt-0.5">
           {movie.s}
         </div>
+
+        {/* Previous winner inline badge */}
+        {isPreviousWinner && (
+          <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5">
+            <Eye className="h-2.5 w-2.5 text-amber-500 shrink-0" />
+            <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 leading-none">
+              {t("create.previousWinner")}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="ml-auto shrink-0 flex items-center">
