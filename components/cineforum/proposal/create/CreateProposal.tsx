@@ -16,11 +16,18 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Users,
+  User,
 } from "lucide-react";
 import MovieSearch from "./MovieSearch";
 import MovieCard from "./MovieCard";
 import SelectedMovies from "./SelectedMovies";
-import { createProposal, fetchProposalWinners } from "@/lib/client/cineforum";
+import {
+  createProposal,
+  fetchProposalWinners,
+  fetchCandidates,
+  CandidateDTO,
+} from "@/lib/client/cineforum";
 
 /** Create Proposal block (IMDb search + simple selection + submit) */
 export default function CreateProposal({
@@ -41,6 +48,7 @@ export default function CreateProposal({
     type: "User" | "Team";
   } | null>(null);
   const [creating, setCreating] = React.useState(false);
+  const [candidates, setCandidates] = React.useState<CandidateDTO[]>([]);
 
   // Set of IMDb IDs that have already won a previous proposal
   const [previousWinnerImdbIds, setPreviousWinnerImdbIds] = React.useState<
@@ -49,9 +57,13 @@ export default function CreateProposal({
 
   React.useEffect(() => {
     if (session?.user && "id" in session.user && session.user.id) {
-      setOwner({ id: session.user.id as string, type: "User" });
+      const userId = session.user.id as string;
+      setOwner({ id: userId, type: "User" });
+      fetchCandidates(userId, cineforumId)
+        .then(setCandidates)
+        .catch(() => {});
     }
-  }, [session]);
+  }, [session, cineforumId]);
 
   // Fetch previous winners once on mount
   React.useEffect(() => {
@@ -133,6 +145,53 @@ export default function CreateProposal({
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
+          {/* Owner toggle — only shown when a team candidate exists */}
+          {candidates.some((c) => c.type === "Team") &&
+            (() => {
+              const userCandidate = candidates.find((c) => c.type === "User")!;
+              const teamCandidate = candidates.find((c) => c.type === "Team")!;
+              return (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm font-semibold">
+                    <Users className="h-4 w-4 text-primary" />
+                    {t("create.ownerLabel")}
+                  </Label>
+                  <div className="flex rounded-xl border border-border overflow-hidden bg-card">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOwner({ id: userCandidate.id, type: "User" })
+                      }
+                      className={`flex-1 px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
+                      ${
+                        owner?.type === "User"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <User className="h-4 w-4" />
+                      {t("create.ownerMe")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOwner({ id: teamCandidate.id, type: "Team" })
+                      }
+                      className={`flex-1 px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
+                      ${
+                        owner?.type === "Team"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <Users className="h-4 w-4" />
+                      {t("create.ownerTeam", { name: teamCandidate.name })}
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
           {/* Date and Title */}
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">

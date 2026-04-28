@@ -24,6 +24,7 @@ import { Film, Trophy } from "lucide-react"; // Trophy kept for winner info bloc
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import ProposalMovieCard from "@/components/cineforum/proposal/shared/ProposalMovieCard";
 import ProposalVotesAccordion from "@/components/cineforum/proposal/shared/ProposalVotesAccordion";
+import ProposalOwnerBadge from "@/components/cineforum/proposal/shared/ProposalOwnerBadge";
 
 const NO_ROUND_KEY = "__no_round__";
 
@@ -151,12 +152,25 @@ export default function ProposalsHistoryPage({
                         className="px-4 hover:no-underline overflow-hidden"
                         onClick={() => loadRanking(proposal.id)}
                       >
-                        <div className="flex min-w-0 flex-1 items-center gap-2 pr-2">
-                          <Film className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="min-w-0 flex-1 truncate text-left font-semibold">
-                            {proposal.title}
-                          </span>
-                          <div className="flex shrink-0 items-center gap-2">
+                        {/* Mobile: two-line layout — title + owner on top, nothing else */}
+                        {/* sm+: single-row layout with date and status */}
+                        <div className="flex min-w-0 flex-1 flex-col gap-1 pr-2 sm:flex-row sm:items-center sm:gap-2">
+                          {/* Row 1 (mobile) / single row (sm+) */}
+                          <div className="flex min-w-0 flex-1 items-center gap-2">
+                            <Film className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span className="min-w-0 flex-1 truncate text-left font-semibold">
+                              {proposal.title}
+                            </span>
+                          </div>
+
+                          {/* Row 2 on mobile: owner + status */}
+                          <div className="flex items-center gap-2 sm:shrink-0">
+                            {proposal.owner && (
+                              <ProposalOwnerBadge
+                                owner={proposal.owner}
+                                tNamespace="proposal"
+                              />
+                            )}
                             <span className="hidden text-sm text-muted-foreground sm:inline">
                               {proposal.date
                                 ? new Date(proposal.date).toLocaleDateString(

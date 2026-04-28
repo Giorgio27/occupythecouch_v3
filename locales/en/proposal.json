@@ -30,7 +30,16 @@
     "searching": "Searching…",
     "selectedMovies": "Selected movies",
     "previousWinner": "Already seen",
-    "previousWinnerTooltip": "This movie already won a previous proposal"
+    "previousWinnerTooltip": "This movie already won a previous proposal",
+    "ownerLabel": "Proposal owner",
+    "ownerMe": "Me",
+    "ownerTeam": "My team ({{name}})"
+  },
+  "owner": {
+    "team": "{{name}}",
+    "teamFallback": "Team",
+    "userFallback": "User",
+    "proposedBy": "Proposed by"
   },
   "open": {
     "badge": "Voting open",

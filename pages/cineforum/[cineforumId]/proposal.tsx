@@ -14,6 +14,7 @@ type ProposalLite = {
   title: string;
   closed: boolean;
   winner?: { id: string; title: string } | null;
+  owner?: { id: string; type: "User" | "Team"; name?: string | null } | null;
   show_results: boolean;
   no_votes_left: boolean;
 };
@@ -38,7 +39,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const last = await prisma.proposal.findFirst({
     where: { cineforumId },
     orderBy: { date: "desc" },
-    include: { winner: { select: { id: true, title: true } } },
+    include: {
+      winner: { select: { id: true, title: true } },
+      ownerUser: { select: { id: true, name: true } },
+      ownerTeam: { select: { id: true, name: true } },
+    },
   });
 
   const props: Props = {
@@ -56,6 +61,19 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
           winner: last.winner
             ? { id: last.winner.id, title: last.winner.title }
             : null,
+          owner: last.ownerUserId
+            ? {
+                id: last.ownerUserId,
+                type: "User" as const,
+                name: last.ownerUser?.name ?? null,
+              }
+            : last.ownerTeamId
+              ? {
+                  id: last.ownerTeamId,
+                  type: "Team" as const,
+                  name: last.ownerTeam?.name ?? null,
+                }
+              : null,
           show_results: last.showResults,
           no_votes_left: false,
         }

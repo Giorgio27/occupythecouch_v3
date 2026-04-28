@@ -29,7 +29,16 @@
     "searching": "Ricerca in corso…",
     "selectedMovies": "Film selezionati",
     "previousWinner": "Già visto",
-    "previousWinnerTooltip": "Questo film ha già vinto una proposta precedente"
+    "previousWinnerTooltip": "Questo film ha già vinto una proposta precedente",
+    "ownerLabel": "Proprietario della proposta",
+    "ownerMe": "Io",
+    "ownerTeam": "Il mio team ({{name}})"
+  },
+  "owner": {
+    "team": "{{name}}",
+    "teamFallback": "Team",
+    "userFallback": "Utente",
+    "proposedBy": "Proposto da"
   },
   "open": {
     "badge": "Votazione aperta",

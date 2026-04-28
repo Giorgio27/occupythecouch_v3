@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { CalendarDays, Film, Sparkles, Trophy } from "lucide-react";
+import ProposalOwnerBadge from "@/components/cineforum/proposal/shared/ProposalOwnerBadge";
 
 type ProposalHeaderProps = {
   proposal: any;
@@ -50,6 +51,7 @@ export default function ProposalHeader({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            {proposal?.owner && <ProposalOwnerBadge owner={proposal.owner} />}
             {proposal?.date && (
               <div className="cine-badge bg-muted/50">
                 <CalendarDays className="mr-2 h-4 w-4" />

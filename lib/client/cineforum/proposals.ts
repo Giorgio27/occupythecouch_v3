@@ -9,6 +9,21 @@ export type ProposalWinnersDTO = {
   imdbIds: string[];
 };
 
+export type CandidateDTO = {
+  id: string;
+  name: string;
+  type: "User" | "Team";
+};
+
+export async function fetchCandidates(
+  userId: string,
+  cineforumId: string,
+): Promise<CandidateDTO[]> {
+  return jsonFetch<CandidateDTO[]>(
+    `/api/cineforum/users/${userId}/candidates?cineforumId=${cineforumId}`,
+  );
+}
+
 export async function fetchProposal(
   proposalId: string,
 ): Promise<ProposalDetailDTO> {

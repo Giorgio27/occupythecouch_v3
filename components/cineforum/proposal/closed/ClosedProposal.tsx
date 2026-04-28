@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Trophy, Film, Sparkles, Clock } from "lucide-react";
+import ProposalOwnerBadge from "@/components/cineforum/proposal/shared/ProposalOwnerBadge";
 
 export default function ClosedProposal({
   last,
@@ -10,6 +11,7 @@ export default function ClosedProposal({
     date: string | null;
     title: string;
     winner?: { id: string; title: string } | null;
+    owner?: { id: string; type: "User" | "Team"; name?: string | null } | null;
   };
 }) {
   const { t } = useTranslation("proposal");
@@ -31,9 +33,12 @@ export default function ClosedProposal({
               <span className="text-gradient">{t("closed.winnerTitle")}</span>
             </CardTitle>
 
-            <div className="cine-badge animate-scale-in delay-200">
-              <Sparkles className="mr-2 h-4 w-4" />
-              {t("closed.closedBadge")}
+            <div className="flex items-center gap-2 flex-wrap">
+              {last.owner && <ProposalOwnerBadge owner={last.owner} />}
+              <div className="cine-badge animate-scale-in delay-200">
+                <Sparkles className="mr-2 h-4 w-4" />
+                {t("closed.closedBadge")}
+              </div>
             </div>
           </div>
         </CardHeader>

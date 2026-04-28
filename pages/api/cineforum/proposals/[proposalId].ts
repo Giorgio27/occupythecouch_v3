@@ -19,6 +19,8 @@ export default async function handler(
       movies: { include: { movie: true } },
       votes: { include: { user: { select: { id: true, name: true } } } },
       cineforum: { select: { id: true } },
+      ownerUser: { select: { id: true, name: true } },
+      ownerTeam: { select: { id: true, name: true } },
     },
   });
   if (!p) return res.status(404).json({ error: "Not found" });
@@ -38,9 +40,9 @@ export default async function handler(
     id: p.id,
     date: p.date ? new Date(p.date).toLocaleDateString("it-IT") : null,
     owner: p.ownerUserId
-      ? { id: p.ownerUserId, type: "User" }
+      ? { id: p.ownerUserId, type: "User", name: p.ownerUser?.name ?? null }
       : p.ownerTeamId
-        ? { id: p.ownerTeamId, type: "Team" }
+        ? { id: p.ownerTeamId, type: "Team", name: p.ownerTeam?.name ?? null }
         : null,
     movies: p.movies.map((pm) => pm.movie),
     winner: p.winner,
