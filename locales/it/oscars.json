@@ -2,6 +2,8 @@
   "title": "Oscars",
   "subtitle": "Vota i film dei round passati e scopri i vincitori di ogni ciclo",
   "error": "Si è verificato un errore durante il caricamento dei round.",
+  "closed": "Chiuso",
+  "averageCycle": "Media ciclo",
   "loading": "Caricamento round in corso...",
   "empty": {
     "title": "Nessun round disponibile",

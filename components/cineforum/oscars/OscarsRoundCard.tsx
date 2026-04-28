@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 import OscarsMovieRow from "./OscarsMovieRow";
+import { useTranslation } from "react-i18next";
 
 interface OscarsRoundCardProps {
   round: OscarsRoundDTO;
@@ -16,6 +17,7 @@ export default function OscarsRoundCard({
   isFirst,
   onVote,
 }: OscarsRoundCardProps) {
+  const { t } = useTranslation("oscars");
   const [isExpanded, setIsExpanded] = useState(!round.closed || isFirst);
   const [votingMovie, setVotingMovie] = useState<string | null>(null);
 
@@ -52,7 +54,7 @@ export default function OscarsRoundCard({
               </h3>
               {round.closed && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                  Chiuso
+                  {t("closed")}
                 </Badge>
               )}
             </div>
@@ -113,7 +115,7 @@ export default function OscarsRoundCard({
 
           {round.closed && round.winners.length > 0 && (
             <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Media ciclo</span>
+              <span>{t("averageCycle")}</span>
               <div className="flex items-center gap-1 font-semibold text-foreground">
                 <Sofa className="h-3 w-3 text-primary" />
                 <span>{roundAverageRating}</span>

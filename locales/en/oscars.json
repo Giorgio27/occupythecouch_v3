@@ -2,6 +2,8 @@
   "title": "Oscars",
   "subtitle": "Vote for movies from past rounds and discover the winners of each cycle",
   "error": "An error occurred while loading rounds.",
+  "closed": "Closed",
+  "averageCycle": "Average cycle",
   "loading": "Loading rounds...",
   "empty": {
     "title": "No rounds available",

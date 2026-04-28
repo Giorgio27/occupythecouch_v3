@@ -121,7 +121,7 @@ export default async function handler(
     const body = await Promise.all(
       rounds.map(async (round) => {
         // Get all winners (movies) for this round
-        const winners = await Promise.all(
+        const winnersUnsorted = await Promise.all(
           round.proposals
             .filter((p) => p.winner)
             .map(async (proposal) => {
@@ -185,9 +185,19 @@ export default async function handler(
                 tmdbVote: movie.voteAverage ?? null,
                 tomatometer: movie.tomatometer ?? null,
                 metascore: movie.metascore ?? null,
+                _proposalDate: proposal.date ?? proposal.createdAt,
               };
             }),
         );
+
+        // Sort winners by proposal date descending (newest first)
+        const winners = winnersUnsorted
+          .sort(
+            (a, b) =>
+              new Date(b._proposalDate).getTime() -
+              new Date(a._proposalDate).getTime(),
+          )
+          .map(({ _proposalDate: _, ...w }) => w);
 
         // Sort by rating and find best
         const sortedWinners = [...winners].sort(
