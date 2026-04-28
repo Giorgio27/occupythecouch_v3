@@ -2,6 +2,7 @@ import { Trophy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProposalRankingMovieDTO } from "@/lib/shared/types/cineforum";
 import { useTranslation } from "react-i18next";
+import MoviePoster from "@/components/ui/MoviePoster";
 
 export type ProposalMovieCardMovie = {
   id: string;
@@ -40,7 +41,6 @@ export default function ProposalMovieCard({
 }: ProposalMovieCardProps) {
   const { t } = useTranslation(tNamespace);
 
-  const movieImage = movie.imageMedium ?? movie.i?.[0];
   const movieTitle = movie.title ?? movie.l ?? "";
   const movieYear = movie.year ?? movie.y;
 
@@ -53,17 +53,14 @@ export default function ProposalMovieCard({
       }`}
     >
       {/* Poster */}
-      {movieImage ? (
-        <img
-          src={movieImage}
-          alt={movieTitle}
-          className="h-24 w-16 flex-shrink-0 rounded-lg object-cover shadow-sm"
-        />
-      ) : (
-        <div className="flex h-24 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-          <span className="text-center leading-tight px-1">No image</span>
-        </div>
-      )}
+      <MoviePoster
+        imageMedium={movie.imageMedium ?? movie.i?.[1] ?? null}
+        image={movie.i?.[0] ?? null}
+        imdbId={movie.id ?? null}
+        alt={movieTitle}
+        className="h-24 w-16 flex-shrink-0 rounded-lg object-cover shadow-sm"
+        placeholderClassName="h-24 w-16 flex-shrink-0 rounded-lg bg-muted flex items-center justify-center"
+      />
 
       {/* Info */}
       <div className="min-w-0 flex-1">

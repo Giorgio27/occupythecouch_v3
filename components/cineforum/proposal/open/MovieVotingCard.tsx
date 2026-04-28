@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useTouchDrag } from "./useTouchDrag";
 import PositionPicker from "./PositionPicker";
+import MoviePoster from "@/components/ui/MoviePoster";
 
 interface MovieVotingCardProps {
   movie: any;
@@ -90,17 +91,15 @@ export default function MovieVotingCard({
           </div>
 
           <div className="shrink-0">
-            {movie.imageMedium || movie.image || movie.poster ? (
-              <img
-                alt={movie.title}
-                src={movie.imageMedium || movie.image || movie.poster}
-                className="h-20 w-14 rounded border border-border/60 object-cover shadow-sm"
-              />
-            ) : (
-              <div className="h-20 w-14 rounded border border-border/60 bg-muted/50 flex items-center justify-center">
-                <Star className="h-5 w-5 text-muted-foreground/30" />
-              </div>
-            )}
+            <MoviePoster
+              imageMedium={movie.imageMedium ?? null}
+              poster={movie.poster ?? null}
+              image={movie.image ?? null}
+              imdbId={movie.imdbId ?? null}
+              alt={movie.title ?? ""}
+              className="h-20 w-14 rounded border border-border/60 object-cover shadow-sm"
+              placeholderClassName="h-20 w-14 rounded border border-border/60 bg-muted/50 flex items-center justify-center"
+            />
           </div>
 
           <div className="min-w-0 flex-1">

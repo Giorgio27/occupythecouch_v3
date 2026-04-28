@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Film, Star, GripVertical } from "lucide-react";
+import { Star, GripVertical } from "lucide-react";
+import MoviePoster from "@/components/ui/MoviePoster";
 
 /** Single movie row with rank buttons (1°,2°,...) and drag-and-drop */
 export default function MovieRankRow({
@@ -195,13 +196,15 @@ export default function MovieRankRow({
         </div>
         {/* Poster / fallback icon */}
         <div className="shrink-0">
-          {(movie.imageMedium || movie.image || movie.poster) && (
-            <img
-              alt=""
-              src={movie.imageMedium || movie.image || movie.poster}
-              className="h-14 w-10 rounded-md border border-border/60 object-cover"
-            />
-          )}
+          <MoviePoster
+            imageMedium={movie.imageMedium ?? null}
+            poster={movie.poster ?? null}
+            image={movie.image ?? null}
+            imdbId={movie.imdbId ?? null}
+            alt=""
+            className="h-14 w-10 rounded-md border border-border/60 object-cover"
+            placeholderClassName="h-14 w-10 rounded-md border border-border/60 bg-muted flex items-center justify-center"
+          />
         </div>
 
         {/* Title + meta */}

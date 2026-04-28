@@ -1,6 +1,7 @@
 import * as React from "react";
 import { CheckCircle2, Plus, X, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import MoviePoster from "@/components/ui/MoviePoster";
 
 type Movie = {
   id: string;
@@ -27,16 +28,6 @@ export default function MovieCard({
 }: MovieCardProps) {
   const { t } = useTranslation("proposal");
 
-  // Get higher resolution image if available
-  const getImageUrl = (movie: Movie) => {
-    if (movie.i && movie.i.length > 0) {
-      return movie.i[1] ?? movie.i[0] ?? null;
-    }
-    return null;
-  };
-
-  const imageUrl = getImageUrl(movie);
-
   return (
     <button
       onClick={() => onToggle(movie)}
@@ -58,16 +49,18 @@ export default function MovieCard({
         </div>
       )}
 
-      {imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          alt=""
-          src={imageUrl}
-          className={`h-14 w-10 sm:h-20 sm:w-14 md:h-24 md:w-16 rounded-md object-cover border shadow-sm shrink-0 ${
-            isPreviousWinner ? "border-amber-500/40" : "border-border/60"
-          }`}
-        />
-      ) : null}
+      <MoviePoster
+        imageMedium={movie.i?.[1] ?? null}
+        image={movie.i?.[0] ?? null}
+        imdbId={movie.id}
+        alt=""
+        className={`h-14 w-10 sm:h-20 sm:w-14 md:h-24 md:w-16 rounded-md object-cover border shadow-sm shrink-0 ${
+          isPreviousWinner ? "border-amber-500/40" : "border-border/60"
+        }`}
+        placeholderClassName={`h-14 w-10 sm:h-20 sm:w-14 md:h-24 md:w-16 rounded-md border shadow-sm shrink-0 bg-muted flex items-center justify-center ${
+          isPreviousWinner ? "border-amber-500/40" : "border-border/60"
+        }`}
+      />
 
       <div className="flex-1 min-w-0">
         <div className="truncate text-xs sm:text-sm md:text-base font-semibold text-foreground">

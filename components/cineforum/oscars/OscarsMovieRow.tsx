@@ -4,6 +4,7 @@ import { CouchRating } from "@/components/ui/couch-rating";
 import { MovieWinnerDTO } from "@/lib/shared/types/cineforum";
 import UserVotes from "./UserVotes";
 import ExternalRatings from "./ExternalRatings";
+import MoviePoster from "@/components/ui/MoviePoster";
 
 interface OscarsMovieRowProps {
   movie: MovieWinnerDTO;
@@ -36,18 +37,16 @@ export default function OscarsMovieRow({
       )}
 
       <div className="flex items-center gap-2.5">
-        <div className="oscars-movie-card__poster">
-          {movie.imageMedium || movie.image || movie.poster ? (
-            <img
-              src={movie.imageMedium || movie.image || movie.poster || ""}
-              alt={movie.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Sofa className="h-4 w-4 text-muted-foreground/30" />
-            </div>
-          )}
+        <div className="oscars-movie-card__poster overflow-hidden">
+          <MoviePoster
+            imageMedium={movie.imageMedium}
+            poster={movie.poster}
+            image={movie.image}
+            imdbId={movie.id}
+            alt={movie.title}
+            className="w-full h-full object-cover"
+            placeholderClassName="w-full h-full flex items-center justify-center bg-muted"
+          />
         </div>
 
         <div className="flex-1 min-w-0">

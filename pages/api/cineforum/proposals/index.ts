@@ -70,6 +70,10 @@ export default async function handler(
         metascore: omdb.metascore ?? null,
       },
       update: {
+        // Always refresh image fields in case they were missing on first insert
+        image: m.i?.[0] ?? undefined,
+        imageMedium: m.i?.[1] ?? undefined,
+        poster: tmdb.poster ?? undefined,
         imdbRating: omdb.imdb_rating ?? undefined,
         tomatometer: omdb.tomatometer ?? undefined,
         metascore: omdb.metascore ?? undefined,

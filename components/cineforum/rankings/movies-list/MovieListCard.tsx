@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MovieStatsDTO } from "@/lib/shared/types";
+import MoviePoster from "@/components/ui/MoviePoster";
 
 type MovieListCardProps = {
   movie: MovieStatsDTO;
@@ -91,17 +92,17 @@ export default function MovieListCard({
         <div className="border-t border-border px-4 sm:px-6 py-4 sm:py-6 bg-secondary/30">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
             {/* Poster — centered on mobile, left on sm+ */}
-            {(movie.imageMedium || movie.image || movie.poster) && (
-              <div className="flex-shrink-0 flex justify-center sm:block">
-                <img
-                  src={
-                    (movie.imageMedium || movie.image || movie.poster) as string
-                  }
-                  alt={movie.title}
-                  className="w-24 sm:w-32 rounded-xl object-cover shadow-md border border-border"
-                />
-              </div>
-            )}
+            <div className="flex-shrink-0 flex justify-center sm:block">
+              <MoviePoster
+                imageMedium={movie.imageMedium}
+                poster={movie.poster}
+                image={movie.image}
+                imdbId={movie.imdbId}
+                alt={movie.title}
+                className="w-24 sm:w-32 rounded-xl object-cover shadow-md border border-border"
+                placeholderClassName="w-24 sm:w-32 rounded-xl border border-border bg-muted flex items-center justify-center aspect-[2/3]"
+              />
+            </div>
 
             {/* Info */}
             <div className="flex-1 space-y-3">
