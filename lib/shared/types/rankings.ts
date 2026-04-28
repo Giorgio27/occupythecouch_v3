@@ -60,6 +60,7 @@ export type MoviesRankingResponseDTO = {
 export type UsersRankingResponseDTO = {
   body: UserRankingDTO[];
   status: string;
+  total_movies_voted: number;
 };
 
 export const SUPPLIERS: Supplier[] = [

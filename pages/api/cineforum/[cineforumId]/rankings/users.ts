@@ -39,6 +39,18 @@ export default async function handler(
       return res.status(403).json({ error: "Not a member of this cineforum" });
     }
 
+    // Count distinct movies voted (proposals with a winner in a closed round)
+    const watchedMovies = await prisma.proposal.findMany({
+      where: {
+        cineforumId,
+        winnerId: { not: null },
+        round: { closed: true },
+      },
+      select: { winnerId: true },
+      distinct: ["winnerId"],
+    });
+    const totalMoviesVoted = watchedMovies.length;
+
     // Get total count for pagination status (only active users)
     const totalCount = await prisma.userRanking.count({
       where: {
@@ -138,6 +150,7 @@ export default async function handler(
     return res.status(200).json({
       body,
       status,
+      total_movies_voted: totalMoviesVoted,
     });
   } catch (error) {
     console.error("Error fetching user rankings:", error);

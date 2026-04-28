@@ -66,6 +66,7 @@ export default function UsersRankingPage({
 }: Props) {
   const { t } = useTranslation("rankings");
   const [rankings, setRankings] = useState<UserRankingDTO[]>([]);
+  const [totalMoviesVoted, setTotalMoviesVoted] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier>(
     suppliers[0],
@@ -92,6 +93,7 @@ export default function UsersRankingPage({
       });
 
       setRankings(response.body);
+      setTotalMoviesVoted(response.total_movies_voted ?? 0);
 
       if (response.body.length > 0) {
         const allRounds = new Set<string>();
@@ -284,7 +286,6 @@ export default function UsersRankingPage({
 
     return {
       totalUsers: filteredByRoundRankings.length,
-      activeUsers: withRatings.length,
       avgRating,
       totalWins,
     };
@@ -381,14 +382,14 @@ export default function UsersRankingPage({
 
           <div className="cine-card p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-500/10">
-              <TrendingUp className="w-5 h-5 text-green-500" />
+              <Film className="w-5 h-5 text-green-500" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">
-                {t("users.statActive")}
+                {t("users.statMoviesVoted")}
               </p>
               <p className="text-lg font-bold text-foreground">
-                {stats.activeUsers}
+                {totalMoviesVoted}
               </p>
             </div>
           </div>
