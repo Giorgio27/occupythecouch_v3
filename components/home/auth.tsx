@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CineforumDTO } from "@/lib/shared/types";
@@ -11,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  BookOpen,
   Check,
   Clapperboard,
   LayoutGrid,
@@ -198,6 +200,20 @@ export function AuthedHome({ cineforums }: { cineforums: CineforumDTO[] }) {
                     </div>
                   </div>
                 )}
+
+                <Link
+                  href="/tutorial"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-200 group"
+                >
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors duration-200">
+                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-left">
+                      {t("home.tutorialLink")}
+                    </p>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>

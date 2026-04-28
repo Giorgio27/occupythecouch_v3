@@ -1,0 +1,128 @@
+{
+  "hero": {
+    "badge": "Guida passo dopo passo",
+    "headline1": "Come usare",
+    "headline2": "Occupy the Couch",
+    "subtitle": "Tutto quello che devi sapere per gestire il tuo cineforum — dalla creazione di un round all'incoronazione del vincitore.",
+    "subtitleBold": "8 passi,",
+    "subtitleEnd": "zero confusione.",
+    "ctaRead": "Leggi la guida",
+    "ctaStart": "Inizia gratis",
+    "statSteps": "Passi da seguire",
+    "statVoting": "Sistema di voto Schulze",
+    "statNights": "Serate film in arrivo"
+  },
+  "steps": {
+    "title": "Il flusso completo",
+    "subtitle": "Segui questi passi in ordine e il tuo cineforum funzionerà alla perfezione — dalla prima proposta alla cerimonia degli Oscar.",
+    "tipLabel": "Consiglio:",
+    "step01": {
+      "title": "Invita il tuo gruppo",
+      "subtitle": "Costruisci il team del cineforum",
+      "description": "Prima di tutto, porta i tuoi amici a bordo. Come admin puoi invitare i membri direttamente dalla sezione Teams del tuo cineforum.",
+      "bullet1": "Vai su Admin → Teams nel tuo cineforum",
+      "bullet2": "Invia un link di invito o aggiungi membri via email",
+      "bullet3": "I membri ricevono una notifica e possono unirsi subito",
+      "bullet4": "Puoi disabilitare i membri in qualsiasi momento senza eliminarli",
+      "tip": "Servono almeno due membri per rendere la votazione significativa!"
+    },
+    "step02": {
+      "title": "Crea un round",
+      "subtitle": "Apri una nuova stagione di proposte",
+      "description": "Un round è il contenitore di tutto: proposte, voti e la cerimonia degli Oscar finale. Gli admin creano i round dal pannello di amministrazione.",
+      "bullet1": "Vai su Admin → Rounds e clicca 'Nuovo Round'",
+      "bullet2": "Dai un nome al round (es. 'Primavera 2025')",
+      "bullet3": "Il round parte in stato aperto — le proposte possono essere inviate",
+      "bullet4": "Solo un round può essere attivo alla volta",
+      "tip": "I round mantengono la storia del tuo cineforum organizzata — puoi sempre sfogliare i round passati."
+    },
+    "step03": {
+      "title": "Invia proposte di film",
+      "subtitle": "Ognuno propone i suoi preferiti",
+      "description": "Con un round attivo aperto, ogni membro può proporre film da guardare. Cerca nel database TMDB e aggiungi le tue scelte.",
+      "bullet1": "Vai alla scheda Proposta del tuo cineforum",
+      "bullet2": "Cerca un film per titolo — i risultati vengono da TMDB",
+      "bullet3": "Seleziona uno o più film e invia la tua proposta",
+      "bullet4": "Tutte le proposte sono visibili a ogni membro immediatamente",
+      "tip": "Le proposte sono pubbliche — puoi vedere cosa hanno suggerito gli altri prima di votare."
+    },
+    "step04": {
+      "title": "Vota con il metodo Schulze",
+      "subtitle": "Classifica i film, non sceglierne uno solo",
+      "description": "Una volta ricevute le proposte, i membri votano classificando tutti i film proposti dal più al meno preferito. L'app usa il metodo Schulze — un algoritmo di confronto a coppie che trova il vincitore più ampiamente preferito.",
+      "bullet1": "Apri la scheda Proposta mentre la proposta è ancora aperta",
+      "bullet2": "Trascina i film nel tuo ordine preferito",
+      "bullet3": "Invia la tua classifica — puoi aggiornarla fino alla chiusura",
+      "bullet4": "L'algoritmo Schulze calcola il vincitore da tutte le classifiche",
+      "tip": "Schulze è più equo della semplice pluralità: considera l'ordine completo delle preferenze di tutti, non solo la prima scelta."
+    },
+    "step05": {
+      "title": "Chiudi la proposta",
+      "subtitle": "Blocca il vincitore",
+      "description": "Quando tutti hanno votato (o la scadenza è arrivata), un admin chiude esplicitamente la proposta. Questo blocca le classifiche, esegue il conteggio finale Schulze e rivela il film vincitore.",
+      "bullet1": "Vai su Admin → Proposte",
+      "bullet2": "Clicca 'Chiudi proposta' sulla proposta attiva",
+      "bullet3": "Il risultato Schulze viene calcolato e il vincitore annunciato",
+      "bullet4": "I membri ricevono una notifica con il film vincitore",
+      "tip": "La chiusura è irreversibile — assicurati che tutti abbiano avuto la possibilità di votare prima."
+    },
+    "step06": {
+      "title": "Votazione Oscar",
+      "subtitle": "Valuta i film che hai visto",
+      "description": "Dopo aver visto il film vincitore (e gli altri del round), i membri esprimono i loro voti Oscar — valutazioni personali che alimentano le classifiche del cineforum.",
+      "bullet1": "Vai alla scheda Oscar del tuo cineforum",
+      "bullet2": "Valuta ogni film che hai visto su una scala a divani",
+      "bullet3": "Le valutazioni vengono aggregate nelle classifiche del cineforum",
+      "bullet4": "Puoi vedere le valutazioni di tutti e la media del gruppo",
+      "tip": "I voti Oscar sono separati dai voti di proposta — riflettono quanto hai effettivamente apprezzato il film."
+    },
+    "step07": {
+      "title": "Chiudi il round",
+      "subtitle": "Concludi e archivia",
+      "description": "Una volta terminata la votazione Oscar, un admin chiude il round. Questo archivia tutti i dati e rende il round di sola lettura, preservando la storia del tuo cineforum.",
+      "bullet1": "Vai su Admin → Rounds",
+      "bullet2": "Clicca 'Chiudi round' sul round attivo",
+      "bullet3": "Tutte le proposte, i voti e le valutazioni Oscar vengono archiviate",
+      "bullet4": "Un nuovo round può ora essere creato per la prossima stagione",
+      "tip": "I round chiusi sono sempre accessibili — sfoglia la storia completa del tuo cineforum dalla scheda Film."
+    },
+    "step08": {
+      "title": "Notifiche",
+      "subtitle": "Resta aggiornato via Telegram",
+      "description": "Occupy the Couch può inviare notifiche Telegram per tenere i membri informati su nuove proposte, risultati delle votazioni e aggiornamenti dei round.",
+      "bullet1": "Gli admin configurano il bot Telegram in Admin → Notifiche",
+      "bullet2": "I membri vengono notificati quando si apre una nuova proposta",
+      "bullet3": "Tutti vengono avvisati quando una proposta si chiude e il vincitore viene rivelato",
+      "bullet4": "Possono essere inviate anche notifiche di chiusura round e promemoria Oscar",
+      "tip": "Le notifiche sono opzionali ma altamente consigliate per mantenere il gruppo coinvolto."
+    }
+  },
+  "faq": {
+    "title": "Domande frequenti",
+    "subtitle": "Hai ancora domande? Ecco le più comuni.",
+    "q1": "Chi può creare un cineforum?",
+    "a1": "Qualsiasi utente registrato può creare un cineforum. Il creatore diventa automaticamente admin e può invitare altri membri, gestire i round e configurare le notifiche.",
+    "q2": "Posso appartenere a più cineforum?",
+    "a2": "Sì! Puoi essere membro di quanti cineforum vuoi. Ogni cineforum ha i propri round, proposte e classifiche Oscar indipendenti.",
+    "q3": "Cos'è il metodo di voto Schulze?",
+    "a3": "Schulze è un algoritmo di voto a scelta classificata. Invece di scegliere un solo preferito, ogni votante classifica tutti i candidati. L'algoritmo esegue confronti a coppie tra ogni coppia di film e trova quello che batterebbe tutti gli altri testa a testa. È considerato uno dei sistemi di voto più equi per le decisioni di gruppo.",
+    "q4": "Posso cambiare il mio voto dopo averlo inviato?",
+    "a4": "Sì — puoi aggiornare la tua classifica di proposta in qualsiasi momento mentre la proposta è ancora aperta. Una volta che un admin chiude la proposta, tutti i voti vengono bloccati e il risultato Schulze viene calcolato.",
+    "q5": "Cosa succede se due film pareggiano nel conteggio Schulze?",
+    "a5": "Il metodo Schulze è progettato per minimizzare i pareggi, ma se si verifica l'app mostrerà entrambi i film come vincitori a pari merito. L'admin può quindi decidere come procedere — ad esempio con un round di spareggio.",
+    "q6": "I voti Oscar sono gli stessi dei voti di proposta?",
+    "a6": "No. I voti di proposta determinano quale film il gruppo guarderà (usando la classifica Schulze). I voti Oscar sono valutazioni personali che dai ai film dopo averli visti — alimentano le classifiche e le statistiche del cineforum.",
+    "q7": "Ho bisogno di un account Telegram per le notifiche?",
+    "a7": "Le notifiche sono completamente opzionali. Se il tuo admin ha configurato il bot Telegram, puoi scegliere di ricevere avvisi. L'app funziona perfettamente senza notifiche — puoi sempre controllare lo stato attuale visitando direttamente il cineforum.",
+    "q8": "Un membro non-admin può chiudere una proposta o un round?",
+    "a8": "No. Solo gli admin possono chiudere proposte e round. I membri regolari possono inviare proposte, votare e dare valutazioni Oscar, ma tutte le azioni amministrative richiedono i privilegi di admin."
+  },
+  "cta": {
+    "badge": "Pronto a iniziare?",
+    "title": "La tua prima serata film è a un round di distanza",
+    "subtitle": "Crea il tuo cineforum, invita il tuo gruppo e lascia che la scelta democratica dei film abbia inizio.",
+    "subtitleBold": "Gratis, equo e sorprendentemente divertente.",
+    "signup": "Crea il tuo cineforum",
+    "login": "Accedi"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "hero": {
+    "badge": "Step-by-step guide",
+    "headline1": "How to use",
+    "headline2": "Occupy the Couch",
+    "subtitle": "Everything you need to know to run your cineforum — from creating a round to crowning the winner.",
+    "subtitleBold": "8 steps,",
+    "subtitleEnd": "zero confusion.",
+    "ctaRead": "Read the guide",
+    "ctaStart": "Start for free",
+    "statSteps": "Steps to master",
+    "statVoting": "Schulze voting system",
+    "statNights": "Movie nights ahead"
+  },
+  "steps": {
+    "title": "The complete workflow",
+    "subtitle": "Follow these steps in order and your cineforum will run like clockwork — from the first proposal to the final Oscar ceremony.",
+    "tipLabel": "Tip:",
+    "step01": {
+      "title": "Invite your crew",
+      "subtitle": "Build your cineforum team",
+      "description": "Before anything else, get your friends on board. As an admin you can invite members directly from the Teams section of your cineforum.",
+      "bullet1": "Go to Admin → Teams in your cineforum",
+      "bullet2": "Send an invite link or add members by email",
+      "bullet3": "Members receive a notification and can join immediately",
+      "bullet4": "You can disable members at any time without deleting them",
+      "tip": "You need at least two members to make voting meaningful!"
+    },
+    "step02": {
+      "title": "Create a round",
+      "subtitle": "Open a new season of movie picks",
+      "description": "A round is the container for everything: proposals, votes, and the final Oscar ceremony. Admins create rounds from the Rounds admin panel.",
+      "bullet1": "Go to Admin → Rounds and click 'New Round'",
+      "bullet2": "Give the round a name (e.g. 'Spring 2025')",
+      "bullet3": "The round starts in open state — proposals can now be submitted",
+      "bullet4": "Only one round can be active at a time",
+      "tip": "Rounds keep your cineforum history organised — you can always browse past rounds."
+    },
+    "step03": {
+      "title": "Submit movie proposals",
+      "subtitle": "Everyone pitches their favourites",
+      "description": "With an active round open, every member can propose movies they want to watch. Search the TMDB database and add up to a handful of picks.",
+      "bullet1": "Navigate to the Proposal tab of your cineforum",
+      "bullet2": "Search for a movie by title — results come from TMDB",
+      "bullet3": "Select one or more movies and submit your proposal",
+      "bullet4": "All proposals are visible to every member immediately",
+      "tip": "Proposals are public — you can see what everyone else has suggested before voting."
+    },
+    "step04": {
+      "title": "Vote with Schulze method",
+      "subtitle": "Rank movies, not just pick one",
+      "description": "Once proposals are in, members vote by ranking all proposed movies from most to least preferred. The app uses the Schulze method — a pairwise comparison algorithm that finds the most broadly preferred winner.",
+      "bullet1": "Open the Proposal tab while the proposal is still open",
+      "bullet2": "Drag and drop movies into your preferred order",
+      "bullet3": "Submit your ranking — you can update it until the proposal closes",
+      "bullet4": "The Schulze algorithm computes the winner from all rankings",
+      "tip": "Schulze is fairer than simple plurality: it considers everyone's full preference order, not just their top pick."
+    },
+    "step05": {
+      "title": "Close the proposal",
+      "subtitle": "Lock in the winner",
+      "description": "When everyone has voted (or the deadline arrives), an admin explicitly closes the proposal. This freezes the rankings, runs the final Schulze tally, and reveals the winning movie.",
+      "bullet1": "Go to Admin → Proposals",
+      "bullet2": "Click 'Close proposal' on the active proposal",
+      "bullet3": "The Schulze result is computed and the winner is announced",
+      "bullet4": "Members receive a notification with the winning movie",
+      "tip": "Closing is irreversible — make sure everyone has had a chance to vote first."
+    },
+    "step06": {
+      "title": "Oscar voting",
+      "subtitle": "Rate the movies you've watched",
+      "description": "After watching the winning movie (and any others from the round), members cast their Oscar votes — personal ratings that feed into the cineforum's all-time rankings.",
+      "bullet1": "Navigate to the Oscars tab of your cineforum",
+      "bullet2": "Rate each movie you've watched on a couch scale",
+      "bullet3": "Ratings are aggregated into the cineforum's movie rankings",
+      "bullet4": "You can see everyone's ratings and the group average",
+      "tip": "Oscar votes are separate from proposal votes — they reflect how much you actually enjoyed the film."
+    },
+    "step07": {
+      "title": "Close the round",
+      "subtitle": "Wrap up and archive",
+      "description": "Once Oscar voting is done, an admin closes the round. This archives all data and makes the round read-only, preserving the history of your cineforum.",
+      "bullet1": "Go to Admin → Rounds",
+      "bullet2": "Click 'Close round' on the active round",
+      "bullet3": "All proposals, votes, and Oscar ratings are archived",
+      "bullet4": "A new round can now be created for the next season",
+      "tip": "Closed rounds are always accessible — browse your cineforum's full history from the Movies tab."
+    },
+    "step08": {
+      "title": "Notifications",
+      "subtitle": "Stay in the loop via Telegram",
+      "description": "Occupy the Couch can send Telegram notifications to keep members informed about new proposals, voting results, and round updates — no need to check the app constantly.",
+      "bullet1": "Admins configure the Telegram bot in Admin → Notifications",
+      "bullet2": "Members get notified when a new proposal opens",
+      "bullet3": "Everyone is pinged when a proposal closes and the winner is revealed",
+      "bullet4": "Round closure and Oscar reminders can also be sent",
+      "tip": "Notifications are optional but highly recommended for keeping the group engaged."
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Still have questions? Here are the most common ones.",
+    "q1": "Who can create a cineforum?",
+    "a1": "Any registered user can create a cineforum. The creator automatically becomes the admin and can invite other members, manage rounds, and configure notifications.",
+    "q2": "Can I belong to multiple cineforums?",
+    "a2": "Yes! You can be a member of as many cineforums as you like. Each cineforum has its own independent rounds, proposals, and Oscar rankings.",
+    "q3": "What is the Schulze voting method?",
+    "a3": "Schulze is a ranked-choice voting algorithm. Instead of picking a single favourite, each voter ranks all candidates. The algorithm then runs pairwise comparisons between every pair of movies and finds the one that would beat all others head-to-head. It is widely considered one of the fairest voting systems for group decisions.",
+    "q4": "Can I change my vote after submitting?",
+    "a4": "Yes — you can update your proposal ranking at any time while the proposal is still open. Once an admin closes the proposal, all votes are locked and the Schulze result is computed.",
+    "q5": "What happens if two movies tie in the Schulze count?",
+    "a5": "The Schulze method is designed to minimise ties, but if one occurs the app will display both movies as joint winners. The admin can then decide how to proceed — for example by running a tiebreaker round.",
+    "q6": "Are Oscar votes the same as proposal votes?",
+    "a6": "No. Proposal votes determine which movie the group watches next (using Schulze ranking). Oscar votes are personal ratings you give to movies after watching them — they feed into the cineforum's all-time movie rankings and stats.",
+    "q7": "Do I need a Telegram account for notifications?",
+    "a7": "Notifications are entirely optional. If your admin has configured the Telegram bot, you can opt in to receive alerts. The app works perfectly without notifications — you can always check the current state by visiting the cineforum directly.",
+    "q8": "Can a non-admin member close a proposal or round?",
+    "a8": "No. Only admins can close proposals and rounds. Regular members can submit proposals, vote, and cast Oscar ratings, but all administrative actions require admin privileges."
+  },
+  "cta": {
+    "badge": "Ready to start?",
+    "title": "Your first movie night is one round away",
+    "subtitle": "Create your cineforum, invite your crew, and let the democratic movie-picking begin.",
+    "subtitleBold": "Free, fair, and surprisingly fun.",
+    "signup": "Create your cineforum",
+    "login": "Log in"
+  }
+}
