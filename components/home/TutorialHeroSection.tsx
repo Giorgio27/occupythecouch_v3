@@ -63,7 +63,7 @@ export default function TutorialHeroSection() {
   const { t } = useTranslation("tutorial");
 
   const stats = [
-    { value: "8", label: t("hero.statSteps") },
+    { value: "9", label: t("hero.statSteps") },
     { value: "1", label: t("hero.statVoting") },
     { value: "∞", label: t("hero.statNights") },
   ];

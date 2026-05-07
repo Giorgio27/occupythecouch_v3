@@ -11,7 +11,9 @@ import {
   Bell,
   UserPlus,
   ChevronRight,
+  ChevronDown,
   CheckCircle2,
+  BarChart2,
 } from "lucide-react";
 
 function useInView(threshold = 0.1) {
@@ -36,14 +38,15 @@ function useInView(threshold = 0.1) {
 }
 
 const STEP_ICONS = [
-  UserPlus,
-  PlusCircle,
-  Film,
-  Vote,
-  XCircle,
-  Trophy,
-  XCircle,
-  Bell,
+  UserPlus, // 01 invite
+  PlusCircle, // 02 create round
+  Film, // 03 proposals
+  Vote, // 04 vote
+  XCircle, // 05 close proposal
+  Trophy, // 06 oscar voting
+  XCircle, // 07 close round
+  Bell, // 08 notifications
+  BarChart2, // 09 rankings
 ];
 const STEP_ACCENTS = [
   "bg-primary/10",
@@ -54,6 +57,7 @@ const STEP_ACCENTS = [
   "bg-yellow-500/10",
   "bg-green-500/10",
   "bg-primary/10",
+  "bg-blue-500/10",
 ];
 const STEP_KEYS = [
   "step01",
@@ -64,6 +68,7 @@ const STEP_KEYS = [
   "step06",
   "step07",
   "step08",
+  "step09",
 ] as const;
 const STEPS_LENGTH = STEP_KEYS.length;
 
@@ -78,6 +83,7 @@ type StepCardProps = {
 
 function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
   const { t } = useTranslation("tutorial");
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const Icon = STEP_ICONS[index];
   const accent = STEP_ACCENTS[index];
 
@@ -145,7 +151,7 @@ function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
               ))}
             </ul>
 
-            <div className="flex items-start gap-2.5 bg-primary/5 border border-primary/20 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
+            <div className="flex items-start gap-2.5 bg-primary/5 border border-primary/20 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 mb-3 sm:mb-4">
               <span className="text-primary text-base leading-none mt-0.5">
                 💡
               </span>
@@ -154,6 +160,27 @@ function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
                   {t("steps.tipLabel")}{" "}
                 </span>
                 {t(`steps.${stepKey}.tip`)}
+              </p>
+            </div>
+
+            {/* Expandable details */}
+            <button
+              type="button"
+              onClick={() => setDetailsOpen((v) => !v)}
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-primary/70 hover:text-primary transition-colors duration-200"
+              aria-expanded={detailsOpen}
+            >
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-300 ${detailsOpen ? "rotate-180" : ""}`}
+              />
+              {detailsOpen ? t("steps.detailsHide") : t("steps.detailsShow")}
+            </button>
+
+            <div
+              className={`overflow-hidden transition-all duration-300 ${detailsOpen ? "max-h-64 mt-3" : "max-h-0"}`}
+            >
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed border-l-2 border-primary/30 pl-3 sm:pl-4">
+                {t(`steps.${stepKey}.details`)}
               </p>
             </div>
           </div>
