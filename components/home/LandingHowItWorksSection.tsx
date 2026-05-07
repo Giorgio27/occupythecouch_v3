@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Users, Popcorn, Vote, Trophy } from "lucide-react";
+import { Users, Popcorn, Vote, Trophy, ArrowRight } from "lucide-react";
 
 function useInView(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null);
@@ -69,12 +70,23 @@ export default function LandingHowItWorksSection() {
         <div
           className={`transition-all duration-700 ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
-          <h2 className="cine-title mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl">
-            {t("howItWorks.title")}
-          </h2>
-          <p className="text-muted-foreground text-base sm:text-lg mb-10 sm:mb-12 md:mb-16 max-w-xl">
-            {t("howItWorks.subtitle")}
-          </p>
+          <div className="flex items-start sm:items-center justify-between gap-4 mb-10 sm:mb-12 md:mb-16">
+            <div>
+              <h2 className="cine-title mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl">
+                {t("howItWorks.title")}
+              </h2>
+              <p className="text-muted-foreground text-base sm:text-lg max-w-xl">
+                {t("howItWorks.subtitle")}
+              </p>
+            </div>
+            <Link
+              href="/tutorial"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 flex-shrink-0 group"
+            >
+              <span>{t("howItWorks.seeMore")}</span>
+              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-4 lg:gap-5 xl:gap-6">
@@ -117,6 +129,17 @@ export default function LandingHowItWorksSection() {
               </div>
             );
           })}
+        </div>
+
+        {/* Mobile "See more" link */}
+        <div className="flex justify-center mt-8 sm:hidden">
+          <Link
+            href="/tutorial"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 group"
+          >
+            <span>{t("howItWorks.seeMore")}</span>
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </div>
     </section>
