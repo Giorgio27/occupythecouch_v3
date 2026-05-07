@@ -3,7 +3,7 @@
 import TutorialHeroSection from "./TutorialHeroSection";
 import TutorialStepsSection from "./TutorialStepsSection";
 import TutorialFaqSection from "./TutorialFaqSection";
-import TutorialCtaSection from "./TutorialCtaSection";
+// import TutorialCtaSection from "./TutorialCtaSection";
 
 export function Tutorial() {
   return (
@@ -26,7 +26,7 @@ export function Tutorial() {
       <TutorialHeroSection />
       <TutorialStepsSection />
       <TutorialFaqSection />
-      <TutorialCtaSection />
+      {/* <TutorialCtaSection /> */}
     </div>
   );
 }

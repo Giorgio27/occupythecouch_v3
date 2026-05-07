@@ -15,7 +15,7 @@ type InviteUserRequest = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user) {
@@ -124,10 +124,10 @@ export default async function handler(
       user: membership.user,
       createdAt: membership.createdAt,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error(
       "POST /api/cineforum/[cineforumId]/admin/users/invite error",
-      e
+      e,
     );
     return res.status(500).json({ error: "Internal server error" });
   }

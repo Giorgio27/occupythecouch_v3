@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user) {
@@ -47,7 +47,7 @@ export default async function handler(
       disabled: membership.disabled,
       isAdmin: ["ADMIN", "OWNER"].includes(membership.role),
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("GET /api/cineforum/[cineforumId]/membership error", e);
     return res.status(500).json({ error: "Internal server error" });
   }

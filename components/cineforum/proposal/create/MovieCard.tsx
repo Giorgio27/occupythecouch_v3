@@ -2,20 +2,13 @@ import * as React from "react";
 import { CheckCircle2, Plus, X, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import MoviePoster from "@/components/ui/MoviePoster";
-
-type Movie = {
-  id: string;
-  l: string; // title
-  y?: string; // year
-  s?: string; // subtitle/description
-  i?: string[]; // images array
-};
+import type { ImdbSuggestionDTO } from "@/lib/shared/types";
 
 type MovieCardProps = {
-  movie: Movie;
+  movie: ImdbSuggestionDTO;
   isSelected?: boolean;
   isPreviousWinner?: boolean;
-  onToggle: (movie: Movie) => void;
+  onToggle: (movie: ImdbSuggestionDTO) => void;
   variant?: "search" | "selected";
 };
 
@@ -26,6 +19,7 @@ export default function MovieCard({
   onToggle,
   variant = "search",
 }: MovieCardProps) {
+  // ImdbSuggestionDTO.y is number | undefined; display as string
   const { t } = useTranslation("proposal");
 
   return (

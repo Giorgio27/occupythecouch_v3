@@ -6,9 +6,10 @@ import { useTranslation } from "react-i18next";
 import { useTouchDrag } from "./useTouchDrag";
 import PositionPicker from "./PositionPicker";
 import MoviePoster from "@/components/ui/MoviePoster";
+import type { ProposalMovieDTO } from "@/lib/shared/types";
 
 interface MovieVotingCardProps {
-  movie: any;
+  movie: ProposalMovieDTO;
   currentPosition: number | null;
   totalPositions: number;
   onPositionChange: (position: number | null) => void;

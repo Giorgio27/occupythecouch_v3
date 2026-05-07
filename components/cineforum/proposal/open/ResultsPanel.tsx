@@ -1,13 +1,14 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Trophy, Medal, Sparkles, ChevronDown } from "lucide-react";
+import type { ProposalRankingDTO, ProposalDetailDTO } from "@/lib/shared/types";
 
 export default function ResultsPanel({
   ranking,
   proposal,
 }: {
-  ranking: any;
-  proposal: any;
+  ranking: ProposalRankingDTO;
+  proposal: ProposalDetailDTO;
 }) {
   const { t } = useTranslation("proposal");
   const sorted = ranking?.sorted_movies ?? [];
@@ -21,14 +22,14 @@ export default function ResultsPanel({
   );
 
   const titleOf = (id: string) =>
-    proposal.movies.find((mm: any) => mm.id === id)?.title;
+    proposal.movies.find((mm) => mm.id === id)?.title;
 
   return (
     <div className="space-y-5">
       {/* Podium */}
       {top.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {top.map((m: any, idx: number) => {
+          {top.map((m, idx) => {
             const isWinner = idx === 0;
 
             return (
@@ -90,7 +91,7 @@ export default function ResultsPanel({
       {/* Rest list */}
       {rest.length > 0 && (
         <div className="space-y-2">
-          {rest.map((m: any) => (
+          {rest.map((m) => (
             <div
               key={m.id}
               className="rounded-xl border border-border/70 bg-card/60 p-3 transition-all hover:border-primary/30 hover:bg-secondary/30"
@@ -134,7 +135,7 @@ export default function ResultsPanel({
         </summary>
 
         <div className="mt-4 space-y-3">
-          {ranking.votes.map((v: any) => (
+          {ranking.votes.map((v) => (
             <div
               key={v.id}
               className="rounded-xl border border-border/70 bg-secondary/20 p-4"

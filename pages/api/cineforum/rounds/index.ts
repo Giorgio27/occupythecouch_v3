@@ -2,14 +2,16 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import prisma from "@/lib/prisma";
 import { createRound, listRoundsForCineforum } from "@/lib/server/rounds";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
+  // 1. Auth check
   const session = await getServerSession(req, res, authOptions);
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -20,6 +22,16 @@ export default async function handler(
       return res
         .status(400)
         .json({ error: "cineforumId query param is required" });
+    }
+
+    // 2. Membership check
+    const membership = await prisma.membership.findUnique({
+      where: {
+        userId_cineforumId: { userId: session.user.id, cineforumId },
+      },
+    });
+    if (!membership || membership.disabled) {
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     const off = offset ? Number(offset) : 0;
@@ -37,7 +49,7 @@ export default async function handler(
         total: data.total,
         rounds: data.items,
       });
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("GET /api/cineforum/rounds error", e);
       return res.status(500).json({ error: "Internal server error" });
     }
@@ -52,6 +64,19 @@ export default async function handler(
       });
     }
 
+    // 2. Membership check + admin check for POST
+    const membership = await prisma.membership.findUnique({
+      where: {
+        userId_cineforumId: { userId: session.user.id, cineforumId },
+      },
+    });
+    if (!membership || membership.disabled) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    if (!["ADMIN", "OWNER"].includes(membership.role)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     try {
       const round = await createRound({
         cineforumId,
@@ -61,7 +86,7 @@ export default async function handler(
       });
 
       return res.status(201).json(round);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("POST /api/cineforum/rounds error", e);
       return res.status(500).json({ error: "Internal server error" });
     }

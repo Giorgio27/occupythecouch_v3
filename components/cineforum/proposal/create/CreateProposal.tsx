@@ -26,8 +26,8 @@ import {
   createProposal,
   fetchProposalWinners,
   fetchCandidates,
-  CandidateDTO,
 } from "@/lib/client/cineforum";
+import type { CandidateDTO, ImdbSuggestionDTO } from "@/lib/shared/types";
 
 /** Create Proposal block (IMDb search + simple selection + submit) */
 export default function CreateProposal({
@@ -38,8 +38,8 @@ export default function CreateProposal({
   const { data: session } = useSession();
   const { t } = useTranslation("proposal");
 
-  const [results, setResults] = React.useState<any[]>([]);
-  const [selected, setSelected] = React.useState<any[]>([]);
+  const [results, setResults] = React.useState<ImdbSuggestionDTO[]>([]);
+  const [selected, setSelected] = React.useState<ImdbSuggestionDTO[]>([]);
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [date, setDate] = React.useState("");
@@ -74,7 +74,7 @@ export default function CreateProposal({
       });
   }, [cineforumId]);
 
-  function toggleMovie(m: any) {
+  function toggleMovie(m: ImdbSuggestionDTO) {
     const isAlreadySelected = selected.some((x) => x.id === m.id);
 
     if (isAlreadySelected) {

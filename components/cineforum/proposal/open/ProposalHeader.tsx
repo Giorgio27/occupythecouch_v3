@@ -2,9 +2,10 @@ import { useTranslation } from "react-i18next";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { CalendarDays, Film, Sparkles, Trophy } from "lucide-react";
 import ProposalOwnerBadge from "@/components/cineforum/proposal/shared/ProposalOwnerBadge";
+import type { ProposalDetailDTO } from "@/lib/shared/types";
 
 type ProposalHeaderProps = {
-  proposal: any;
+  proposal: ProposalDetailDTO;
   canVote: boolean;
 };
 

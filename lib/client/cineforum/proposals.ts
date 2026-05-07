@@ -1,20 +1,21 @@
 import { jsonFetch } from "@/lib/client/https";
-import {
+import type {
   ImdbSuggestionDTO,
   ProposalDetailDTO,
   ProposalRankingDTO,
+  ProposalWinnersDTO,
+  CandidateDTO,
 } from "@/lib/shared/types";
 
-export type ProposalWinnersDTO = {
-  imdbIds: string[];
-};
+export type { ProposalWinnersDTO, CandidateDTO };
 
-export type CandidateDTO = {
-  id: string;
-  name: string;
-  type: "User" | "Team";
-};
-
+/**
+ * Fetches the list of proposal candidates (user and/or team) for a given user and cineforum.
+ *
+ * @param userId - The ID of the current user
+ * @param cineforumId - The cineforum identifier
+ * @returns Promise resolving to an array of CandidateDTO
+ */
 export async function fetchCandidates(
   userId: string,
   cineforumId: string,
@@ -24,12 +25,24 @@ export async function fetchCandidates(
   );
 }
 
+/**
+ * Fetches the full detail of a proposal by its ID.
+ *
+ * @param proposalId - The proposal identifier
+ * @returns Promise resolving to a ProposalDetailDTO
+ */
 export async function fetchProposal(
   proposalId: string,
 ): Promise<ProposalDetailDTO> {
   return jsonFetch<ProposalDetailDTO>(`/api/cineforum/proposals/${proposalId}`);
 }
 
+/**
+ * Fetches the Schulze ranking result for a proposal.
+ *
+ * @param proposalId - The proposal identifier
+ * @returns Promise resolving to a ProposalRankingDTO with sorted movies and votes
+ */
 export async function fetchRanking(
   proposalId: string,
 ): Promise<ProposalRankingDTO> {
@@ -38,9 +51,16 @@ export async function fetchRanking(
   );
 }
 
+/**
+ * Submits or updates the current user's vote for a proposal.
+ *
+ * @param proposalId - The proposal identifier
+ * @param lists - A map of rank position (as string) to arrays of movie IDs
+ * @returns Promise resolving to the API response
+ */
 export async function voteProposal<TReturn = { ok: boolean }>(
   proposalId: string,
-  lists: Record<string, any[]>,
+  lists: Record<string, string[]>,
 ): Promise<TReturn> {
   return jsonFetch<TReturn>(`/api/cineforum/proposals/votes`, {
     method: "POST",
@@ -58,6 +78,12 @@ export type CreateProposalPayload = {
   proposal: ImdbSuggestionDTO[];
 };
 
+/**
+ * Creates a new proposal in a cineforum.
+ *
+ * @param payload - The proposal creation payload including movies, date, title, and owner
+ * @returns Promise resolving to the created proposal's id and title
+ */
 export async function createProposal<TReturn = { id: string; title: string }>(
   payload: CreateProposalPayload,
 ): Promise<TReturn> {
@@ -68,12 +94,24 @@ export async function createProposal<TReturn = { id: string; title: string }>(
   });
 }
 
+/**
+ * Searches IMDb for movies matching the given query string.
+ *
+ * @param query - The search query (movie title or keywords)
+ * @returns Promise resolving to an array of IMDb suggestion results
+ */
 export async function imdbSearch(query: string): Promise<ImdbSuggestionDTO[]> {
   return jsonFetch<ImdbSuggestionDTO[]>(
     `/api/cineforum/proposals/movies/input/${encodeURIComponent(query)}`,
   );
 }
 
+/**
+ * Fetches the IMDb IDs of all movies that have won a proposal in a cineforum.
+ *
+ * @param cineforumId - The cineforum identifier
+ * @returns Promise resolving to a ProposalWinnersDTO with an array of IMDb IDs
+ */
 export async function fetchProposalWinners(
   cineforumId: string,
 ): Promise<ProposalWinnersDTO> {

@@ -24,11 +24,14 @@ export type ProposalMovieDTO = {
   year: number | null;
   image?: string | null;
   imageMedium?: string | null;
+  poster?: string | null;
+  imdbId?: string | null;
   runtime?: number | null;
   director?: string | null;
   actors?: string | null;
   link?: string | null;
-  // add other fields only if you really use them in the UI
+  imdbRating?: number | null;
+  rating?: number | null;
 };
 
 export type ProposalVoteDTO = {
@@ -154,6 +157,16 @@ export type TelegramSettingsDTO = {
   chatId: string | null;
   /** Cineforum locale used for Telegram messages ("it" | "en") */
   locale: string;
+};
+
+export type ProposalWinnersDTO = {
+  imdbIds: string[];
+};
+
+export type CandidateDTO = {
+  id: string;
+  name: string;
+  type: "User" | "Team";
 };
 
 export type OscarsRoundDTO = {

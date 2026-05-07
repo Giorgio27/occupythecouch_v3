@@ -1,3 +1,4 @@
+import type { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
@@ -15,7 +16,7 @@ type Props =
     };
 
 // Server-side: if logged in, load cineforums via Membership
-export async function getServerSideProps(ctx: any) {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
   if (!session?.user?.id) {
     return {

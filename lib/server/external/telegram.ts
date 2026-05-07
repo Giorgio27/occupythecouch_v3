@@ -54,8 +54,6 @@ export async function telegramNotify(
           `[telegram] sendMessage failed (${response.status}):`,
           JSON.stringify(body),
         );
-      } else {
-        console.log("[telegram] sendMessage ok:", JSON.stringify(body));
       }
     }
   }
