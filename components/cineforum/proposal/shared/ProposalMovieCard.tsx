@@ -58,8 +58,8 @@ export default function ProposalMovieCard({
         image={movie.i?.[0] ?? null}
         imdbId={movie.id ?? null}
         alt={movieTitle}
-        className="h-24 w-16 flex-shrink-0 rounded-lg object-cover shadow-sm"
-        placeholderClassName="h-24 w-16 flex-shrink-0 rounded-lg bg-muted flex items-center justify-center"
+        className="h-24 w-16 shrink-0 rounded-lg object-cover shadow-sm"
+        placeholderClassName="h-24 w-16 shrink-0 rounded-lg bg-muted flex items-center justify-center"
       />
 
       {/* Info */}
@@ -84,7 +84,7 @@ export default function ProposalMovieCard({
 
           {/* Trophy icon for winner */}
           {isWinner && (
-            <Trophy className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+            <Trophy className="h-5 w-5 shrink-0 text-primary mt-0.5" />
           )}
 
           {/* Delete button (admin edit mode) */}
@@ -93,7 +93,7 @@ export default function ProposalMovieCard({
               size="sm"
               variant="ghost"
               onClick={() => onRemove(movie.id)}
-              className="flex-shrink-0 text-red-500 hover:bg-red-50 hover:text-red-600 -mr-1"
+              className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-600 -mr-1"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

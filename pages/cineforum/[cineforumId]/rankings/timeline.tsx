@@ -105,10 +105,10 @@ function MoviePill({ movie }: { movie: TimelineMovieDTO }) {
         <img
           src={movie.poster}
           alt={movie.title}
-          className="w-10 h-14 object-cover rounded-md flex-shrink-0 shadow"
+          className="w-10 h-14 object-cover rounded-md shrink-0 shadow"
         />
       ) : (
-        <div className="w-10 h-14 bg-secondary rounded-md flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-14 bg-secondary rounded-md flex items-center justify-center shrink-0">
           <Film className="w-5 h-5 text-muted-foreground" />
         </div>
       )}
@@ -122,7 +122,7 @@ function MoviePill({ movie }: { movie: TimelineMovieDTO }) {
           </p>
         )}
         <div className="flex items-center gap-1 mt-1">
-          <Trophy className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+          <Trophy className="w-3 h-3 text-yellow-500 shrink-0" />
           <span className="text-xs text-muted-foreground truncate">
             {movie.round}
           </span>
@@ -180,7 +180,7 @@ function DecadeSection({
             {years.map((entry) => (
               <div
                 key={entry.year}
-                className="flex-shrink-0"
+                className="shrink-0"
                 style={{ minWidth: "32px", maxWidth: "56px", flex: "1" }}
               >
                 <YearBar
@@ -282,7 +282,7 @@ export default function TimelineRankingPage({
   if (loading) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-        <div className="flex justify-center items-center min-h-[400px]">
+        <div className="flex justify-center items-center min-h-100">
           <LoadingCard text={t("timeline.loading")} />
         </div>
       </CineforumLayout>
@@ -361,7 +361,7 @@ export default function TimelineRankingPage({
                 {data.map((entry) => (
                   <div
                     key={entry.year}
-                    className="flex-shrink-0"
+                    className="shrink-0"
                     style={{ minWidth: "18px", maxWidth: "40px", flex: "1" }}
                   >
                     <YearBar

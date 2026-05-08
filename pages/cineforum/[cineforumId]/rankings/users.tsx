@@ -10,7 +10,11 @@ import {
   UserRankingList,
   ComparisonSection,
 } from "@/components/cineforum/rankings";
-import LoadingCard from "@/components/cineforum/common/LoadingCard";
+import {
+  LoadingCard,
+  StatCard,
+  EmptyState,
+} from "@/components/cineforum/common";
 import type { UserRankingDTO, Supplier } from "@/lib/shared/types";
 
 const suppliers: Supplier[] = [
@@ -197,7 +201,7 @@ export default function UsersRankingPage({
   if (loading) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-        <div className="flex justify-center items-center min-h-[400px]">
+        <div className="flex justify-center items-center min-h-100">
           <LoadingCard text={t("users.loading")} />
         </div>
       </CineforumLayout>
@@ -224,43 +228,33 @@ export default function UsersRankingPage({
 
         {/* Stats */}
         <div
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8 animate-fade-in-up"
+          className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 animate-fade-in-up"
           style={{ animationDelay: "100ms" }}
         >
-          {[
-            {
-              icon: <Users className="w-5 h-5 text-primary" />,
-              bg: "bg-primary/10",
-              label: t("users.statUsers"),
-              value: stats.totalUsers,
-            },
-            {
-              icon: <Film className="w-5 h-5 text-green-500" />,
-              bg: "bg-green-500/10",
-              label: t("users.statMoviesVoted"),
-              value: totalMoviesVoted,
-            },
-            {
-              icon: <Award className="w-5 h-5 text-amber-500" />,
-              bg: "bg-amber-500/10",
-              label: t("users.statAverage"),
-              value: stats.avgRating.toFixed(2),
-            },
-            {
-              icon: <Trophy className="w-5 h-5 text-yellow-500" />,
-              bg: "bg-yellow-500/10",
-              label: t("users.statWins"),
-              value: stats.totalWins,
-            },
-          ].map(({ icon, bg, label, value }) => (
-            <div key={label} className="cine-card p-4 flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${bg}`}>{icon}</div>
-              <div>
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="text-lg font-bold text-foreground">{value}</p>
-              </div>
-            </div>
-          ))}
+          <StatCard
+            icon={<Users className="w-5 h-5 text-primary" />}
+            iconBg="bg-primary/10"
+            label={t("users.statUsers")}
+            value={stats.totalUsers}
+          />
+          <StatCard
+            icon={<Film className="w-5 h-5 text-green-500" />}
+            iconBg="bg-green-500/10"
+            label={t("users.statMoviesVoted")}
+            value={totalMoviesVoted}
+          />
+          <StatCard
+            icon={<Award className="w-5 h-5 text-amber-500" />}
+            iconBg="bg-amber-500/10"
+            label={t("users.statAverage")}
+            value={stats.avgRating.toFixed(2)}
+          />
+          <StatCard
+            icon={<Trophy className="w-5 h-5 text-yellow-500" />}
+            iconBg="bg-yellow-500/10"
+            label={t("users.statWins")}
+            value={stats.totalWins}
+          />
         </div>
 
         {/* Controls */}
@@ -308,18 +302,16 @@ export default function UsersRankingPage({
 
         {/* Empty state */}
         {!loading && sortedAndFilteredRankings.length === 0 && (
-          <div className="cine-card p-12 text-center animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center">
-              <Users className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {searchQuery ? t("users.noResults") : t("users.emptyTitle")}
-            </h3>
-            <p className="text-muted-foreground">
-              {searchQuery
-                ? t("users.noResultsQuery", { query: searchQuery })
-                : t("users.emptySubtitle")}
-            </p>
+          <div className="animate-fade-in">
+            <EmptyState
+              icon={<Users className="w-8 h-8 text-muted-foreground" />}
+              title={searchQuery ? t("users.noResults") : t("users.emptyTitle")}
+              subtitle={
+                searchQuery
+                  ? t("users.noResultsQuery", { query: searchQuery })
+                  : t("users.emptySubtitle")
+              }
+            />
           </div>
         )}
       </div>

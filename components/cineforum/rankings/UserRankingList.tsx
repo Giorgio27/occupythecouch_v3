@@ -136,10 +136,10 @@ export default function UserRankingList({
                                 {mrr.movie}
                               </span>
                               {mrr.round_winner && (
-                                <Trophy className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                                <Trophy className="w-4 h-4 text-yellow-500 shrink-0" />
                               )}
                             </div>
-                            <div className="text-sm flex items-center gap-3 flex-shrink-0 ml-4">
+                            <div className="text-sm flex items-center gap-3 shrink-0 ml-4">
                               <span className="font-bold text-gradient tabular-nums">
                                 {mrr.average_rating?.toFixed(2) ?? "N/A"}
                               </span>

@@ -1,7 +1,6 @@
-"use client";
-
-import { ChevronDown, Medal } from "lucide-react";
+import { Medal } from "lucide-react";
 import { ReactNode } from "react";
+import { ExpandableListItem } from "@/components/cineforum/common";
 
 type RankingCardProps = {
   position: number;
@@ -13,7 +12,7 @@ type RankingCardProps = {
   children?: ReactNode;
 };
 
-// Get medal color for top 3 positions
+/** Tailwind class for the medal icon at each top-3 position */
 function getMedalColor(position: number): string | null {
   switch (position) {
     case 1:
@@ -27,8 +26,8 @@ function getMedalColor(position: number): string | null {
   }
 }
 
-// Get position background for top 3
-function getPositionBg(position: number): string {
+/** Tailwind gradient class for the row background at each top-3 position */
+function getPositionBg(position: number): string | undefined {
   switch (position) {
     case 1:
       return "bg-gradient-to-r from-yellow-500/20 via-yellow-500/5 to-transparent";
@@ -37,7 +36,7 @@ function getPositionBg(position: number): string {
     case 3:
       return "bg-gradient-to-r from-amber-600/15 via-amber-600/5 to-transparent";
     default:
-      return "";
+      return undefined;
   }
 }
 
@@ -51,84 +50,37 @@ export default function RankingCard({
   children,
 }: RankingCardProps) {
   const medalColor = getMedalColor(position);
-  const positionBg = getPositionBg(position);
+
+  const positionNode = medalColor ? (
+    <Medal
+      className={`w-6 h-6 sm:w-7 sm:h-7 ${medalColor} transition-transform group-hover:scale-110`}
+    />
+  ) : (
+    position
+  );
+
+  const metricNode =
+    rating !== null ? (
+      <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent font-bold text-base sm:text-lg tabular-nums">
+        {rating.toFixed(2)}
+      </span>
+    ) : (
+      <span className="font-bold text-base sm:text-lg tabular-nums text-muted-foreground">
+        N/A
+      </span>
+    );
 
   return (
-    <div
-      className={`
-        group cine-card-fit overflow-hidden
-        ${isExpanded ? "ring-1 ring-primary/40 border-primary/50" : ""}
-      `}
+    <ExpandableListItem
+      position={positionNode}
+      title={title}
+      badges={badges}
+      metric={metricNode}
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+      highlightBg={getPositionBg(position)}
     >
-      <button
-        onClick={onToggle}
-        className={`
-          w-full px-4 sm:px-6 py-4 sm:py-5 text-left transition-all duration-300
-          hover:bg-secondary/50
-          ${positionBg}
-        `}
-      >
-        <div className="flex items-center gap-2 sm:gap-4">
-          {/* Position */}
-          <div className="w-12 sm:w-16 flex items-center justify-center">
-            {medalColor ? (
-              <div className="relative">
-                <Medal
-                  className={`w-6 h-6 sm:w-7 sm:h-7 ${medalColor} transition-transform group-hover:scale-110`}
-                />
-              </div>
-            ) : (
-              <span className="text-lg sm:text-xl font-bold text-muted-foreground tabular-nums">
-                {position}
-              </span>
-            )}
-          </div>
-
-          {/* Title and badges */}
-          <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="font-semibold text-sm sm:text-base text-foreground truncate group-hover:text-primary transition-colors">
-              {title}
-            </span>
-            {badges && <div className="flex-shrink-0">{badges}</div>}
-          </div>
-
-          {/* Rating */}
-          <div className="w-16 sm:w-20 text-right">
-            <span
-              className={`
-              font-bold text-base sm:text-lg tabular-nums
-              ${rating !== null ? "text-gradient" : "text-muted-foreground"}
-            `}
-            >
-              {rating !== null ? rating.toFixed(2) : "N/A"}
-            </span>
-          </div>
-
-          {/* Expand/Collapse icon */}
-          <div className="w-8 sm:w-10 flex justify-center">
-            <div
-              className={`
-              p-1.5 rounded-lg transition-all duration-300
-              ${isExpanded ? "bg-primary/20" : "bg-secondary group-hover:bg-primary/10"}
-            `}
-            >
-              <ChevronDown
-                className={`
-                w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300
-                ${isExpanded ? "text-primary rotate-180" : "text-muted-foreground group-hover:text-primary"}
-              `}
-              />
-            </div>
-          </div>
-        </div>
-      </button>
-
-      {/* Expanded content with animation */}
-      {isExpanded && children && (
-        <div className="border-t border-border bg-secondary/30 animate-accordion-down overflow-hidden">
-          <div className="p-4 sm:p-6">{children}</div>
-        </div>
-      )}
-    </div>
+      {children}
+    </ExpandableListItem>
   );
 }

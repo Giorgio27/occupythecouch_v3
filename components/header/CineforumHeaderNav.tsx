@@ -82,7 +82,7 @@ function DropdownNavItem({
       }`}
     >
       <Icon
-        className={`h-4 w-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : "text-primary/70 group-hover:text-primary"}`}
+        className={`h-4 w-4 shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : "text-primary/70 group-hover:text-primary"}`}
       />
       <span className="text-sm font-medium">{link.label}</span>
     </Link>

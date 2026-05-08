@@ -64,7 +64,7 @@ export default function OscarsMovieRow({
         </div>
 
         <div
-          className="flex-shrink-0 flex flex-col items-end gap-1"
+          className="shrink-0 flex flex-col items-end gap-1"
           onClick={(e) => e.stopPropagation()}
         >
           {isClosed ? (

@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { SectionHeader } from "@/components/cineforum/common";
 import type {
   LoveReceivedDTO,
   UserProfileStatsDTO,
@@ -200,11 +201,11 @@ export default function LoveReceivedTable({
   const selectedUser = users.find((u) => u.user_id === selectedUserId);
 
   return (
-    <div className="cine-card p-6 mb-8">
-      <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-        <Heart className="w-4 h-4" />
-        Amore Ricevuto
-      </h3>
+    <div className="mb-8 rounded-xl border border-border bg-card p-6">
+      <SectionHeader
+        icon={<Heart className="w-4 h-4" />}
+        title="Amore Ricevuto"
+      />
 
       <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
         <p className="text-sm text-muted-foreground leading-relaxed">

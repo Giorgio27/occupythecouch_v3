@@ -81,7 +81,7 @@ export default function LandingHowItWorksSection() {
             </div>
             <Link
               href="/tutorial"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 flex-shrink-0 group"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 shrink-0 group"
             >
               <span>{t("howItWorks.seeMore")}</span>
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />

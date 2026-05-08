@@ -109,7 +109,7 @@ export default function RankingSlot({
           : isEmpty
             ? "border-dashed border-border/40 bg-muted/20"
             : "border-border/60 bg-card/40",
-        "min-h-[120px]",
+        "min-h-30",
       ]
         .filter(Boolean)
         .join(" ")}

@@ -1,5 +1,6 @@
 import { TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { SectionHeader } from "@/components/cineforum/common";
 import type { UserVoteDetailDTO } from "@/lib/shared/types";
 
 type Props = {
@@ -8,29 +9,29 @@ type Props = {
 
 export default function DeviantMoviesTable({ movies }: Props) {
   return (
-    <div className="cine-card p-6 mb-8">
-      <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-        <TrendingUp className="w-4 h-4" />
-        Film con Maggiore Divergenza
-      </h3>
+    <div className="mb-8 rounded-xl border border-border bg-card p-6">
+      <SectionHeader
+        icon={<TrendingUp className="w-4 h-4" />}
+        title="Film con Maggiore Divergenza"
+      />
 
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-secondary/50">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Film
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Round
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Tuo Voto
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Media Film
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Differenza
               </th>
             </tr>
@@ -39,7 +40,7 @@ export default function DeviantMoviesTable({ movies }: Props) {
             {movies.map((movie, index) => (
               <tr
                 key={index}
-                className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
+                className="border-b border-border transition-colors last:border-0 hover:bg-secondary/50"
               >
                 <td className="px-4 py-3.5 text-sm font-medium text-foreground">
                   {movie.movie}
@@ -49,13 +50,13 @@ export default function DeviantMoviesTable({ movies }: Props) {
                     {movie.round}
                   </Badge>
                 </td>
-                <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums text-primary">
+                <td className="px-4 py-3.5 text-right text-sm font-bold tabular-nums text-primary">
                   {movie.user_rating.toFixed(2)}
                 </td>
-                <td className="px-4 py-3.5 text-sm text-right tabular-nums text-muted-foreground">
+                <td className="px-4 py-3.5 text-right text-sm tabular-nums text-muted-foreground">
                   {movie.movie_average.toFixed(2)}
                 </td>
-                <td className="px-4 py-3.5 text-sm font-bold text-right tabular-nums">
+                <td className="px-4 py-3.5 text-right text-sm font-bold tabular-nums">
                   <span
                     className={
                       movie.user_rating > movie.movie_average
