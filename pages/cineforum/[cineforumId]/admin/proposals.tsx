@@ -7,41 +7,30 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import {
+import type {
   ProposalDetailDTO,
   ImdbMovieData,
   ProposalRankingDTO,
 } from "@/lib/shared/types/cineforum";
 import {
   adminProposalsClient,
-  MovieUpdateData,
+  type MovieUpdateData,
 } from "@/lib/client/cineforum/admin-proposals";
-import { imdbSearch, fetchRanking } from "@/lib/client/cineforum/proposals";
+import { fetchRanking } from "@/lib/client/cineforum/proposals";
 import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import ProposalMovieCard, {
-  ProposalMovieCardMovie,
+  type ProposalMovieCardMovie,
 } from "@/components/cineforum/proposal/shared/ProposalMovieCard";
 import ProposalVotesAccordion from "@/components/cineforum/proposal/shared/ProposalVotesAccordion";
-import { Calendar, Film, Plus, Search, History } from "lucide-react";
+import ProposalMovieSearch from "@/components/cineforum/admin/ProposalMovieSearch";
+import ProposalActionBar from "@/components/cineforum/admin/ProposalActionBar";
+import CloseProposalDialog from "@/components/cineforum/admin/CloseProposalDialog";
+import { Calendar, Film, Plus, History } from "lucide-react";
 
 interface AdminProposalsPageProps {
   cineforumId: string;
@@ -63,37 +52,16 @@ export default function AdminProposalsPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
-  const [selectedWinnerId, setSelectedWinnerId] = useState<string | null>(null);
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
   const [editDate, setEditDate] = useState<string>("");
   const [editMovies, setEditMovies] = useState<MovieUpdateData[]>([]);
-
-  // Movie search state
   const [showMovieSearch, setShowMovieSearch] = useState(false);
-  const [movieSearchQuery, setMovieSearchQuery] = useState("");
-  const [movieSearchResults, setMovieSearchResults] = useState<ImdbMovieData[]>(
-    [],
-  );
-  const [searchingMovies, setSearchingMovies] = useState(false);
 
   // Ranking state
   const [ranking, setRanking] = useState<ProposalRankingDTO | null>(null);
   const [loadingRanking, setLoadingRanking] = useState(false);
-
-  const loadRanking = async (proposalId: string) => {
-    if (ranking || loadingRanking) return;
-    setLoadingRanking(true);
-    try {
-      const r = await fetchRanking(proposalId);
-      setRanking(r);
-    } catch (err) {
-      console.error("Failed to load ranking", err);
-    } finally {
-      setLoadingRanking(false);
-    }
-  };
 
   // Auto-load ranking as soon as the proposal id is known
   useEffect(() => {
@@ -115,24 +83,18 @@ export default function AdminProposalsPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proposal?.id]);
 
-  const handleOpenCloseDialog = () => {
-    setShowCloseDialog(true);
-    setSelectedWinnerId(null);
-  };
-
-  const handleCloseProposal = async () => {
-    if (!proposal || !cineforumId || !selectedWinnerId) return;
+  const handleCloseProposal = async (winnerId: string) => {
+    if (!proposal || !cineforumId) return;
     setLoading(true);
     setError(null);
     try {
       const closed = await adminProposalsClient.closeProposal(
         cineforumId,
         proposal.id,
-        selectedWinnerId,
+        winnerId,
       );
       setProposal(closed);
       setShowCloseDialog(false);
-      setSelectedWinnerId(null);
     } catch (err) {
       setError(t("proposals.closeError"));
       console.error(err);
@@ -171,7 +133,9 @@ export default function AdminProposalsPage({
       const updated = await adminProposalsClient.updateProposal(
         cineforumId,
         proposal.id,
-        { show_results: !proposal.show_results },
+        {
+          show_results: !proposal.show_results,
+        },
       );
       setProposal(updated);
     } catch (err) {
@@ -201,8 +165,6 @@ export default function AdminProposalsPage({
       })),
     );
     setShowMovieSearch(false);
-    setMovieSearchQuery("");
-    setMovieSearchResults([]);
   };
 
   const cancelEditing = () => {
@@ -210,8 +172,6 @@ export default function AdminProposalsPage({
     setEditDate("");
     setEditMovies([]);
     setShowMovieSearch(false);
-    setMovieSearchQuery("");
-    setMovieSearchResults([]);
   };
 
   const saveEditing = async () => {
@@ -222,7 +182,10 @@ export default function AdminProposalsPage({
       const updated = await adminProposalsClient.updateProposal(
         cineforumId,
         proposal.id,
-        { date: editDate || null, movies: editMovies },
+        {
+          date: editDate || null,
+          movies: editMovies,
+        },
       );
       setProposal(updated);
       cancelEditing();
@@ -238,24 +201,9 @@ export default function AdminProposalsPage({
     setEditMovies((prev) => prev.filter((m) => m.id !== movieId));
   };
 
-  const searchMovies = async () => {
-    if (!movieSearchQuery || movieSearchQuery.length < 2) return;
-    setSearchingMovies(true);
-    try {
-      const results = await imdbSearch(movieSearchQuery);
-      setMovieSearchResults(results);
-    } catch (err) {
-      console.error("Movie search failed", err);
-    } finally {
-      setSearchingMovies(false);
-    }
-  };
-
   const addMovieFromSearch = (movie: ImdbMovieData) => {
     if (editMovies.some((m) => m.id === movie.id)) return;
     setEditMovies((prev) => [...prev, movie]);
-    setMovieSearchResults([]);
-    setMovieSearchQuery("");
   };
 
   if (isLoadingAccess) {
@@ -274,7 +222,6 @@ export default function AdminProposalsPage({
     ? editMovies
     : (proposal?.movies ?? []);
   const displayDate = isEditing ? editDate : proposal?.date;
-  const canReopen = proposal?.closed && !proposal?.roundClosed;
 
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
@@ -406,59 +353,10 @@ export default function AdminProposalsPage({
                   )}
                 </div>
 
-                {/* Movie Search */}
                 {isEditing && showMovieSearch && (
-                  <Card className="p-3">
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder={t("proposals.searchMoviePlaceholder")}
-                          value={movieSearchQuery}
-                          onChange={(e) => setMovieSearchQuery(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && searchMovies()}
-                        />
-                        <Button
-                          onClick={searchMovies}
-                          disabled={searchingMovies}
-                          size="sm"
-                        >
-                          <Search className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      {movieSearchResults.length > 0 && (
-                        <div className="max-h-60 space-y-2 overflow-y-auto">
-                          {movieSearchResults.map((movie) => (
-                            <button
-                              key={movie.id}
-                              onClick={() => addMovieFromSearch(movie)}
-                              className="flex w-full items-center gap-3 rounded-lg border p-2 text-left transition-colors hover:bg-accent"
-                            >
-                              {movie.i?.[0] && (
-                                <img
-                                  src={movie.i[0]}
-                                  alt={movie.l}
-                                  className="h-12 w-8 rounded object-cover"
-                                />
-                              )}
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium">
-                                  {movie.l} {movie.y && `(${movie.y})`}
-                                </p>
-                                {movie.s && (
-                                  <p className="truncate text-xs text-muted-foreground">
-                                    {movie.s}
-                                  </p>
-                                )}
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </Card>
+                  <ProposalMovieSearch onMovieAdd={addMovieFromSearch} />
                 )}
 
-                {/* Movie list */}
                 <div className="space-y-2">
                   {displayMovies.map((movie) => {
                     const rankedMovie =
@@ -530,200 +428,48 @@ export default function AdminProposalsPage({
               </div>
 
               {/* Actions */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {isEditing ? (
-                  <>
-                    <Button
-                      onClick={saveEditing}
-                      disabled={loading || editMovies.length === 0}
-                      size="sm"
-                    >
-                      {t("proposals.saveChanges")}
-                    </Button>
-                    <Button
-                      onClick={cancelEditing}
-                      disabled={loading}
-                      variant="outline"
-                      size="sm"
-                    >
-                      {t("proposals.cancel")}
-                    </Button>
-                  </>
-                ) : (
-                  <TooltipProvider>
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span
-                            className={
-                              proposal.closed ||
-                              (proposal.votes && proposal.votes.length > 0)
-                                ? "cursor-not-allowed"
-                                : ""
-                            }
-                          >
-                            <Button
-                              onClick={startEditing}
-                              disabled={
-                                loading ||
-                                proposal.closed ||
-                                (proposal.votes && proposal.votes.length > 0)
-                              }
-                              variant="outline"
-                              size="sm"
-                            >
-                              {t("proposals.edit")}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {proposal.closed
-                            ? t("proposals.cannotEdit")
-                            : proposal.votes && proposal.votes.length > 0
-                              ? t("proposals.cannotEditWithVotes")
-                              : t("proposals.edit")}
-                        </TooltipContent>
-                      </Tooltip>
-
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span
-                            className={
-                              proposal.closed ? "cursor-not-allowed" : ""
-                            }
-                          >
-                            <Button
-                              onClick={handleOpenCloseDialog}
-                              disabled={loading || proposal.closed}
-                              variant={proposal.closed ? "outline" : "default"}
-                              size="sm"
-                            >
-                              {t("proposals.close")}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {proposal.closed
-                            ? t("proposals.statusClosed")
-                            : t("proposals.closeDialogTitle")}
-                        </TooltipContent>
-                      </Tooltip>
-
-                      {canReopen && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={handleReopenProposal}
-                              disabled={loading}
-                              variant="outline"
-                              size="sm"
-                            >
-                              {t("proposals.reopen")}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {t("proposals.reopen")}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-
-                      {!proposal.closed && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              onClick={handleToggleResults}
-                              disabled={loading}
-                              variant={
-                                proposal.show_results ? "secondary" : "outline"
-                              }
-                              size="sm"
-                            >
-                              {t("proposals.toggleResults")}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {t("proposals.toggleResults")}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </>
-                  </TooltipProvider>
-                )}
-              </div>
+              {isEditing ? (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    onClick={saveEditing}
+                    disabled={loading || editMovies.length === 0}
+                    size="sm"
+                  >
+                    {t("proposals.saveChanges")}
+                  </Button>
+                  <Button
+                    onClick={cancelEditing}
+                    disabled={loading}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {t("proposals.cancel")}
+                  </Button>
+                </div>
+              ) : (
+                <ProposalActionBar
+                  proposal={proposal}
+                  loading={loading}
+                  onEdit={startEditing}
+                  onOpenCloseDialog={() => setShowCloseDialog(true)}
+                  onReopen={handleReopenProposal}
+                  onToggleResults={handleToggleResults}
+                />
+              )}
             </div>
           </div>
         )}
 
         {/* Close Proposal Dialog */}
-        <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t("proposals.closeDialogTitle")}</DialogTitle>
-              <DialogDescription>
-                {t("proposals.selectWinner")}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2 py-4">
-              {proposal?.movies.map((movie) => (
-                <button
-                  key={movie.id}
-                  onClick={() => setSelectedWinnerId(movie.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors hover:bg-accent ${
-                    selectedWinnerId === movie.id
-                      ? "border-primary bg-accent"
-                      : "border-border"
-                  }`}
-                >
-                  {movie.imageMedium && (
-                    <img
-                      src={movie.imageMedium}
-                      alt={movie.title}
-                      className="h-16 w-12 rounded-lg object-cover"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{movie.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {movie.year}
-                    </p>
-                  </div>
-                  {selectedWinnerId === movie.id && (
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
-                      <svg
-                        className="h-3 w-3 text-primary-foreground"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowCloseDialog(false)}
-                disabled={loading}
-              >
-                {t("proposals.cancel")}
-              </Button>
-              <Button
-                onClick={handleCloseProposal}
-                disabled={loading || !selectedWinnerId}
-              >
-                {loading
-                  ? t("proposals.closing")
-                  : t("proposals.closeDialogTitle")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {proposal && (
+          <CloseProposalDialog
+            open={showCloseDialog}
+            onOpenChange={setShowCloseDialog}
+            proposal={proposal}
+            loading={loading}
+            onConfirm={handleCloseProposal}
+          />
+        )}
       </div>
     </CineforumLayout>
   );
@@ -744,7 +490,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const membership = await prisma.membership.findUnique({
     where: {
       userId_cineforumId: {
-        userId: (session.user as any).id,
+        userId: (session.user as { id: string }).id,
         cineforumId,
       },
     },
@@ -752,14 +498,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (!membership || !["ADMIN", "OWNER"].includes(membership.role)) {
     return {
-      redirect: {
-        destination: `/cineforum/${cineforumId}`,
-        permanent: false,
-      },
+      redirect: { destination: `/cineforum/${cineforumId}`, permanent: false },
     };
   }
 
-  // Fetch the most recent proposal (open first, otherwise last closed)
   const proposal = await prisma.proposal.findFirst({
     where: { cineforumId },
     orderBy: [{ closed: "asc" }, { date: "desc" }],
@@ -770,16 +512,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       ownerTeam: true,
       winner: true,
       votes: {
-        include: {
-          user: {
-            select: { id: true, name: true },
-          },
-        },
+        include: { user: { select: { id: true, name: true } } },
       },
     },
   });
 
-  const currentProposal = proposal
+  const currentProposal: ProposalDetailDTO | null = proposal
     ? {
         id: proposal.id,
         date: proposal.date?.toISOString() || null,
@@ -829,9 +567,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     : null;
 
   return {
-    props: {
-      ...cineforumProps.props,
-      currentProposal,
-    },
+    props: { ...cineforumProps.props, currentProposal },
   };
 };

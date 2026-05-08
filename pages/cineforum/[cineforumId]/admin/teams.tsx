@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
@@ -274,7 +273,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const membership = await prisma.membership.findUnique({
     where: {
       userId_cineforumId: {
-        userId: (session.user as any).id,
+        userId: (session.user as { id: string }).id,
         cineforumId,
       },
     },

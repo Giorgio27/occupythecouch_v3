@@ -51,6 +51,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
 
   React.useEffect(() => {
     let cancelled = false;
+    // NOTE: IIFE with cancellation flag — needed to prevent state update on unmount
     (async () => {
       setLoading(true);
       try {
