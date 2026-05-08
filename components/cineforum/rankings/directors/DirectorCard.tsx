@@ -27,7 +27,7 @@ export default function DirectorCard({
       position={position}
       title={director.name}
       metric={director.average_rating.toFixed(2)}
-      metricClassName="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+      metricClassName="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent"
       isExpanded={isExpanded}
       onToggle={onToggle}
     >

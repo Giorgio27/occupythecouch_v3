@@ -30,11 +30,11 @@ function getMedalColor(position: number): string | null {
 function getPositionBg(position: number): string | undefined {
   switch (position) {
     case 1:
-      return "bg-gradient-to-r from-yellow-500/20 via-yellow-500/5 to-transparent";
+      return "bg-linear-to-r from-yellow-500/20 via-yellow-500/5 to-transparent";
     case 2:
-      return "bg-gradient-to-r from-gray-400/15 via-gray-400/5 to-transparent";
+      return "bg-linear-to-r from-gray-400/15 via-gray-400/5 to-transparent";
     case 3:
-      return "bg-gradient-to-r from-amber-600/15 via-amber-600/5 to-transparent";
+      return "bg-linear-to-r from-amber-600/15 via-amber-600/5 to-transparent";
     default:
       return undefined;
   }
@@ -61,7 +61,7 @@ export default function RankingCard({
 
   const metricNode =
     rating !== null ? (
-      <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent font-bold text-base sm:text-lg tabular-nums">
+      <span className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent font-bold text-base sm:text-lg tabular-nums">
         {rating.toFixed(2)}
       </span>
     ) : (

@@ -23,7 +23,7 @@ type ExpandableListItemProps = {
   children?: React.ReactNode;
   /**
    * Optional Tailwind gradient class applied to the row background.
-   * Used for top-3 highlight: "bg-gradient-to-r from-yellow-500/20 via-yellow-500/5 to-transparent"
+   * Used for top-3 highlight: "bg-linear-to-r from-yellow-500/20 via-yellow-500/5 to-transparent"
    */
   highlightBg?: string;
   /** Staggered entrance delay in ms */
@@ -46,10 +46,10 @@ type ExpandableListItemProps = {
  *   position={1}
  *   title="Blade Runner 2049"
  *   metric="8.42"
- *   metricClassName="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+ *   metricClassName="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent"
  *   isExpanded={isExpanded}
  *   onToggle={onToggle}
- *   highlightBg="bg-gradient-to-r from-yellow-500/20 via-yellow-500/5 to-transparent"
+ *   highlightBg="bg-linear-to-r from-yellow-500/20 via-yellow-500/5 to-transparent"
  *   animationDelay={0}
  * >
  *   <p className="text-sm text-muted-foreground">Dettagli...</p>

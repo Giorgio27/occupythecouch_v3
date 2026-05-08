@@ -126,7 +126,7 @@ function DesktopDropdown({
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
         >
-          <div className="w-72 rounded-xl border border-border/50 bg-gradient-to-b from-popover/98 to-popover/95 backdrop-blur-xl p-3 shadow-2xl animate-fade-in">
+          <div className="w-72 rounded-xl border border-border/50 bg-linear-to-b from-popover/98 to-popover/95 backdrop-blur-xl p-3 shadow-2xl animate-fade-in">
             <div className="space-y-1">
               {links.map((link) => (
                 <DropdownNavItem

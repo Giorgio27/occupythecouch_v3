@@ -101,7 +101,7 @@ function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
     >
       <div className="cine-card hover-lift relative overflow-hidden p-5 sm:p-6 md:p-8">
         {/* Hover gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Step number watermark */}
         <div className="absolute top-4 right-4 sm:top-5 sm:right-5 text-5xl sm:text-6xl font-black text-foreground/[0.04] select-none pointer-events-none leading-none">
@@ -206,7 +206,7 @@ export default function TutorialStepsSection() {
       id="tutorial-steps"
       className="py-16 sm:py-20 md:py-28 lg:py-36 bg-card/30 relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/[0.02] to-transparent" />
       <div
         ref={ref}
         className="mx-auto max-w-site px-4 sm:px-6 lg:px-8 xl:px-4 relative"

@@ -47,7 +47,7 @@ export default function MovieListCard({
       title={movie.title}
       badges={statusBadge}
       metric={String(movie.proposals)}
-      metricClassName="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+      metricClassName="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent"
       isExpanded={isExpanded}
       onToggle={onToggle}
       animationDelay={index * 30}

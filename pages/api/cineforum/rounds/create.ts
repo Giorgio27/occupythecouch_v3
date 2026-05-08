@@ -1,15 +1,15 @@
-// pages/api/cineforum/rounds/index.ts — GET /api/cineforum/rounds
+// pages/api/cineforum/rounds/create.ts — POST /api/cineforum/rounds/create
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
-import { listRoundsForCineforum } from "@/lib/server/rounds";
+import { createRound } from "@/lib/server/rounds";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method !== "GET") {
+  if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
@@ -18,12 +18,12 @@ export default async function handler(
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const { cineforumId, offset, limit } = req.query;
+  const { cineforumId, name, date, chooserUserId } = req.body || {};
 
-  if (!cineforumId || typeof cineforumId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "cineforumId query param is required" });
+  if (!cineforumId || !name || !date) {
+    return res.status(400).json({
+      error: "cineforumId, name and date are required",
+    });
   }
 
   const membership = await prisma.membership.findUnique({
@@ -34,24 +34,21 @@ export default async function handler(
   if (!membership || membership.disabled) {
     return res.status(403).json({ error: "Forbidden" });
   }
-
-  const off = offset ? Number(offset) : 0;
-  const lim = limit ? Number(limit) : 10;
+  if (!["ADMIN", "OWNER"].includes(membership.role)) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
 
   try {
-    const data = await listRoundsForCineforum({
+    const round = await createRound({
       cineforumId,
-      offset: off,
-      limit: lim,
+      name,
+      date,
+      chooserUserId: chooserUserId || null,
     });
 
-    return res.status(200).json({
-      status: data.status,
-      total: data.total,
-      rounds: data.items,
-    });
+    return res.status(201).json(round);
   } catch (e: unknown) {
-    console.error("GET /api/cineforum/rounds error", e);
+    console.error("POST /api/cineforum/rounds/create error", e);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

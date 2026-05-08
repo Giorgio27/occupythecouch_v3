@@ -34,7 +34,7 @@ export default function LandingCtaSection() {
   return (
     <section className="py-16 sm:py-20 md:py-28 lg:py-36 relative overflow-hidden">
       <div className="absolute inset-0 bg-radial-glow opacity-40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background" />
+      <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-background" />
 
       <div
         ref={ref}
@@ -47,7 +47,7 @@ export default function LandingCtaSection() {
             className="absolute inset-0 rounded-xl animate-border-glow"
             style={{ padding: "1px" }}
           >
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/20 via-transparent to-primary/20" />
+            <div className="absolute inset-0 rounded-xl bg-linear-to-r from-primary/20 via-transparent to-primary/20" />
           </div>
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 sm:w-52 md:w-64 h-40 sm:h-52 md:h-64 bg-primary/10 rounded-full blur-3xl" />
 

@@ -45,7 +45,7 @@ export type CreateRoundPayload = {
 export async function createRound(
   payload: CreateRoundPayload,
 ): Promise<RoundSummaryDTO> {
-  return jsonFetch<RoundSummaryDTO>("/api/cineforum/rounds", {
+  return jsonFetch<RoundSummaryDTO>("/api/cineforum/rounds/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

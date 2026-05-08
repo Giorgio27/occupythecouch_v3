@@ -139,7 +139,7 @@ export default function ComparisonSection({
       style={{ animationDelay: "400ms" }}
     >
       {/* Header */}
-      <div className="p-6 border-b border-border bg-gradient-to-r from-primary/5 to-amber-500/5">
+      <div className="p-6 border-b border-border bg-linear-to-r from-primary/5 to-amber-500/5">
         <h2 className="font-black text-xl text-foreground tracking-tight flex items-center gap-3 mb-2">
           <div className="p-2 rounded-lg bg-primary/10">
             <BarChart3 className="w-5 h-5 text-primary" />
@@ -285,8 +285,8 @@ export default function ComparisonSection({
           </tbody>
 
           <tfoot>
-            <tr className="border-t-2 border-primary/30 bg-gradient-to-r from-primary/10 to-amber-500/10">
-              <td className="px-4 py-4 text-sm font-bold text-foreground sticky left-0 bg-gradient-to-r from-primary/10 to-amber-500/10 z-10">
+            <tr className="border-t-2 border-primary/30 bg-linear-to-r from-primary/10 to-amber-500/10">
+              <td className="px-4 py-4 text-sm font-bold text-foreground sticky left-0 bg-linear-to-r from-primary/10 to-amber-500/10 z-10">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
                   {t("users.globalAverage")}
