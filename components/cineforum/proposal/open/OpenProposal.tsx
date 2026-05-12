@@ -173,10 +173,10 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
   const hasExistingVote = !!proposal?.my_vote;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up-slow">
       <ProposalHeader proposal={proposal} canVote={canVote} />
 
-      <Card className="cine-card border-primary/20 animate-fade-in-up delay-100">
+      <Card className="cine-card border-primary/20 animate-fade-in-up-slow delay-100">
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <CardTitle className="flex items-center gap-3">
@@ -269,7 +269,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
       </Card>
 
       {ranking && proposal.show_results && (
-        <Card className="cine-card relative overflow-hidden border-primary/30 animate-fade-in-up delay-200">
+        <Card className="cine-card relative overflow-hidden border-primary/30 animate-fade-in-up-slow delay-200">
           <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />
           <CardHeader className="relative border-b border-border/50">
             <CardTitle className="flex items-center gap-3">

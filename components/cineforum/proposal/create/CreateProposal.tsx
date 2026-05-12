@@ -112,7 +112,7 @@ export default function CreateProposal({
     owner && title && description && date && selected.length > 0;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up-slow">
       {/* Intro header */}
       <div className="cine-card cine-glass relative overflow-hidden">
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />
@@ -134,7 +134,7 @@ export default function CreateProposal({
       </div>
 
       {/* Main form card */}
-      <Card className="cine-card border-primary/20 animate-fade-in-up delay-100">
+      <Card className="cine-card border-primary/20 animate-fade-in-up-slow delay-100">
         <CardHeader className="border-b border-border/50">
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/20">
