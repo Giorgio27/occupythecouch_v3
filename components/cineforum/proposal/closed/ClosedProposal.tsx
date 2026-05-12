@@ -18,7 +18,7 @@ export default function ClosedProposal({
   const winnerTitle = last.winner?.title ?? last.title;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up-slow">
       {/* Winner Announcement Card */}
       <Card className="cine-card relative overflow-hidden border-2 border-primary/30">
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />

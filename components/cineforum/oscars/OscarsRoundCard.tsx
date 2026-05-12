@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, Crown, Sofa, Calendar } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Crown, Sofa, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 import OscarsMovieRow from "./OscarsMovieRow";
 import { useTranslation } from "react-i18next";
+import { ExpandableListItem } from "@/components/cineforum/common";
 
 interface OscarsRoundCardProps {
   round: OscarsRoundDTO;
@@ -40,90 +40,77 @@ export default function OscarsRoundCard({
     }
   };
 
-  return (
-    <Card className="overflow-hidden border-border hover:border-primary/30 transition-all duration-300 hover:shadow-md py-1">
-      <CardHeader
-        className={`py-3 px-4 ${round.closed ? "cursor-pointer hover:bg-accent/20 transition-colors" : ""}`}
-        onClick={() => round.closed && setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm font-bold text-primary leading-tight">
-                {round.name}
-              </h3>
-              {round.closed && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                  {t("closed")}
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span>{round.date}</span>
-            </div>
+  // Custom title node: round name + closed badge + date
+  const titleNode = (
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm font-bold text-primary leading-tight">
+          {round.name}
+        </span>
+        {round.closed && (
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+            {t("closed")}
+          </Badge>
+        )}
+      </div>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Calendar className="h-3 w-3" />
+        <span>{round.date}</span>
+      </div>
+    </div>
+  );
+
+  // Metric node: best winners summary (shown when collapsed)
+  const metricNode =
+    round.closed && !isExpanded && round.bests.length > 0 ? (
+      <div className="flex items-center gap-2 flex-wrap justify-end">
+        {round.bests.map((best) => (
+          <div
+            key={best.id}
+            className="flex items-center gap-1 rounded-md border border-yellow-500/20 bg-yellow-500/10 px-2 py-1 text-xs"
+          >
+            <Crown className="h-3 w-3 shrink-0 text-yellow-500" />
+            <span className="max-w-30 truncate font-medium">{best.title}</span>
           </div>
-
-          {round.closed && !isExpanded && round.bests.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-              {round.bests.map((best) => (
-                <div
-                  key={best.id}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-xs"
-                >
-                  <Crown className="h-3 w-3 text-yellow-500 flex-shrink-0" />
-                  <span className="font-medium truncate max-w-[120px]">
-                    {best.title}
-                  </span>
-                </div>
-              ))}
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Sofa className="h-3 w-3 text-primary" />
-                <span className="font-semibold">{roundAverageRating}</span>
-              </div>
-            </div>
-          )}
-
-          {round.closed && (
-            <div className="flex-shrink-0 p-1.5 rounded-md bg-accent/40">
-              {isExpanded ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
-          )}
+        ))}
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Sofa className="h-3 w-3 text-primary" />
+          <span className="font-semibold">{roundAverageRating}</span>
         </div>
-      </CardHeader>
+      </div>
+    ) : undefined;
 
-      {isExpanded && (
-        <CardContent className="pt-0 pb-3 px-3">
-          <div className="space-y-2">
-            {round.winners.map((movie) => (
-              <OscarsMovieRow
-                key={movie.id}
-                movie={movie}
-                isWinner={
-                  round.closed && round.bests.some((b) => b.id === movie.id)
-                }
-                isClosed={round.closed}
-                votingMovieId={votingMovie}
-                onVote={handleVote}
-              />
-            ))}
+  return (
+    <ExpandableListItem
+      title={titleNode}
+      metric={metricNode}
+      isExpanded={isExpanded}
+      onToggle={() => round.closed && setIsExpanded((v) => !v)}
+    >
+      <div className="space-y-2">
+        {round.winners.map((movie) => (
+          <OscarsMovieRow
+            key={movie.id}
+            movie={movie}
+            isWinner={
+              round.closed && round.bests.some((b) => b.id === movie.id)
+            }
+            isClosed={round.closed}
+            votingMovieId={votingMovie}
+            onVote={handleVote}
+          />
+        ))}
+      </div>
+
+      {round.closed && round.winners.length > 0 && (
+        <div className="mt-2 flex items-center justify-between border-t border-border/40 pt-2 text-xs text-muted-foreground">
+          <span>{t("averageCycle")}</span>
+          <div className="flex items-center gap-1 font-semibold text-foreground">
+            <Sofa className="h-3 w-3 text-primary" />
+            <span>{roundAverageRating}</span>
           </div>
-
-          {round.closed && round.winners.length > 0 && (
-            <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{t("averageCycle")}</span>
-              <div className="flex items-center gap-1 font-semibold text-foreground">
-                <Sofa className="h-3 w-3 text-primary" />
-                <span>{roundAverageRating}</span>
-              </div>
-            </div>
-          )}
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </ExpandableListItem>
   );
 }

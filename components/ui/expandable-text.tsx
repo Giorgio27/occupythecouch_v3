@@ -5,12 +5,15 @@ interface ExpandableTextProps {
   text: string;
   maxLength?: number;
   className?: string;
+  /** When true, renders text as HTML (e.g. when the server returns <br> tags). */
+  html?: boolean;
 }
 
 export function ExpandableText({
   text,
   maxLength = 200,
   className = "",
+  html = false,
 }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -22,9 +25,16 @@ export function ExpandableText({
 
   return (
     <div className={className}>
-      <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-        {displayText}
-      </p>
+      {html ? (
+        <p
+          className="text-sm text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: displayText }}
+        />
+      ) : (
+        <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+          {displayText}
+        </p>
+      )}
       {shouldTruncate && (
         <Button
           variant="link"

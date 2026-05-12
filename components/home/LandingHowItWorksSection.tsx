@@ -62,7 +62,7 @@ export default function LandingHowItWorksSection() {
       id="come-funziona"
       className="py-16 sm:py-20 md:py-28 lg:py-36 bg-card/30 relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/[0.02] to-transparent" />
       <div
         ref={ref}
         className="mx-auto max-w-site px-4 sm:px-6 lg:px-8 xl:px-4 relative"
@@ -81,7 +81,7 @@ export default function LandingHowItWorksSection() {
             </div>
             <Link
               href="/tutorial"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 flex-shrink-0 group"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200 shrink-0 group"
             >
               <span>{t("howItWorks.seeMore")}</span>
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -100,12 +100,12 @@ export default function LandingHowItWorksSection() {
               >
                 {idx < 3 && (
                   <div className="hidden lg:block absolute top-10 -right-2.5 xl:-right-3 w-5 xl:w-6 h-px">
-                    <div className="h-full bg-gradient-to-r from-primary/40 to-transparent" />
+                    <div className="h-full bg-linear-to-r from-primary/40 to-transparent" />
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-primary/40" />
                   </div>
                 )}
                 <div className="cine-card hover-lift h-full space-y-4 sm:space-y-5 relative overflow-hidden p-4 sm:p-5 md:p-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-xs sm:text-sm font-bold text-primary">
                       {step.number}

@@ -52,7 +52,7 @@ function AccordionItem({ qKey, index, isInView }: AccordionItemProps) {
           {t(`faq.q${qKey}`)}
         </span>
         <ChevronDown
-          className={`w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180 text-primary" : ""}`}
+          className={`w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground shrink-0 transition-transform duration-300 ${open ? "rotate-180 text-primary" : ""}`}
         />
       </button>
       <div

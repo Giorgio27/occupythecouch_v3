@@ -6,9 +6,10 @@ import { useTranslation } from "react-i18next";
 import { useTouchDrag } from "./useTouchDrag";
 import PositionPicker from "./PositionPicker";
 import MoviePoster from "@/components/ui/MoviePoster";
+import type { ProposalMovieDTO } from "@/lib/shared/types";
 
 interface MovieVotingCardProps {
-  movie: any;
+  movie: ProposalMovieDTO;
   currentPosition: number | null;
   totalPositions: number;
   onPositionChange: (position: number | null) => void;
@@ -82,7 +83,7 @@ export default function MovieVotingCard({
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 opacity-0 transition-opacity duration-300 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute inset-0 rounded-lg bg-linear-to-br from-primary/0 via-primary/0 to-primary/0 opacity-0 transition-opacity duration-300 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 group-hover:opacity-100" />
 
       <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3">
         <div className="flex items-center gap-3 w-full sm:flex-1 min-w-0">

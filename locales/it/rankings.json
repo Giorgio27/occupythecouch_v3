@@ -152,6 +152,7 @@
     "moviesCount": "Film ({{count}})",
     "winner": "Vincitore",
     "winnerTied": "Vincitore (pari con altri {{count}})",
+    "leading": "In testa",
     "rankLabel": "rank",
     "votingResults": "Risultati votazione ({{count}} voti)",
     "individualVotes": "Voti individuali",

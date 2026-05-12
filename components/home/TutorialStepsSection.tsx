@@ -101,7 +101,7 @@ function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
     >
       <div className="cine-card hover-lift relative overflow-hidden p-5 sm:p-6 md:p-8">
         {/* Hover gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Step number watermark */}
         <div className="absolute top-4 right-4 sm:top-5 sm:right-5 text-5xl sm:text-6xl font-black text-foreground/[0.04] select-none pointer-events-none leading-none">
@@ -110,7 +110,7 @@ function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
 
         <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 md:gap-8 relative">
           {/* Icon + subtitle column */}
-          <div className="flex-shrink-0 flex flex-row lg:flex-col items-center lg:items-start gap-4 lg:gap-3 lg:w-48 xl:w-56">
+          <div className="shrink-0 flex flex-row lg:flex-col items-center lg:items-start gap-4 lg:gap-3 lg:w-48 xl:w-56">
             <div className="relative inline-flex">
               <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 scale-150" />
               <div
@@ -143,7 +143,7 @@ function StepCard({ stepKey, number, index, isInView }: StepCardProps) {
             <ul className="space-y-2 sm:space-y-2.5 mb-4 sm:mb-5">
               {bullets.map((bullet, bIdx) => (
                 <li key={bIdx} className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-primary/70 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-primary/70 shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-foreground/80 leading-relaxed">
                     {bullet}
                   </span>
@@ -206,7 +206,7 @@ export default function TutorialStepsSection() {
       id="tutorial-steps"
       className="py-16 sm:py-20 md:py-28 lg:py-36 bg-card/30 relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/[0.02] to-transparent" />
       <div
         ref={ref}
         className="mx-auto max-w-site px-4 sm:px-6 lg:px-8 xl:px-4 relative"

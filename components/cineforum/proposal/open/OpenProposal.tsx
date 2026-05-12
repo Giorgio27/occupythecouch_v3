@@ -21,27 +21,37 @@ import {
   fetchRanking,
   voteProposal,
 } from "@/lib/client/cineforum";
+import type {
+  ProposalDetailDTO,
+  ProposalMovieDTO,
+  ProposalRankingDTO,
+} from "@/lib/shared/types";
 
 export default function OpenProposal({ proposalId }: { proposalId: string }) {
   const { t } = useTranslation("proposal");
   const [loading, setLoading] = React.useState(true);
-  const [proposal, setProposal] = React.useState<any | null>(null);
-  const [rankedMovies, setRankedMovies] = React.useState<Record<number, any[]>>(
-    {},
+  const [proposal, setProposal] = React.useState<ProposalDetailDTO | null>(
+    null,
   );
-  const [unrankedMovies, setUnrankedMovies] = React.useState<any[]>([]);
+  const [rankedMovies, setRankedMovies] = React.useState<
+    Record<number, ProposalMovieDTO[]>
+  >({});
+  const [unrankedMovies, setUnrankedMovies] = React.useState<
+    ProposalMovieDTO[]
+  >([]);
   const [draggingMovieId, setDraggingMovieId] = React.useState<string | null>(
     null,
   );
   const [touchDragOverPosition, setTouchDragOverPosition] = React.useState<
     number | null
   >(null);
-  const [ranking, setRanking] = React.useState<any | null>(null);
+  const [ranking, setRanking] = React.useState<ProposalRankingDTO | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [voteSuccess, setVoteSuccess] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
+    // NOTE: IIFE with cancellation flag — needed to prevent state update on unmount
     (async () => {
       setLoading(true);
       try {
@@ -49,7 +59,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
         if (cancelled) return;
         setProposal(p);
 
-        const positions: Record<number, any[]> = {};
+        const positions: Record<number, ProposalMovieDTO[]> = {};
         for (let i = 1; i <= (p.movies?.length || 0); i++) {
           positions[i] = [];
         }
@@ -60,13 +70,13 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
           Object.entries(movieSelection).forEach(([position, movieIds]) => {
             const posNum = Number(position);
             const movies = (movieIds as string[])
-              .map((id) => p.movies?.find((m: any) => m.id === id))
-              .filter(Boolean);
+              .map((id) => p.movies?.find((m) => m.id === id))
+              .filter((m): m is ProposalMovieDTO => Boolean(m));
             positions[posNum] = movies;
             (movieIds as string[]).forEach((id) => rankedMovieIds.add(id));
           });
           setUnrankedMovies(
-            (p.movies || []).filter((m: any) => !rankedMovieIds.has(m.id)),
+            (p.movies || []).filter((m) => !rankedMovieIds.has(m.id)),
           );
         } else {
           setUnrankedMovies(p.movies || []);
@@ -101,7 +111,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
     setUnrankedMovies((prev) => {
       const filtered = prev.filter((m) => m.id !== movieId);
       if (newPosition === null) {
-        const movie = proposal?.movies?.find((m: any) => m.id === movieId);
+        const movie = proposal?.movies?.find((m) => m.id === movieId);
         if (movie && !filtered.find((m) => m.id === movieId)) {
           return [...filtered, movie];
         }
@@ -112,7 +122,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
     if (newPosition !== null) {
       setRankedMovies((prev) => {
         const next = { ...prev };
-        const movie = proposal?.movies?.find((m: any) => m.id === movieId);
+        const movie = proposal?.movies?.find((m) => m.id === movieId);
         if (movie) {
           next[newPosition] = [...(next[newPosition] || []), movie];
         }
@@ -140,16 +150,33 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
     return lists;
   };
 
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setVoteSuccess(false);
+    try {
+      const voteData = prepareVoteData();
+      await voteProposal(proposalId, voteData);
+      const r = await fetchRanking(proposalId);
+      setRanking(r);
+      setVoteSuccess(true);
+      setTimeout(() => setVoteSuccess(false), 3000);
+    } catch {
+      alert(t("open.voteError"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading || !proposal) return <LoadingCard />;
 
   const canVote = !proposal?.closed;
   const hasExistingVote = !!proposal?.my_vote;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up-slow">
       <ProposalHeader proposal={proposal} canVote={canVote} />
 
-      <Card className="cine-card border-primary/20 animate-fade-in-up delay-100">
+      <Card className="cine-card border-primary/20 animate-fade-in-up-slow delay-100">
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <CardTitle className="flex items-center gap-3">
@@ -236,28 +263,13 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
             hasExistingVote={hasExistingVote}
             submitting={submitting}
             hasUnranked={unrankedMovies.length > 0}
-            onSubmit={async () => {
-              setSubmitting(true);
-              setVoteSuccess(false);
-              try {
-                const voteData = prepareVoteData();
-                await voteProposal(proposalId, voteData);
-                const r = await fetchRanking(proposalId);
-                setRanking(r);
-                setVoteSuccess(true);
-                setTimeout(() => setVoteSuccess(false), 3000);
-              } catch {
-                alert(t("open.voteError"));
-              } finally {
-                setSubmitting(false);
-              }
-            }}
+            onSubmit={handleSubmit}
           />
         </CardContent>
       </Card>
 
-      {ranking && (
-        <Card className="cine-card relative overflow-hidden border-primary/30 animate-fade-in-up delay-200">
+      {ranking && proposal.show_results && (
+        <Card className="cine-card relative overflow-hidden border-primary/30 animate-fade-in-up-slow delay-200">
           <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />
           <CardHeader className="relative border-b border-border/50">
             <CardTitle className="flex items-center gap-3">

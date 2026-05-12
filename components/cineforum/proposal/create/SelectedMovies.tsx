@@ -1,17 +1,10 @@
 import { useTranslation } from "react-i18next";
 import MovieCard from "./MovieCard";
-
-type Movie = {
-  id: string;
-  l: string;
-  y?: string;
-  s?: string;
-  i?: string[];
-};
+import type { ImdbSuggestionDTO } from "@/lib/shared/types";
 
 type SelectedMoviesProps = {
-  items: Movie[];
-  onRemove: (movie: Movie) => void;
+  items: ImdbSuggestionDTO[];
+  onRemove: (movie: ImdbSuggestionDTO) => void;
   previousWinnerIds?: Set<string>;
 };
 

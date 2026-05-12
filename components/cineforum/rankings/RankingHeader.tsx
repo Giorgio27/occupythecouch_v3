@@ -12,7 +12,7 @@ export default function RankingHeader({
   return (
     <div className="relative overflow-hidden rounded-t-xl">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary via-cine-red-soft to-primary opacity-90" />
+      <div className="absolute inset-0 bg-linear-to-r from-primary via-cine-red-soft to-primary opacity-90" />
 
       {/* Subtle pattern overlay */}
       <div className="absolute inset-0 opacity-10">
@@ -61,7 +61,7 @@ export default function RankingHeader({
       </div>
 
       {/* Bottom glow effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-foreground/30 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary-foreground/30 to-transparent" />
     </div>
   );
 }

@@ -2,9 +2,10 @@ import { useTranslation } from "react-i18next";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { CalendarDays, Film, Sparkles, Trophy } from "lucide-react";
 import ProposalOwnerBadge from "@/components/cineforum/proposal/shared/ProposalOwnerBadge";
+import type { ProposalDetailDTO } from "@/lib/shared/types";
 
 type ProposalHeaderProps = {
-  proposal: any;
+  proposal: ProposalDetailDTO;
   canVote: boolean;
 };
 
@@ -43,6 +44,7 @@ export default function ProposalHeader({
                   <ExpandableText
                     text={proposal.description}
                     maxLength={200}
+                    html
                     className="prose prose-sm max-w-none prose-invert prose-p:text-muted-foreground prose-strong:text-foreground"
                   />
                 </div>

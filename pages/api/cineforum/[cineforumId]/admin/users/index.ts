@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user) {
@@ -81,7 +81,7 @@ export default async function handler(
     }));
 
     return res.status(200).json({ users });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("GET /api/cineforum/[cineforumId]/admin/users error", e);
     return res.status(500).json({ error: "Internal server error" });
   }

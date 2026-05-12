@@ -28,7 +28,7 @@ export async function saveNotificationSettings(
   if (botToken.trim()) {
     body.botToken = botToken.trim();
   }
-  await jsonFetch(`/api/cineforum/${cineforumId}/admin/notifications`, {
+  await jsonFetch(`/api/cineforum/${cineforumId}/admin/notifications/update`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -40,7 +40,7 @@ export async function saveNotificationSettings(
  * Throws if credentials are not configured or the request fails.
  */
 export async function sendTestNotification(cineforumId: string): Promise<void> {
-  await jsonFetch(`/api/cineforum/${cineforumId}/admin/notifications`, {
+  await jsonFetch(`/api/cineforum/${cineforumId}/admin/notifications/test`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });

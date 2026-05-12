@@ -2,6 +2,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Star, GripVertical } from "lucide-react";
 import MoviePoster from "@/components/ui/MoviePoster";
+import type { ProposalMovieDTO } from "@/lib/shared/types";
 
 /** Single movie row with rank buttons (1°,2°,...) and drag-and-drop */
 export default function MovieRankRow({
@@ -9,9 +10,11 @@ export default function MovieRankRow({
   lists,
   setLists,
 }: {
-  movie: any;
-  lists: Record<string, any[]>;
-  setLists: React.Dispatch<React.SetStateAction<Record<string, any[]>>>;
+  movie: ProposalMovieDTO;
+  lists: Record<string, ProposalMovieDTO[]>;
+  setLists: React.Dispatch<
+    React.SetStateAction<Record<string, ProposalMovieDTO[]>>
+  >;
 }) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragOver, setDragOver] = React.useState<"top" | "bottom" | null>(null);
@@ -89,9 +92,9 @@ export default function MovieRankRow({
         const next = { ...prev };
 
         // Find the dragged movie
-        let draggedMovie: any = null;
+        let draggedMovie: ProposalMovieDTO | null = null;
         for (const k of Object.keys(next)) {
-          const found = next[k].find((m: any) => m.id === draggedMovieId);
+          const found = next[k].find((m) => m.id === draggedMovieId);
           if (found) {
             draggedMovie = found;
             break;
@@ -102,7 +105,7 @@ export default function MovieRankRow({
 
         // Remove dragged movie from all ranks
         for (const k of Object.keys(next)) {
-          next[k] = next[k].filter((m: any) => m.id !== draggedMovieId);
+          next[k] = next[k].filter((m) => m.id !== draggedMovieId);
         }
 
         const targetRank = currentRank;
@@ -140,7 +143,7 @@ export default function MovieRankRow({
         }
 
         // Clean up empty ranks and renumber
-        const cleanedLists: Record<string, any[]> = {};
+        const cleanedLists: Record<string, ProposalMovieDTO[]> = {};
         const sortedRanks = Object.keys(next)
           .map((k) => parseInt(k))
           .sort((a, b) => a - b)

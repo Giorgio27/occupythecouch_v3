@@ -26,8 +26,8 @@ import {
   createProposal,
   fetchProposalWinners,
   fetchCandidates,
-  CandidateDTO,
 } from "@/lib/client/cineforum";
+import type { CandidateDTO, ImdbSuggestionDTO } from "@/lib/shared/types";
 
 /** Create Proposal block (IMDb search + simple selection + submit) */
 export default function CreateProposal({
@@ -38,8 +38,8 @@ export default function CreateProposal({
   const { data: session } = useSession();
   const { t } = useTranslation("proposal");
 
-  const [results, setResults] = React.useState<any[]>([]);
-  const [selected, setSelected] = React.useState<any[]>([]);
+  const [results, setResults] = React.useState<ImdbSuggestionDTO[]>([]);
+  const [selected, setSelected] = React.useState<ImdbSuggestionDTO[]>([]);
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [date, setDate] = React.useState("");
@@ -74,7 +74,7 @@ export default function CreateProposal({
       });
   }, [cineforumId]);
 
-  function toggleMovie(m: any) {
+  function toggleMovie(m: ImdbSuggestionDTO) {
     const isAlreadySelected = selected.some((x) => x.id === m.id);
 
     if (isAlreadySelected) {
@@ -112,7 +112,7 @@ export default function CreateProposal({
     owner && title && description && date && selected.length > 0;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up-slow">
       {/* Intro header */}
       <div className="cine-card cine-glass relative overflow-hidden">
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />
@@ -134,7 +134,7 @@ export default function CreateProposal({
       </div>
 
       {/* Main form card */}
-      <Card className="cine-card border-primary/20 animate-fade-in-up delay-100">
+      <Card className="cine-card border-primary/20 animate-fade-in-up-slow delay-100">
         <CardHeader className="border-b border-border/50">
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/20">

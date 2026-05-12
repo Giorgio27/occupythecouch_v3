@@ -7,9 +7,16 @@ import { jsonFetch } from "../https";
 
 const PAGE_SIZE = 10;
 
+/**
+ * Fetches a paginated page of rounds for a cineforum.
+ *
+ * @param cineforumId - The cineforum identifier
+ * @param page - Zero-based page index
+ * @returns Promise resolving to a RoundsListResponseDTO with rounds and pagination info
+ */
 export async function fetchRoundsPage(
   cineforumId: string,
-  page: number
+  page: number,
 ): Promise<RoundsListResponseDTO> {
   const params = new URLSearchParams({
     cineforumId,
@@ -18,7 +25,7 @@ export async function fetchRoundsPage(
   });
 
   return jsonFetch<RoundsListResponseDTO>(
-    `/api/cineforum/rounds?${params.toString()}`
+    `/api/cineforum/rounds?${params.toString()}`,
   );
 }
 
@@ -29,10 +36,16 @@ export type CreateRoundPayload = {
   chooserUserId?: string;
 };
 
+/**
+ * Creates a new round in a cineforum.
+ *
+ * @param payload - The round creation payload including name, date, and optional chooser
+ * @returns Promise resolving to the created RoundSummaryDTO
+ */
 export async function createRound(
-  payload: CreateRoundPayload
+  payload: CreateRoundPayload,
 ): Promise<RoundSummaryDTO> {
-  return jsonFetch<RoundSummaryDTO>("/api/cineforum/rounds", {
+  return jsonFetch<RoundSummaryDTO>("/api/cineforum/rounds/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -48,9 +61,18 @@ export type CloseRoundResult =
       details?: CloseRoundErrorDetails;
     };
 
+/**
+ * Closes a round, triggering winner computation for all proposals.
+ * Returns a structured result instead of throwing, so callers can handle
+ * known business errors (e.g. open proposals, missing votes) gracefully.
+ *
+ * @param cineforumId - The cineforum identifier (unused in request but kept for API symmetry)
+ * @param roundId - The round identifier to close
+ * @returns Promise resolving to CloseRoundResult — either { ok: true } or an error object
+ */
 export async function closeRound(
   cineforumId: string,
-  roundId: string
+  roundId: string,
 ): Promise<CloseRoundResult> {
   const res = await fetch(`/api/cineforum/rounds/${roundId}/close`, {
     method: "POST",

@@ -1,3 +1,13 @@
+export type TmdbGenre = { id: number; name: string };
+export type TmdbCompany = { id: number; name: string; origin_country: string };
+export type TmdbCountry = { iso_3166_1: string; name: string };
+export type TmdbLanguage = { iso_639_1: string; name: string };
+export type TmdbCrewMember = {
+  job: string;
+  name: string;
+  [key: string]: unknown;
+};
+
 export type TmdbMovieDetails = {
   adult?: boolean;
   tmdb_id?: number;
@@ -9,13 +19,13 @@ export type TmdbMovieDetails = {
   vote_count?: number;
   poster?: string | null;
   budget?: number | null;
-  genres?: any;
+  genres?: TmdbGenre[] | null;
   homepage?: string | null;
-  production_companies?: any;
-  production_countries?: any;
+  production_companies?: TmdbCompany[] | null;
+  production_countries?: TmdbCountry[] | null;
   revenue?: number | null;
   runtime?: number | null;
-  spoken_languages?: any;
+  spoken_languages?: TmdbLanguage[] | null;
   tagline?: string | null;
   director?: string | null;
   show_id?: number;
@@ -25,15 +35,15 @@ export type TmdbMovieDetails = {
 
 export async function tmdbFindAndDetails(
   imdbId: string,
-  kind: "feature" | "TV movie" | "TV episode"
+  kind: "feature" | "TV movie" | "TV episode",
 ): Promise<TmdbMovieDetails> {
   const key = process.env.TMDB_API_KEY!;
   const base = "https://api.themoviedb.org/3";
 
   const resp = await fetch(
     `${base}/find/${encodeURIComponent(
-      imdbId
-    )}?api_key=${key}&language=en-US&external_source=imdb_id`
+      imdbId,
+    )}?api_key=${key}&language=en-US&external_source=imdb_id`,
   ).then((r) => r.json());
 
   if (kind === "TV episode") {
@@ -52,9 +62,11 @@ export async function tmdbFindAndDetails(
       vote_count: tv.vote_count,
     };
     const json2 = await fetch(
-      `${base}/tv/${info.show_id}/season/${info.season_number}/episode/${info.episode_number}?api_key=${key}&language=en-US`
+      `${base}/tv/${info.show_id}/season/${info.season_number}/episode/${info.episode_number}?api_key=${key}&language=en-US`,
     ).then((r) => r.json());
-    const director = (json2?.crew || []).find((c: any) => c.job === "Director");
+    const director = ((json2?.crew as TmdbCrewMember[]) || []).find(
+      (c) => c.job === "Director",
+    );
     info.director = director?.name ?? null;
     return info;
   } else {
@@ -79,7 +91,7 @@ export async function tmdbFindAndDetails(
     };
 
     const details = await fetch(
-      `${base}/movie/${movie.id}?api_key=${key}&language=en-US`
+      `${base}/movie/${movie.id}?api_key=${key}&language=en-US`,
     ).then((r) => r.json());
     Object.assign(basic, {
       budget: details?.budget ?? null,
@@ -94,10 +106,10 @@ export async function tmdbFindAndDetails(
     });
 
     const credits = await fetch(
-      `${base}/movie/${movie.id}/credits?api_key=${key}&language=en-US`
+      `${base}/movie/${movie.id}/credits?api_key=${key}&language=en-US`,
     ).then((r) => r.json());
-    const director = (credits?.crew || []).find(
-      (c: any) => c.job === "Director"
+    const director = ((credits?.crew as TmdbCrewMember[]) || []).find(
+      (c) => c.job === "Director",
     );
     basic.director = director?.name ?? null;
     return basic;

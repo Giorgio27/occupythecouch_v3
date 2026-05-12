@@ -71,9 +71,10 @@ export default function CineforumUsersAdminPage({
     try {
       const data = await fetchCineforumUsers(cineforumId);
       setUsers(data.users);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("users.loading"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("users.loading"));
     } finally {
       setLoading(false);
     }
@@ -100,9 +101,10 @@ export default function CineforumUsersAdminPage({
       setPassword("");
       setRole("MEMBER");
       await loadUsers();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("users.inviteButton"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("users.inviteButton"));
     } finally {
       setInviting(false);
     }
@@ -115,9 +117,10 @@ export default function CineforumUsersAdminPage({
     try {
       await updateUserRole(cineforumId, userId, newRole);
       await loadUsers();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("users.makeAdmin"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("users.makeAdmin"));
     } finally {
       setActioningUserId(null);
     }
@@ -134,9 +137,10 @@ export default function CineforumUsersAdminPage({
     try {
       await toggleUserDisabled(cineforumId, userId, !currentlyDisabled);
       await loadUsers();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("users.disable"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("users.disable"));
     } finally {
       setActioningUserId(null);
     }

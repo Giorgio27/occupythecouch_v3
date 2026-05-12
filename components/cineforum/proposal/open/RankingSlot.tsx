@@ -2,10 +2,11 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Trophy, Plus, Medal } from "lucide-react";
 import MovieVotingCard from "./MovieVotingCard";
+import type { ProposalMovieDTO } from "@/lib/shared/types";
 
 interface RankingSlotProps {
   position: number;
-  movies: any[];
+  movies: ProposalMovieDTO[];
   totalPositions: number;
   onMoviePositionChange: (movieId: string, newPosition: number | null) => void;
   onDrop: (position: number, movieId: string) => void;
@@ -108,7 +109,7 @@ export default function RankingSlot({
           : isEmpty
             ? "border-dashed border-border/40 bg-muted/20"
             : "border-border/60 bg-card/40",
-        "min-h-[120px]",
+        "min-h-30",
       ]
         .filter(Boolean)
         .join(" ")}

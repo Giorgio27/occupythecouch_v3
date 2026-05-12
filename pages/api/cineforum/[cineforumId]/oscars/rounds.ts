@@ -204,7 +204,11 @@ export default async function handler(
           (a, b) => (b.roundRating || 0) - (a.roundRating || 0),
         );
         const bestRating = sortedWinners[0]?.roundRating;
-        const bests = sortedWinners.filter((w) => w.roundRating === bestRating);
+
+        const bests =
+          bestRating == null
+            ? []
+            : sortedWinners.filter((w) => w.roundRating === bestRating);
 
         return {
           id: round.id,

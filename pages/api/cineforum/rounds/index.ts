@@ -1,72 +1,57 @@
-// pages/api/cineforum/rounds/index.ts
+// pages/api/cineforum/rounds/index.ts — GET /api/cineforum/rounds
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
-import { createRound, listRoundsForCineforum } from "@/lib/server/rounds";
+import prisma from "@/lib/prisma";
+import { listRoundsForCineforum } from "@/lib/server/rounds";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   const session = await getServerSession(req, res, authOptions);
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === "GET") {
-    const { cineforumId, offset, limit } = req.query;
+  const { cineforumId, offset, limit } = req.query;
 
-    if (!cineforumId || typeof cineforumId !== "string") {
-      return res
-        .status(400)
-        .json({ error: "cineforumId query param is required" });
-    }
-
-    const off = offset ? Number(offset) : 0;
-    const lim = limit ? Number(limit) : 10;
-
-    try {
-      const data = await listRoundsForCineforum({
-        cineforumId,
-        offset: off,
-        limit: lim,
-      });
-
-      return res.status(200).json({
-        status: data.status,
-        total: data.total,
-        rounds: data.items,
-      });
-    } catch (e) {
-      console.error("GET /api/cineforum/rounds error", e);
-      return res.status(500).json({ error: "Internal server error" });
-    }
+  if (!cineforumId || typeof cineforumId !== "string") {
+    return res
+      .status(400)
+      .json({ error: "cineforumId query param is required" });
   }
 
-  if (req.method === "POST") {
-    const { cineforumId, name, date, chooserUserId } = req.body || {};
-
-    if (!cineforumId || !name || !date) {
-      return res.status(400).json({
-        error: "cineforumId, name and date are required",
-      });
-    }
-
-    try {
-      const round = await createRound({
-        cineforumId,
-        name,
-        date,
-        chooserUserId: chooserUserId || null,
-      });
-
-      return res.status(201).json(round);
-    } catch (e) {
-      console.error("POST /api/cineforum/rounds error", e);
-      return res.status(500).json({ error: "Internal server error" });
-    }
+  const membership = await prisma.membership.findUnique({
+    where: {
+      userId_cineforumId: { userId: session.user.id, cineforumId },
+    },
+  });
+  if (!membership || membership.disabled) {
+    return res.status(403).json({ error: "Forbidden" });
   }
 
-  res.setHeader("Allow", ["GET", "POST"]);
-  return res.status(405).end();
+  const off = offset ? Number(offset) : 0;
+  const lim = limit ? Number(limit) : 10;
+
+  try {
+    const data = await listRoundsForCineforum({
+      cineforumId,
+      offset: off,
+      limit: lim,
+    });
+
+    return res.status(200).json({
+      status: data.status,
+      total: data.total,
+      rounds: data.items,
+    });
+  } catch (e: unknown) {
+    console.error("GET /api/cineforum/rounds error", e);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 }

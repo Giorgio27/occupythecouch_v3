@@ -30,7 +30,7 @@ export default function OscarsMovieRow({
     >
       {isWinner && (
         <div className="absolute -top-1.5 -right-1.5 z-10">
-          <div className="p-1 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 shadow-md">
+          <div className="p-1 rounded-full bg-linear-to-br from-yellow-400 to-amber-500 shadow-md">
             <Crown className="h-3 w-3 text-white" />
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function OscarsMovieRow({
         </div>
 
         <div
-          className="flex-shrink-0 flex flex-col items-end gap-1"
+          className="shrink-0 flex flex-col items-end gap-1"
           onClick={(e) => e.stopPropagation()}
         >
           {isClosed ? (

@@ -1,9 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const userId = req.query.userId as string;
   const cineforumId = req.query.cineforumId as string | undefined;
@@ -14,7 +15,7 @@ export default async function handler(
   });
   if (!user) return res.status(404).json({ error: "User not found" });
 
-  const whereTeam: any = cineforumId ? { cineforumId } : {};
+  const whereTeam: Prisma.TeamWhereInput = cineforumId ? { cineforumId } : {};
   const teams = await prisma.team.findMany({
     where: { ...whereTeam, users: { some: { userId } } },
     orderBy: { createdAt: "asc" },

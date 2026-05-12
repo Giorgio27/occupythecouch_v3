@@ -93,9 +93,10 @@ export default function CineforumRoundsAdminPage({
       setStatus(data.status);
       setPage(pageToLoad);
       setRounds((prev) => (reset ? data.rounds : [...prev, ...data.rounds]));
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("rounds.loading"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("rounds.loading"));
     } finally {
       setLoading(false);
     }
@@ -124,9 +125,10 @@ export default function CineforumRoundsAdminPage({
       setDate("");
       // reload from first page to see newest rounds
       await loadPage(0, true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("rounds.createButton"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("rounds.createButton"));
     } finally {
       setCreating(false);
     }
@@ -180,9 +182,10 @@ export default function CineforumRoundsAdminPage({
 
       // refresh list
       await loadPage(0, true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      setError(e.message ?? t("rounds.closeRound"));
+      const err = e as { message?: string };
+      setError(err.message ?? t("rounds.closeRound"));
     } finally {
       setClosingId(null);
     }

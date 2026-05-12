@@ -81,6 +81,7 @@
     "cannotEditWithVotes": "Cannot edit a proposal that already has votes",
     "winner": "Winner",
     "winnerTied": "Winner (tied with {{count}} others)",
+    "leading": "Leading",
     "loading": "Loading...",
     "closeDialogTitle": "Close proposal",
     "selectWinner": "Select the winning movie...",

@@ -25,7 +25,7 @@ export function RankingChartTooltip({
 
   return (
     <div
-      className="min-w-[220px] max-w-[280px] rounded-2xl p-3.5"
+      className="min-w-55 max-w-70 rounded-2xl p-3.5"
       style={{
         backgroundColor: "var(--popover)",
         border: "1px solid var(--border)",

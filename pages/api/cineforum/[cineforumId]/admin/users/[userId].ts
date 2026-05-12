@@ -15,7 +15,7 @@ type ToggleDisabledRequest = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user) {
@@ -153,13 +153,14 @@ export default async function handler(
 
     res.setHeader("Allow", ["PATCH"]);
     return res.status(405).end();
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error(
       `${req.method} /api/cineforum/[cineforumId]/admin/users/[userId] error`,
-      e
+      e,
     );
 
-    if (e.code === "P2025") {
+    const err = e as { code?: string; message?: string };
+    if (err.code === "P2025") {
       return res
         .status(404)
         .json({ error: "User not found in this cineforum" });

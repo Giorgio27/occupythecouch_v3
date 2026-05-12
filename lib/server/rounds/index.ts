@@ -96,7 +96,7 @@ export async function closeRound(roundId: string) {
 
   const openProposals = round.proposals.filter((p) => !p.closed);
   const proposalsWithoutWinner = round.proposals.filter(
-    (p) => p.closed && !p.winnerId
+    (p) => p.closed && !p.winnerId,
   );
   const proposalsWithoutVotes = round.proposals.filter((p) => {
     if (!p.closed || !p.winnerId) return false;
@@ -110,8 +110,8 @@ export async function closeRound(roundId: string) {
     proposalsWithoutVotes.length > 0;
 
   if (hasIssues) {
-    const error: any = new Error(
-      "Round cannot be closed: some proposals are still open or are missing winner/votes"
+    const error: Error & { code?: string; details?: unknown } = new Error(
+      "Round cannot be closed: some proposals are still open or are missing winner/votes",
     );
     error.code = "ROUND_NOT_READY";
     error.details = {
@@ -306,7 +306,7 @@ async function recomputeUserRanking(rankingId: string) {
   const averageRating =
     ratings.length > 0
       ? Number(
-          (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(2)
+          (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(2),
         )
       : null;
 

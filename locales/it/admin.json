@@ -81,6 +81,7 @@
     "cannotEditWithVotes": "Impossibile modificare una proposta con voti",
     "winner": "Vincitore",
     "winnerTied": "Vincitore (pari con altri {{count}})",
+    "leading": "In testa",
     "loading": "Caricamento...",
     "closeDialogTitle": "Chiudi proposta",
     "selectWinner": "Seleziona il film vincitore...",

@@ -76,7 +76,7 @@ export default function LandingWhySection() {
                 className={`cine-card hover-lift group relative overflow-hidden transition-all duration-700 p-4 sm:p-5 md:p-6 ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} ${idx === 2 ? "sm:col-span-2 lg:col-span-1" : ""}`}
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative">
                   <div

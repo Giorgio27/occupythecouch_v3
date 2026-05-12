@@ -82,7 +82,7 @@ function DropdownNavItem({
       }`}
     >
       <Icon
-        className={`h-4 w-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : "text-primary/70 group-hover:text-primary"}`}
+        className={`h-4 w-4 shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-primary" : "text-primary/70 group-hover:text-primary"}`}
       />
       <span className="text-sm font-medium">{link.label}</span>
     </Link>
@@ -126,7 +126,7 @@ function DesktopDropdown({
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
         >
-          <div className="w-72 rounded-xl border border-border/50 bg-gradient-to-b from-popover/98 to-popover/95 backdrop-blur-xl p-3 shadow-2xl animate-fade-in">
+          <div className="w-72 rounded-xl border border-border/50 bg-linear-to-b from-popover/98 to-popover/95 backdrop-blur-xl p-3 shadow-2xl animate-fade-in">
             <div className="space-y-1">
               {links.map((link) => (
                 <DropdownNavItem

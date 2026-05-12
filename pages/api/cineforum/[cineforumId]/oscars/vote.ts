@@ -98,9 +98,11 @@ export default async function handler(
           where: {
             winnerId: { not: null },
           },
+
           orderBy: {
-            date: "asc",
+            date: "desc",
           },
+
           include: {
             winner: true,
             ownerUser: {
@@ -125,7 +127,7 @@ export default async function handler(
     }
 
     // Transform to match Rails format
-    const winners = await Promise.all(
+    const winnersUnsorted = await Promise.all(
       updatedRound.proposals
         .filter((p) => p.winner)
         .map(async (proposal) => {
@@ -180,15 +182,39 @@ export default async function handler(
             userRating:
               votes.find((v) => v.user.id === session.user.id)?.rating || null,
             proposer,
+
+            // External ratings — per coerenza con la GET
+            imdbRating: movie.imdbRating ?? null,
+            tmdbVote: movie.voteAverage ?? null,
+            tomatometer: movie.tomatometer ?? null,
+            metascore: movie.metascore ?? null,
+
+            // Campo temporaneo usato solo per ordinare come nella GET
+            _proposalDate: proposal.date ?? proposal.createdAt,
           };
         }),
     );
 
+    // Stesso identico ordinamento della GET: proposta più recente prima
+    const winners = winnersUnsorted
+      .sort(
+        (a, b) =>
+          new Date(b._proposalDate).getTime() -
+          new Date(a._proposalDate).getTime(),
+      )
+      .map(({ _proposalDate: _, ...w }) => w);
+
+    // Sort by rating and find best
     const sortedWinners = [...winners].sort(
-      (a, b) => (b.roundRating || 0) - (a.roundRating || 0),
+      (a, b) => (b.roundRating ?? -1) - (a.roundRating ?? -1),
     );
+
     const bestRating = sortedWinners[0]?.roundRating;
-    const bests = sortedWinners.filter((w) => w.roundRating === bestRating);
+
+    const bests =
+      bestRating == null
+        ? []
+        : sortedWinners.filter((w) => w.roundRating === bestRating);
 
     const response = {
       id: updatedRound.id,
@@ -197,6 +223,7 @@ export default async function handler(
       date: updatedRound.date
         ? new Date(updatedRound.date).toLocaleDateString("it-IT")
         : null,
+      createdAt: new Date(updatedRound.createdAt).toLocaleDateString("it-IT"),
       chooser: updatedRound.chooser
         ? {
             id: updatedRound.chooser.id,

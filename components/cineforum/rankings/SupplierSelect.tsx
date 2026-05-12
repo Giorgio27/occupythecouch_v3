@@ -1,5 +1,3 @@
-"use client";
-
 import { ChevronDown, BarChart3 } from "lucide-react";
 import type { Supplier } from "@/lib/shared/types";
 

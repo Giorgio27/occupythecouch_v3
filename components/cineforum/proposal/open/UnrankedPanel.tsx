@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Inbox } from "lucide-react";
 import MovieVotingCard from "./MovieVotingCard";
+import type { ProposalMovieDTO } from "@/lib/shared/types";
 
 type UnrankedPanelProps = {
-  movies: any[];
+  movies: ProposalMovieDTO[];
   totalPositions: number;
   draggingMovieId: string | null;
   onDragStart: (movieId: string) => void;

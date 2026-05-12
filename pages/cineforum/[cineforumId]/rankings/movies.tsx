@@ -85,7 +85,7 @@ export default function MoviesRankingPage({
   if (loading) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-        <div className="flex justify-center items-center min-h-[400px]">
+        <div className="flex justify-center items-center min-h-100">
           <LoadingCard text={t("movies.loading")} />
         </div>
       </CineforumLayout>

@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { imdbSearch } from "@/lib/client/cineforum/proposals";
+import type { ImdbSuggestionDTO } from "@/lib/shared/types";
 
 export default function MovieSearch({
   onResults,
 }: {
-  onResults: (items: any[]) => void;
+  onResults: (items: ImdbSuggestionDTO[]) => void;
 }) {
   const { t } = useTranslation("proposal");
   const [query, setQuery] = React.useState("");

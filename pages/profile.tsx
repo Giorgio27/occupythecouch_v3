@@ -61,7 +61,7 @@ export default function ProfilePage({ initialProfile }: ProfilePageProps) {
     setProfileSuccess(false);
 
     try {
-      const res = await fetch("/api/user/profile", {
+      const res = await fetch("/api/user/profile/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
