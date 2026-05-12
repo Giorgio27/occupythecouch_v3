@@ -302,7 +302,11 @@ export default function AdminProposalsPage({
               {/* Description */}
               {proposal.description && (
                 <div className="rounded-xl border bg-muted/50 p-3">
-                  <ExpandableText text={proposal.description} maxLength={150} />
+                  <ExpandableText
+                    text={proposal.description}
+                    maxLength={150}
+                    html
+                  />
                 </div>
               )}
 
@@ -358,25 +362,43 @@ export default function AdminProposalsPage({
                 )}
 
                 <div className="space-y-2">
-                  {displayMovies.map((movie) => {
-                    const rankedMovie =
-                      !isEditing && ranking
-                        ? ranking.sorted_movies.find((m) => m.id === movie.id)
-                        : null;
+                  {[...displayMovies]
+                    .sort((a, b) => {
+                      if (isEditing || !ranking) return 0;
+                      const ra =
+                        ranking.sorted_movies.find((m) => m.id === a.id)
+                          ?.proposal_rank ?? Infinity;
+                      const rb =
+                        ranking.sorted_movies.find((m) => m.id === b.id)
+                          ?.proposal_rank ?? Infinity;
+                      return ra - rb;
+                    })
+                    .map((movie) => {
+                      const rankedMovie =
+                        !isEditing && ranking
+                          ? ranking.sorted_movies.find((m) => m.id === movie.id)
+                          : null;
+                      const isLeading =
+                        !isEditing &&
+                        !proposal.winner &&
+                        !proposal.closed &&
+                        !!rankedMovie &&
+                        rankedMovie.proposal_rank === 1;
 
-                    return (
-                      <ProposalMovieCard
-                        key={movie.id}
-                        movie={movie}
-                        isWinner={
-                          !isEditing && proposal.winner?.id === movie.id
-                        }
-                        rankedMovie={rankedMovie}
-                        tNamespace="admin"
-                        onRemove={isEditing ? removeMovie : undefined}
-                      />
-                    );
-                  })}
+                      return (
+                        <ProposalMovieCard
+                          key={movie.id}
+                          movie={movie}
+                          isWinner={
+                            !isEditing && proposal.winner?.id === movie.id
+                          }
+                          isLeading={isLeading}
+                          rankedMovie={rankedMovie}
+                          tNamespace="admin"
+                          onRemove={isEditing ? removeMovie : undefined}
+                        />
+                      );
+                    })}
                 </div>
               </div>
 

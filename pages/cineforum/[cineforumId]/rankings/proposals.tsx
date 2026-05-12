@@ -8,8 +8,10 @@ import {
   ProposalsListResponseDTO,
   ProposalRankingDTO,
 } from "@/lib/shared/types/cineforum";
-import { adminProposalsClient } from "@/lib/client/cineforum/admin-proposals";
-import { fetchRanking } from "@/lib/client/cineforum/proposals";
+import {
+  fetchAllProposals,
+  fetchRanking,
+} from "@/lib/client/cineforum/proposals";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -72,7 +74,7 @@ export default function ProposalsHistoryPage({
     setLoading(true);
     setError(null);
     try {
-      const data = await adminProposalsClient.getAllProposals(
+      const data = await fetchAllProposals(
         cineforumId,
         pagination.page + 1,
         pagination.limit,
@@ -201,6 +203,7 @@ export default function ProposalsHistoryPage({
                               <ExpandableText
                                 text={proposal.description}
                                 maxLength={150}
+                                html
                               />
                             </div>
                           )}
@@ -220,7 +223,7 @@ export default function ProposalsHistoryPage({
                             </p>
                           )}
 
-                          {/* Movies */}
+                          {/* Movies — sorted by Schulze rank when available */}
                           <div className="space-y-2">
                             <Label className="text-xs font-semibold text-muted-foreground">
                               {t("proposals.moviesCount", {
@@ -228,23 +231,47 @@ export default function ProposalsHistoryPage({
                               })}
                             </Label>
                             <div className="space-y-2">
-                              {proposal.movies.map((movie) => {
-                                const rankedMovie = rankings[proposal.id]
-                                  ? rankings[proposal.id].sorted_movies.find(
-                                      (m) => m.id === movie.id,
-                                    )
-                                  : null;
+                              {[...proposal.movies]
+                                .sort((a, b) => {
+                                  const ranking = rankings[proposal.id];
+                                  if (!ranking) return 0;
+                                  const ra =
+                                    ranking.sorted_movies.find(
+                                      (m) => m.id === a.id,
+                                    )?.proposal_rank ?? Infinity;
+                                  const rb =
+                                    ranking.sorted_movies.find(
+                                      (m) => m.id === b.id,
+                                    )?.proposal_rank ?? Infinity;
+                                  return ra - rb;
+                                })
+                                .map((movie) => {
+                                  const ranking = rankings[proposal.id];
+                                  const rankedMovie = ranking
+                                    ? ranking.sorted_movies.find(
+                                        (m) => m.id === movie.id,
+                                      )
+                                    : null;
+                                  // For open proposals without an official winner, highlight rank-1 as "leading"
+                                  const isLeading =
+                                    !proposal.winner &&
+                                    !proposal.closed &&
+                                    !!rankedMovie &&
+                                    rankedMovie.proposal_rank === 1;
 
-                                return (
-                                  <ProposalMovieCard
-                                    key={movie.id}
-                                    movie={movie}
-                                    isWinner={proposal.winner?.id === movie.id}
-                                    rankedMovie={rankedMovie}
-                                    tNamespace="rankings"
-                                  />
-                                );
-                              })}
+                                  return (
+                                    <ProposalMovieCard
+                                      key={movie.id}
+                                      movie={movie}
+                                      isWinner={
+                                        proposal.winner?.id === movie.id
+                                      }
+                                      isLeading={isLeading}
+                                      rankedMovie={rankedMovie}
+                                      tNamespace="rankings"
+                                    />
+                                  );
+                                })}
                             </div>
                           </div>
 
@@ -313,7 +340,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const totalCount = await prisma.proposal.count({ where: { cineforumId } });
 
   const proposals = await prisma.proposal.findMany({
-    where: { cineforumId },
+    where: { cineforumId, closed: true },
     orderBy: { date: "desc" },
     take: limit,
     include: {

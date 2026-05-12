@@ -44,6 +44,7 @@ export default function ProposalHeader({
                   <ExpandableText
                     text={proposal.description}
                     maxLength={200}
+                    html
                     className="prose prose-sm max-w-none prose-invert prose-p:text-muted-foreground prose-strong:text-foreground"
                   />
                 </div>

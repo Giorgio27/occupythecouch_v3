@@ -1,4 +1,4 @@
-import { Trophy, Trash2 } from "lucide-react";
+import { Trophy, Trash2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProposalRankingMovieDTO } from "@/lib/shared/types/cineforum";
 import { useTranslation } from "react-i18next";
@@ -24,6 +24,11 @@ type ProposalMovieCardProps = {
    * When true, shows the winner label and trophy icon.
    */
   isWinner?: boolean;
+  /**
+   * Whether this movie is currently leading in an open proposal (rank === 1, no official winner yet).
+   * Shows a distinct "leading" label and icon instead of the winner trophy.
+   */
+  isLeading?: boolean;
   /** Ranking data for this movie, if already loaded (used only for rank badge) */
   rankedMovie?: ProposalRankingMovieDTO | null;
   /** Namespace for translations: "admin" or "rankings" */
@@ -35,6 +40,7 @@ type ProposalMovieCardProps = {
 export default function ProposalMovieCard({
   movie,
   isWinner = false,
+  isLeading = false,
   rankedMovie,
   tNamespace = "rankings",
   onRemove,
@@ -44,12 +50,16 @@ export default function ProposalMovieCard({
   const movieTitle = movie.title ?? movie.l ?? "";
   const movieYear = movie.year ?? movie.y;
 
+  const highlighted = isWinner || isLeading;
+
   return (
     <div
       className={`flex items-center gap-3 rounded-xl border p-3 transition-colors ${
         isWinner
           ? "border-primary/40 bg-primary/8"
-          : "border-border/60 bg-card/60"
+          : isLeading
+            ? "border-amber-400/40 bg-amber-50/10"
+            : "border-border/60 bg-card/60"
       }`}
     >
       {/* Poster */}
@@ -71,6 +81,11 @@ export default function ProposalMovieCard({
                 {t("proposals.winner")}
               </p>
             )}
+            {isLeading && !isWinner && (
+              <p className="mb-1 text-xs font-semibold text-amber-500">
+                {t("proposals.leading")}
+              </p>
+            )}
             <p
               className="truncate font-semibold text-foreground"
               title={movieTitle}
@@ -82,9 +97,14 @@ export default function ProposalMovieCard({
             )}
           </div>
 
-          {/* Trophy icon for winner */}
+          {/* Trophy icon for official winner */}
           {isWinner && (
             <Trophy className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+          )}
+
+          {/* Trending icon for leading movie in open proposal */}
+          {isLeading && !isWinner && (
+            <TrendingUp className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
           )}
 
           {/* Delete button (admin edit mode) */}

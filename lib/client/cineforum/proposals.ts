@@ -4,6 +4,7 @@ import type {
   ProposalDetailDTO,
   ProposalRankingDTO,
   ProposalWinnersDTO,
+  ProposalsListResponseDTO,
   CandidateDTO,
 } from "@/lib/shared/types";
 
@@ -117,5 +118,23 @@ export async function fetchProposalWinners(
 ): Promise<ProposalWinnersDTO> {
   return jsonFetch<ProposalWinnersDTO>(
     `/api/cineforum/${cineforumId}/proposals/winners`,
+  );
+}
+
+/**
+ * Fetches a paginated list of all proposals for a cineforum (accessible to all members).
+ *
+ * @param cineforumId - The cineforum identifier
+ * @param page - Page number (1-based)
+ * @param limit - Number of proposals per page
+ * @returns Promise resolving to a ProposalsListResponseDTO
+ */
+export async function fetchAllProposals(
+  cineforumId: string,
+  page: number = 1,
+  limit: number = 10,
+): Promise<ProposalsListResponseDTO> {
+  return jsonFetch<ProposalsListResponseDTO>(
+    `/api/cineforum/${cineforumId}/proposals?page=${page}&limit=${limit}`,
   );
 }
