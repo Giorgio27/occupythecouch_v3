@@ -268,7 +268,7 @@ export default function OpenProposal({ proposalId }: { proposalId: string }) {
         </CardContent>
       </Card>
 
-      {ranking && (
+      {ranking && proposal.show_results && (
         <Card className="cine-card relative overflow-hidden border-primary/30 animate-fade-in-up delay-200">
           <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />
           <CardHeader className="relative border-b border-border/50">
