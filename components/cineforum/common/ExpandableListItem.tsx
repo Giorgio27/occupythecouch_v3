@@ -112,7 +112,13 @@ export default function ExpandableListItem({
 
           {/* Metric */}
           {metric !== undefined && (
-            <div className="w-16 shrink-0 text-right sm:w-20">
+            <div
+              className={
+                typeof metric === "string"
+                  ? "w-16 shrink-0 text-right sm:w-20"
+                  : "shrink-0"
+              }
+            >
               {typeof metric === "string" ? (
                 <span
                   className={`text-base font-bold tabular-nums sm:text-lg ${metricClassName}`}

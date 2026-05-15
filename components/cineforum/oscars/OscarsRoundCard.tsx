@@ -40,45 +40,87 @@ export default function OscarsRoundCard({
     }
   };
 
-  // Custom title node: round name + closed badge + date
+  const showCollapsedSummary =
+    round.closed && !isExpanded && round.bests.length > 0;
+
+  // Custom title node:
+  // - collapsed mobile: round name + winner chips stacked below + average rating
+  // - collapsed desktop: round name + closed badge + date (horizontal, no chips)
+  // - expanded (any): round name + closed badge + date
   const titleNode = (
-    <div className="flex flex-col gap-0.5">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-bold text-primary leading-tight">
-          {round.name}
-        </span>
-        {round.closed && (
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-            {t("closed")}
-          </Badge>
+    <div className="flex flex-col gap-1">
+      {/* Row 1: round name + (mobile collapsed: average rating right-aligned) + (desktop: closed badge) */}
+      <div className="flex items-center gap-2 justify-between">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-bold text-primary leading-tight">
+            {round.name}
+          </span>
+          {round.closed && (
+            <Badge
+              variant="secondary"
+              className={`text-[10px] px-1.5 py-0 ${showCollapsedSummary ? "hidden sm:inline-flex" : ""}`}
+            >
+              {t("closed")}
+            </Badge>
+          )}
+        </div>
+        {/* Average rating top-right on mobile collapsed only */}
+        {showCollapsedSummary && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0 sm:hidden">
+            <Sofa className="h-3 w-3 text-primary" />
+            <span className="font-semibold">{roundAverageRating}</span>
+          </div>
         )}
       </div>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+
+      {/* Row 2 (mobile collapsed only): winner chips stacked vertically */}
+      {showCollapsedSummary && (
+        <div className="flex flex-col gap-1 sm:hidden">
+          {round.bests.map((best) => (
+            <div
+              key={best.id}
+              className="flex items-center gap-1 rounded-md border border-yellow-500/20 bg-yellow-500/10 px-2 py-1 text-xs w-fit"
+            >
+              <Crown className="h-3 w-3 shrink-0 text-yellow-500" />
+              <span className="font-medium">{best.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Row 2 (desktop, always): date */}
+      <div
+        className={`items-center gap-1.5 text-xs text-muted-foreground ${showCollapsedSummary ? "hidden sm:flex" : "flex"}`}
+      >
         <Calendar className="h-3 w-3" />
         <span>{round.date}</span>
       </div>
     </div>
   );
 
-  // Metric node: best winners summary (shown when collapsed)
-  const metricNode =
-    round.closed && !isExpanded && round.bests.length > 0 ? (
-      <div className="flex items-center gap-2 flex-wrap justify-end">
+  // Metric node: winner chips (vertical) + average rating inline, desktop collapsed only
+  // On mobile the chips are embedded in titleNode above
+  const metricNode = showCollapsedSummary ? (
+    <div className="hidden sm:flex items-center gap-2 justify-end">
+      {/* Chips stacked vertically */}
+      <div className="flex flex-col gap-1 items-end">
         {round.bests.map((best) => (
           <div
             key={best.id}
             className="flex items-center gap-1 rounded-md border border-yellow-500/20 bg-yellow-500/10 px-2 py-1 text-xs"
           >
             <Crown className="h-3 w-3 shrink-0 text-yellow-500" />
-            <span className="max-w-30 truncate font-medium">{best.title}</span>
+            <span className="font-medium">{best.title}</span>
           </div>
         ))}
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Sofa className="h-3 w-3 text-primary" />
-          <span className="font-semibold">{roundAverageRating}</span>
-        </div>
       </div>
-    ) : undefined;
+      {/* Average rating inline next to chips */}
+      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+        <Sofa className="h-3 w-3 text-primary" />
+        <span className="font-semibold">{roundAverageRating}</span>
+      </div>
+    </div>
+  ) : undefined;
 
   return (
     <ExpandableListItem
