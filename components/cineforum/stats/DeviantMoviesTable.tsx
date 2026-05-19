@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/cineforum/common";
@@ -8,11 +9,12 @@ type Props = {
 };
 
 export default function DeviantMoviesTable({ movies }: Props) {
+  const { t } = useTranslation("stats");
   return (
     <div className="mb-8 rounded-xl border border-border bg-card p-6">
       <SectionHeader
         icon={<TrendingUp className="w-4 h-4" />}
-        title="Film con Maggiore Divergenza"
+        title={t("users.deviantMovies")}
       />
 
       <div className="overflow-x-auto">
@@ -20,19 +22,19 @@ export default function DeviantMoviesTable({ movies }: Props) {
           <thead>
             <tr className="border-b border-border bg-secondary/50">
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Film
+                {t("users.colMovie")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Round
+                {t("users.colRound")}
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Tuo Voto
+                {t("users.colYourRating")}
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Media Film
+                {t("users.colMovieAvg")}
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Differenza
+                {t("users.colDifference")}
               </th>
             </tr>
           </thead>

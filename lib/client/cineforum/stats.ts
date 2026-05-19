@@ -6,6 +6,8 @@ import type {
   LoveGivenResponseDTO,
   RatingDistributionResponseDTO,
   DeviantMoviesResponseDTO,
+  SimilarUsersResponseDTO,
+  CommonMovieVotesResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -101,5 +103,39 @@ export async function fetchDeviantMovies(
 ): Promise<DeviantMoviesResponseDTO> {
   return jsonFetch<DeviantMoviesResponseDTO>(
     `/api/cineforum/${cineforumId}/stats/users/deviant-movies?userId=${userId}`,
+  );
+}
+
+/**
+ * Fetches users with similar cinematic taste to the given user.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @param userId - The target user identifier
+ * @returns Promise resolving to the list of similar users
+ */
+export async function fetchSimilarUsers(
+  cineforumId: string,
+  userId: string,
+): Promise<SimilarUsersResponseDTO> {
+  return jsonFetch<SimilarUsersResponseDTO>(
+    `/api/cineforum/${cineforumId}/stats/users/similar?userId=${userId}`,
+  );
+}
+
+/**
+ * Fetches the common movie votes between two users for drill-down comparison.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @param userId - The target user identifier
+ * @param otherUserId - The other user to compare against
+ * @returns Promise resolving to the list of common movie votes with deltas
+ */
+export async function fetchCommonMovieVotes(
+  cineforumId: string,
+  userId: string,
+  otherUserId: string,
+): Promise<CommonMovieVotesResponseDTO> {
+  return jsonFetch<CommonMovieVotesResponseDTO>(
+    `/api/cineforum/${cineforumId}/stats/users/similar-votes?userId=${userId}&otherUserId=${otherUserId}`,
   );
 }

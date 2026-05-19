@@ -188,6 +188,41 @@ export type DeviantMoviesResponseDTO = {
   status: string;
 };
 
+// Similar users types
+
+/** A user with similar cinematic taste to the target user. */
+export type SimilarUserDTO = {
+  userId: string;
+  userName: string;
+  score: number;
+  pearson: number;
+  commonRatings: number;
+  compatibilityPercent: number;
+  /** Average absolute difference between the two users' ratings on common films (0–4 scale) */
+  avgAbsDiff: number;
+  /** Proximity factor: 1 - avgAbsDiff/4. 1 = identical votes, 0 = maximally different */
+  distancePenalty: number;
+};
+
+/** Detail of a single common movie vote between two users. */
+export type CommonMovieVoteDTO = {
+  movieId: string;
+  movieTitle: string;
+  targetRating: number;
+  otherRating: number;
+  delta: number;
+};
+
+export type SimilarUsersResponseDTO = {
+  body: SimilarUserDTO[];
+  status: string;
+};
+
+export type CommonMovieVotesResponseDTO = {
+  body: CommonMovieVoteDTO[];
+  status: string;
+};
+
 // Timeline types
 export type TimelineMovieDTO = {
   id: string;

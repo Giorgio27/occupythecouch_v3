@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Gift,
   ArrowUpDown,
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
+  const { t } = useTranslation("stats");
   // Sorting state
   const [givenSortBy, setGivenSortBy] = useState<
     "user" | "average" | "averageRanking" | "delta"
@@ -184,21 +186,20 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
 
   return (
     <div className="mb-8 rounded-xl border border-border bg-card p-6">
-      <SectionHeader icon={<Gift className="w-4 h-4" />} title="Amore Dato" />
+      <SectionHeader
+        icon={<Gift className="w-4 h-4" />}
+        title={t("users.loveGivenTitle")}
+      />
 
       <div className="mb-4 p-4 rounded-xl bg-secondary/30 border border-border">
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Quanto{" "}
-          <strong className="text-foreground">{profileStats.user_name}</strong>{" "}
-          ha votato in media i film proposti dagli altri utenti.
-          <br />
-          <strong className="text-foreground">Media Data</strong>: la media dei
-          voti che {profileStats.user_name} ha dato ai film proposti dall'utente
-          della riga.
-          <br />
-          <strong className="text-foreground">Media Ranking</strong>: la media
-          globale dell'utente della riga nel cineforum (per confronto).
-        </p>
+        <p
+          className="text-sm text-muted-foreground leading-relaxed"
+          dangerouslySetInnerHTML={{
+            __html: t("users.loveGivenDescription", {
+              user: profileStats.user_name,
+            }),
+          }}
+        />
       </div>
 
       <div className="overflow-x-auto">
@@ -213,7 +214,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                 onClick={() => toggleGivenSort("user")}
               >
                 <div className="flex items-center">
-                  Utente
+                  {t("users.colUser")}
                   {renderSortIcon("user", givenSortBy, givenSortDir)}
                 </div>
               </th>
@@ -222,7 +223,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                 onClick={() => toggleGivenSort("average")}
               >
                 <div className="flex items-center justify-end">
-                  Media Data
+                  {t("users.colAvgGiven")}
                   {renderSortIcon("average", givenSortBy, givenSortDir)}
                 </div>
               </th>
@@ -231,7 +232,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                 onClick={() => toggleGivenSort("averageRanking")}
               >
                 <div className="flex items-center justify-end">
-                  Media Ranking
+                  {t("users.colAvgRanking")}
                   {renderSortIcon("averageRanking", givenSortBy, givenSortDir)}
                 </div>
               </th>
@@ -240,7 +241,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                 onClick={() => toggleGivenSort("delta")}
               >
                 <div className="flex items-center justify-end">
-                  Delta
+                  {t("users.delta")}
                   {renderSortIcon("delta", givenSortBy, givenSortDir)}
                 </div>
               </th>
@@ -274,7 +275,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                       {row.user}
                       {row.isSelectedUser && (
                         <span className="ml-2 text-xs text-primary font-semibold">
-                          (utente selezionato)
+                          ({t("users.selectedUser")})
                         </span>
                       )}
                       <span className="ml-2 text-xs text-muted-foreground">
@@ -309,7 +310,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                       <td colSpan={5} className="px-4 py-4 bg-secondary/30">
                         <div className="space-y-3">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            Voti Dati ai Film di {row.user}
+                            {t("users.loveGivenByUser", { user: row.user })}
                           </h4>
                           <div className="overflow-x-auto">
                             <table className="w-full text-xs">
@@ -325,7 +326,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                                     }
                                   >
                                     <div className="flex items-center">
-                                      Round
+                                      {t("users.colRound")}
                                       {renderExpandedGivenSortIcon(
                                         row.userId,
                                         "round",
@@ -342,7 +343,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                                     }
                                   >
                                     <div className="flex items-center">
-                                      Film
+                                      {t("users.colMovie")}
                                       {renderExpandedGivenSortIcon(
                                         row.userId,
                                         "movie",
@@ -359,7 +360,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                                     }
                                   >
                                     <div className="flex items-center justify-end">
-                                      Voto Dato
+                                      {t("users.colRatingGiven")}
                                       {renderExpandedGivenSortIcon(
                                         row.userId,
                                         "rating",
@@ -376,7 +377,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                                     }
                                   >
                                     <div className="flex items-center justify-end">
-                                      Media Film
+                                      {t("users.colMovieAvg")}
                                       {renderExpandedGivenSortIcon(
                                         row.userId,
                                         "average",
@@ -393,7 +394,7 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                                     }
                                   >
                                     <div className="flex items-center justify-end">
-                                      Delta
+                                      {t("users.delta")}
                                       {renderExpandedGivenSortIcon(
                                         row.userId,
                                         "delta",

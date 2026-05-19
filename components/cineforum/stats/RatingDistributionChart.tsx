@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { BarChart3 } from "lucide-react";
 import {
   BarChart,
@@ -16,9 +17,16 @@ type DistributionTooltipProps = {
   payload?: Array<{
     payload: RatingDistributionDTO;
   }>;
+  tRating: string;
+  tMovies: string;
 };
 
-const DistributionTooltip = ({ active, payload }: DistributionTooltipProps) => {
+const DistributionTooltip = ({
+  active,
+  payload,
+  tRating,
+  tMovies,
+}: DistributionTooltipProps) => {
   if (!active || !payload?.length) return null;
 
   const data = payload[0]?.payload;
@@ -34,15 +42,12 @@ const DistributionTooltip = ({ active, payload }: DistributionTooltipProps) => {
         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
       }}
     >
-      <div className="text-xs text-muted-foreground mb-1">Voto</div>
+      <div className="text-xs text-muted-foreground mb-1">{tRating}</div>
       <div className="text-lg font-bold text-primary mb-2">
         {data.rating.toFixed(1)}
       </div>
       <div className="text-sm text-foreground">
-        <span className="font-semibold">{data.count}</span>{" "}
-        {data.count === 1
-          ? "film votato con questo voto"
-          : "film votati con questo voto"}
+        <span className="font-semibold">{data.count}</span> {tMovies}
       </div>
     </div>
   );
@@ -53,14 +58,15 @@ type Props = {
 };
 
 export default function RatingDistributionChart({ data }: Props) {
+  const { t } = useTranslation("stats");
   return (
     <div className="cine-card p-6 mb-8">
       <h3 className="font-bold text-primary mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
         <BarChart3 className="w-4 h-4" />
-        Distribuzione Voti
+        {t("users.ratingDistribution")}
       </h3>
       <p className="text-xs text-muted-foreground mb-4">
-        Quanti film hai votato con ciascun voto
+        {t("users.ratingDistributionSubtitle")}
       </p>
 
       <div className="h-75 sm:h-87.5">
@@ -87,7 +93,12 @@ export default function RatingDistributionChart({ data }: Props) {
               allowDecimals={false}
             />
             <RechartsTooltip
-              content={<DistributionTooltip />}
+              content={
+                <DistributionTooltip
+                  tRating={t("users.tooltipRating")}
+                  tMovies={t("users.tooltipMoviesWithRating")}
+                />
+              }
               cursor={{ fill: "var(--secondary)" }}
             />
             <Bar dataKey="count" radius={[8, 8, 0, 0]}>

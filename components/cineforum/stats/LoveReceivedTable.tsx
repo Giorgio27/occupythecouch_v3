@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Heart,
   ArrowUpDown,
@@ -27,6 +28,7 @@ export default function LoveReceivedTable({
   users,
   selectedUserId,
 }: Props) {
+  const { t } = useTranslation("stats");
   // Sorting state
   const [receivedSortBy, setReceivedSortBy] = useState<
     "user" | "average" | "delta"
@@ -204,15 +206,18 @@ export default function LoveReceivedTable({
     <div className="mb-8 rounded-xl border border-border bg-card p-6">
       <SectionHeader
         icon={<Heart className="w-4 h-4" />}
-        title="Amore Ricevuto"
+        title={t("users.loveReceived")}
       />
 
       <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Quanto gli altri utenti hanno votato in media i film votati da{" "}
-          <strong className="text-foreground">{profileStats.user_name}</strong>.
-          La tabella mostra la media dei voti ricevuti da ciascun utente.
-        </p>
+        <p
+          className="text-sm text-muted-foreground leading-relaxed"
+          dangerouslySetInnerHTML={{
+            __html: t("users.loveReceivedDescription", {
+              user: profileStats.user_name,
+            }),
+          }}
+        />
       </div>
 
       <div className="overflow-x-auto">
@@ -227,7 +232,7 @@ export default function LoveReceivedTable({
                 onClick={() => toggleReceivedSort("user")}
               >
                 <div className="flex items-center">
-                  Utente
+                  {t("users.colUser")}
                   {renderSortIcon("user", receivedSortBy, receivedSortDir)}
                 </div>
               </th>
@@ -236,7 +241,7 @@ export default function LoveReceivedTable({
                 onClick={() => toggleReceivedSort("average")}
               >
                 <div className="flex items-center justify-end">
-                  Media Ricevuta
+                  {t("users.colAvgReceived")}
                   {renderSortIcon("average", receivedSortBy, receivedSortDir)}
                 </div>
               </th>
@@ -245,7 +250,7 @@ export default function LoveReceivedTable({
                 onClick={() => toggleReceivedSort("delta")}
               >
                 <div className="flex items-center justify-end">
-                  Delta
+                  {t("users.delta")}
                   {renderSortIcon("delta", receivedSortBy, receivedSortDir)}
                 </div>
               </th>
@@ -279,7 +284,7 @@ export default function LoveReceivedTable({
                       {row.user}
                       {row.isSelectedUser && (
                         <span className="ml-2 text-xs text-primary font-semibold">
-                          (utente selezionato)
+                          ({t("users.selectedUser")})
                         </span>
                       )}
                       <span className="ml-2 text-xs text-muted-foreground">
@@ -309,7 +314,7 @@ export default function LoveReceivedTable({
                       <td colSpan={4} className="px-4 py-4 bg-secondary/30">
                         <div className="space-y-3">
                           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            Voti per Film
+                            {t("users.loveGiven")}
                           </h4>
                           <div className="overflow-x-auto">
                             <table className="w-full text-xs">
@@ -322,7 +327,7 @@ export default function LoveReceivedTable({
                                     }
                                   >
                                     <div className="flex items-center">
-                                      Round
+                                      {t("users.colRound")}
                                       {renderExpandedSortIcon(
                                         row.userId,
                                         "round",
@@ -336,7 +341,7 @@ export default function LoveReceivedTable({
                                     }
                                   >
                                     <div className="flex items-center">
-                                      Film
+                                      {t("users.colMovie")}
                                       {renderExpandedSortIcon(
                                         row.userId,
                                         "movie",
@@ -350,7 +355,7 @@ export default function LoveReceivedTable({
                                     }
                                   >
                                     <div className="flex items-center justify-end">
-                                      Voto Dato
+                                      {t("users.colRatingGiven")}
                                       {renderExpandedSortIcon(
                                         row.userId,
                                         "rating",
@@ -364,7 +369,7 @@ export default function LoveReceivedTable({
                                     }
                                   >
                                     <div className="flex items-center justify-end">
-                                      Media Film
+                                      {t("users.colMovieAvg")}
                                       {renderExpandedSortIcon(
                                         row.userId,
                                         "average",
@@ -378,7 +383,7 @@ export default function LoveReceivedTable({
                                     }
                                   >
                                     <div className="flex items-center justify-end">
-                                      Delta
+                                      {t("users.delta")}
                                       {renderExpandedSortIcon(
                                         row.userId,
                                         "delta",

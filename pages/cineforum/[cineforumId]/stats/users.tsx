@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import { BarChart3 } from "lucide-react";
@@ -10,6 +11,7 @@ import {
   fetchLoveGiven,
   fetchRatingDistribution,
   fetchDeviantMovies,
+  fetchSimilarUsers,
 } from "@/lib/client/cineforum";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
@@ -20,12 +22,14 @@ import {
   LoveGivenSkeleton,
   RatingDistributionSkeleton,
   DeviantMoviesSkeleton,
+  SimilarUsersSkeleton,
 } from "@/components/cineforum/stats/UserStatsSkeleton";
 import RatingDistributionChart from "@/components/cineforum/stats/RatingDistributionChart";
 import DeviantMoviesTable from "@/components/cineforum/stats/DeviantMoviesTable";
 import VotingProfileCard from "@/components/cineforum/stats/VotingProfileCard";
 import LoveReceivedTable from "@/components/cineforum/stats/LoveReceivedTable";
 import LoveGivenTable from "@/components/cineforum/stats/LoveGivenTable";
+import SimilarUsersTable from "@/components/cineforum/stats/SimilarUsersTable";
 import type {
   UserRankingDTO,
   UserProfileStatsDTO,
@@ -33,6 +37,7 @@ import type {
   LoveReceivedDTO,
   LoveGivenDTO,
   UserVoteDetailDTO,
+  SimilarUserDTO,
 } from "@/lib/shared/types";
 
 type Props = {
@@ -41,6 +46,7 @@ type Props = {
 };
 
 export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
+  const { t } = useTranslation("stats");
   const [users, setUsers] = useState<UserRankingDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -54,6 +60,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
     RatingDistributionDTO[]
   >([]);
   const [deviantMovies, setDeviantMovies] = useState<UserVoteDetailDTO[]>([]);
+  const [similarUsers, setSimilarUsers] = useState<SimilarUserDTO[]>([]);
 
   // Separate loading states
   const [loading, setLoading] = useState(true);
@@ -62,6 +69,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
   const [loveGivenLoading, setLoveGivenLoading] = useState(false);
   const [distributionLoading, setDistributionLoading] = useState(false);
   const [deviantLoading, setDeviantLoading] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
 
   // Load users list
   useEffect(() => {
@@ -194,6 +202,26 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
     loadDeviantMovies();
   }, [cineforumId, selectedUserId]);
 
+  // Load similar users for selected user
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    const loadSimilarUsers = async () => {
+      try {
+        setSimilarLoading(true);
+        const response = await fetchSimilarUsers(cineforumId, selectedUserId);
+        setSimilarUsers(response.body);
+      } catch (error) {
+        console.error("Error loading similar users:", error);
+        setSimilarUsers([]);
+      } finally {
+        setSimilarLoading(false);
+      }
+    };
+
+    loadSimilarUsers();
+  }, [cineforumId, selectedUserId]);
+
   const selectedUserRanking = useMemo(() => {
     return users.find((u) => u.user_id === selectedUserId);
   }, [users, selectedUserId]);
@@ -202,7 +230,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="flex justify-center items-center min-h-100">
-          <LoadingCard text="Caricamento statistiche..." />
+          <LoadingCard text={t("users.loading")} />
         </div>
       </CineforumLayout>
     );
@@ -213,8 +241,8 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div className="py-6 sm:py-8">
           <EmptyState
-            title="Nessun utente trovato"
-            subtitle="Non ci sono ancora utenti con voti in questo cineforum"
+            title={t("users.emptyTitle")}
+            subtitle={t("users.emptySubtitle")}
           />
         </div>
       </CineforumLayout>
@@ -231,11 +259,11 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
               <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Statistiche Utenti
+              {t("users.pageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">
-            Analisi comportamentale dei voti e tendenze individuali
+            {t("users.pageSubtitle")}
           </p>
         </div>
 
@@ -245,7 +273,7 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
           style={{ animationDelay: "100ms" }}
         >
           <label className="block text-sm font-medium text-foreground mb-2">
-            Seleziona Utente
+            {t("users.selectUser")}
           </label>
           <select
             value={selectedUserId || ""}
@@ -307,6 +335,20 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
           <DeviantMoviesSkeleton />
         ) : deviantMovies.length > 0 ? (
           <DeviantMoviesTable movies={deviantMovies} />
+        ) : null}
+
+        {/* Similar Users Section */}
+        {similarLoading ? (
+          <SimilarUsersSkeleton />
+        ) : selectedUserId ? (
+          <SimilarUsersTable
+            similarUsers={similarUsers}
+            cineforumId={cineforumId}
+            targetUserId={selectedUserId}
+            targetUserName={
+              users.find((u) => u.user_id === selectedUserId)?.user ?? ""
+            }
+          />
         ) : null}
 
         {/* Trend Chart */}

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   TrendingUp,
   TrendingDown,
@@ -31,6 +32,8 @@ export default function VotingProfileCard({
   users,
   selectedUserId,
 }: Props) {
+  const { t } = useTranslation("stats");
+
   // Determine user tendency
   const userTendency = useMemo(() => {
     if (profileStats.delta_from_global === null) return null;
@@ -38,34 +41,46 @@ export default function VotingProfileCard({
     const delta = profileStats.delta_from_global;
     if (delta > 1.0)
       return {
-        label: "Molto Generoso",
+        label: t("users.tendencyVeryGenerous"),
         color: "text-green-700",
         icon: TrendingUp,
       };
     if (delta > 0.5)
-      return { label: "Generoso", color: "text-green-500", icon: TrendingUp };
+      return {
+        label: t("users.tendencyGenerous"),
+        color: "text-green-500",
+        icon: TrendingUp,
+      };
     if (delta > 0.1)
       return {
-        label: "Leggermente Generoso",
+        label: t("users.tendencySlightlyGenerous"),
         color: "text-green-300",
         icon: TrendingUp,
       };
     if (delta < -0.1)
       return {
-        label: "Leggermente Severo",
+        label: t("users.tendencySlightlyStrict"),
         color: "text-red-300",
         icon: TrendingDown,
       };
     if (delta < -0.5)
-      return { label: "Severo", color: "text-red-500", icon: TrendingDown };
+      return {
+        label: t("users.tendencyStrict"),
+        color: "text-red-500",
+        icon: TrendingDown,
+      };
     if (delta < -1.0)
       return {
-        label: "Molto Severo",
+        label: t("users.tendencyVeryStrict"),
         color: "text-red-700",
         icon: TrendingDown,
       };
-    return { label: "Equilibrato", color: "text-blue-500", icon: Target };
-  }, [profileStats]);
+    return {
+      label: t("users.tendencyBalanced"),
+      color: "text-blue-500",
+      icon: Target,
+    };
+  }, [profileStats, t]);
 
   // Determine consistency
   const consistencyLevel = useMemo(() => {
@@ -74,24 +89,24 @@ export default function VotingProfileCard({
     const sd = profileStats.standard_deviation;
     if (sd < 0.5)
       return {
-        label: "Molto Coerente",
+        label: t("users.consistencyVeryConsistent"),
         color: "bg-green-500/10 text-green-500 border-green-500/30",
       };
     if (sd < 1.0)
       return {
-        label: "Coerente",
+        label: t("users.consistencyConsistent"),
         color: "bg-blue-500/10 text-blue-500 border-blue-500/30",
       };
     if (sd < 1.5)
       return {
-        label: "Variabile",
+        label: t("users.consistencyVariable"),
         color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30",
       };
     return {
-      label: "Molto Variabile",
+      label: t("users.consistencyVeryVariable"),
       color: "bg-red-500/10 text-red-500 border-red-500/30",
     };
-  }, [profileStats]);
+  }, [profileStats, t]);
 
   // Delta value formatting
   const deltaValue =
@@ -116,40 +131,40 @@ export default function VotingProfileCard({
         <StatCard
           icon={<Award className="w-5 h-5 text-primary" />}
           iconBg="bg-primary/10"
-          label="Media Utente"
+          label={t("users.userAverage")}
           value={
             profileStats.average_rating !== null
               ? profileStats.average_rating.toFixed(2)
               : null
           }
-          tooltip="La media di tutti i voti espressi da questo utente nel cineforum. Indica la tendenza generale dell'utente a votare alto o basso."
+          tooltip={t("users.userAverageTooltip")}
         />
 
         <StatCard
           icon={<Users className="w-5 h-5 text-blue-500" />}
           iconBg="bg-blue-500/10"
-          label="Media Globale"
+          label={t("users.globalAverage")}
           value={
             profileStats.global_average !== null
               ? profileStats.global_average.toFixed(2)
               : null
           }
-          tooltip='La media di tutti i voti espressi da tutti gli utenti del cineforum. Rappresenta il "consenso generale" del gruppo.'
+          tooltip={t("users.globalAverageTooltip")}
         />
 
         <StatCard
           icon={<Target className="w-5 h-5 text-amber-500" />}
           iconBg="bg-amber-500/10"
-          label="Delta"
+          label={t("users.delta")}
           value={deltaValue}
           valueClassName={deltaClassName}
-          tooltip="La differenza tra la media dell'utente e la media globale. Positivo: l'utente vota più alto della media (generoso). Negativo: l'utente vota più basso della media (severo)."
+          tooltip={t("users.deltaTooltip")}
         />
 
         <StatCard
           icon={<Activity className="w-5 h-5 text-purple-500" />}
           iconBg="bg-purple-500/10"
-          label="Film Votati"
+          label={t("users.moviesVoted")}
           value={profileStats.total_votes}
         />
       </div>
@@ -158,27 +173,14 @@ export default function VotingProfileCard({
       <div className="mb-8 rounded-xl border border-border bg-card p-6">
         <SectionHeader
           icon={<AlertCircle className="w-4 h-4" />}
-          title="Profilo Votante"
+          title={t("users.voterProfile")}
         />
 
         <div className="space-y-4">
           {/* Explanation text */}
           <div className="rounded-xl border border-border bg-secondary/30 p-4">
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Questo profilo analizza il comportamento di voto dell'utente
-              rispetto al gruppo. La{" "}
-              <strong className="text-foreground">tendenza</strong> indica se
-              l'utente tende a votare più alto (generoso) o più basso (severo)
-              rispetto alla media globale. La{" "}
-              <strong className="text-foreground">coerenza</strong> misura
-              quanto sono variabili i voti: un utente coerente dà voti simili
-              tra loro, mentre uno variabile alterna voti molto alti e molto
-              bassi. L'
-              <strong className="text-foreground">
-                accordo con il consenso
-              </strong>{" "}
-              mostra quanto spesso l'utente vota sopra o sotto la media del
-              film.
+              {t("users.voterProfileExplanation")}
             </p>
           </div>
 
@@ -194,7 +196,9 @@ export default function VotingProfileCard({
                   />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Tendenza</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("users.tendency")}
+                  </p>
                   <p className={`text-sm font-bold ${userTendency.color}`}>
                     {userTendency.label}
                   </p>
@@ -206,7 +210,9 @@ export default function VotingProfileCard({
             {consistencyLevel && (
               <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-4">
                 <div>
-                  <p className="mb-1 text-xs text-muted-foreground">Coerenza</p>
+                  <p className="mb-1 text-xs text-muted-foreground">
+                    {t("users.consistency")}
+                  </p>
                   <Badge className={`${consistencyLevel.color} border`}>
                     {consistencyLevel.label}
                   </Badge>
@@ -227,7 +233,7 @@ export default function VotingProfileCard({
                     </div>
                     <div>
                       <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        Sopra Consenso
+                        {t("users.aboveConsensus")}
                         <Info className="w-3 h-3" />
                       </p>
                       <p className="text-sm font-bold text-foreground">
@@ -237,11 +243,7 @@ export default function VotingProfileCard({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="text-sm">
-                    La percentuale di volte in cui l'utente ha votato sopra la
-                    media del film. Indica quanto spesso l'utente è più generoso
-                    rispetto al consenso generale su ciascun film.
-                  </p>
+                  <p className="text-sm">{t("users.aboveConsensusTooltip")}</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -253,7 +255,7 @@ export default function VotingProfileCard({
                 <TooltipTrigger asChild>
                   <div className="flex cursor-help items-center justify-between text-sm">
                     <span className="flex items-center gap-1 text-muted-foreground">
-                      Deviazione media dal consenso:
+                      {t("users.avgDeviationFromConsensus")}
                       <Info className="w-3 h-3" />
                     </span>
                     <span className="font-bold tabular-nums text-foreground">
@@ -262,13 +264,7 @@ export default function VotingProfileCard({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p className="text-sm">
-                    La media delle differenze assolute tra i voti dell'utente e
-                    la media di ciascun film. Misura quanto l'utente si discosta
-                    tipicamente dal consenso, indipendentemente dalla direzione
-                    (sopra o sotto). Valori più alti indicano opinioni più
-                    divergenti dal gruppo.
-                  </p>
+                  <p className="text-sm">{t("users.avgDeviationTooltip")}</p>
                 </TooltipContent>
               </Tooltip>
             </div>

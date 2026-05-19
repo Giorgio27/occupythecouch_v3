@@ -1,5 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Gift, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  Heart,
+  Gift,
+  BarChart3,
+  TrendingUp,
+  AlertCircle,
+  Users,
+} from "lucide-react";
 
 export function ProfileStatsSkeleton() {
   return (
@@ -211,6 +218,65 @@ export function DeviantMoviesSkeleton() {
                 </td>
                 <td className="px-4 py-3.5 text-right">
                   <Skeleton className="h-4 w-12 ml-auto" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export function SimilarUsersSkeleton() {
+  return (
+    <div className="cine-card p-6 mb-8 animate-fade-in-up">
+      <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+        <Users className="w-4 h-4" />
+        Utenti con Gusti Simili
+      </h3>
+
+      <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-4/6" />
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-secondary/50">
+              <th className="px-4 py-3 w-10" />
+              <th className="px-4 py-3 text-left">
+                <Skeleton className="h-3 w-16" />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <Skeleton className="h-3 w-24 ml-auto" />
+              </th>
+              <th className="px-4 py-3 text-right hidden sm:table-cell">
+                <Skeleton className="h-3 w-16 ml-auto" />
+              </th>
+              <th className="px-4 py-3 text-right hidden sm:table-cell">
+                <Skeleton className="h-3 w-20 ml-auto" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <tr key={i} className="border-b border-border">
+                <td className="px-4 py-3.5">
+                  <Skeleton className="h-4 w-4" />
+                </td>
+                <td className="px-4 py-3.5">
+                  <Skeleton className="h-4 w-32" />
+                </td>
+                <td className="px-4 py-3.5 text-right">
+                  <Skeleton className="h-3 w-28 ml-auto rounded-full" />
+                </td>
+                <td className="px-4 py-3.5 text-right hidden sm:table-cell">
+                  <Skeleton className="h-4 w-12 ml-auto" />
+                </td>
+                <td className="px-4 py-3.5 text-right hidden sm:table-cell">
+                  <Skeleton className="h-5 w-16 ml-auto rounded-full" />
                 </td>
               </tr>
             ))}
