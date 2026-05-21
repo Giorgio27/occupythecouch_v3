@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, Fragment } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import {
   Gift,
   ArrowUpDown,
@@ -192,14 +192,16 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
       />
 
       <div className="mb-4 p-4 rounded-xl bg-secondary/30 border border-border">
-        <p
-          className="text-sm text-muted-foreground leading-relaxed"
-          dangerouslySetInnerHTML={{
-            __html: t("users.loveGivenDescription", {
-              user: profileStats.user_name,
-            }),
-          }}
-        />
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          <Trans
+            i18nKey="users.loveGivenDescription"
+            ns="stats"
+            values={{ user: profileStats.user_name }}
+            components={{
+              strong: <strong className="font-semibold text-foreground" />,
+            }}
+          />
+        </p>
       </div>
 
       <div className="overflow-x-auto">

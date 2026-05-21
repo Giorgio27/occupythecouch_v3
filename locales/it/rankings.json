@@ -82,7 +82,7 @@
     "noMoviesVotedSubtitle": "Questo utente non ha ancora votato alcun film",
     "platformComparison": "Medie per Sito",
     "comparisonTitle": "Confronto Piattaforme",
-    "comparisonSubtitle": "Analisi comparativa delle medie di voto tra Cineforum e le piattaforme esterne. Il <strong>Delta</strong> indica quanto Cineforum vota più alto o più basso rispetto alle piattaforme:",
+    "comparisonSubtitle": "Analisi comparativa delle medie di voto tra Cineforum e le piattaforme esterne. Il Delta indica quanto Cineforum vota più alto o più basso rispetto alle piattaforme:",
     "colDelta": "Delta",
     "positiveValues": "valori positivi",
     "negativeValues": "valori negativi",

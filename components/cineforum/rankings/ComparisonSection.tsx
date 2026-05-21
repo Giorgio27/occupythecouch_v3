@@ -151,11 +151,11 @@ export default function ComparisonSection({
           <span className="text-green-500 font-semibold">
             {t("users.positiveValues")}
           </span>{" "}
-          indicano che Cineforum vota più alto,{" "}
+          {t("users.comparisonPositiveNote")}{" "}
           <span className="text-red-500 font-semibold">
             {t("users.negativeValues")}
           </span>{" "}
-          indicano che Cineforum vota più basso.
+          {t("users.comparisonNegativeNote")}
         </p>
       </div>
 

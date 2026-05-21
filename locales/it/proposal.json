@@ -48,7 +48,7 @@
     "cardTitle": "Ordina i film per preferenza",
     "voteRegistered": "Voto registrato!",
     "howItWorksTitle": "Come funziona il voto",
-    "howItWorksText": "<strong>Trascina i film</strong> per riordinarli: rilascia nella <strong>metà superiore</strong> per posizionare sopra, nella <strong>metà inferiore</strong> per mettere a pari merito. Oppure usa i bottoni numerati per assegnare direttamente un ranking. Il sistema calcolerà automaticamente il vincitore in base alle preferenze di tutti.",
+    "howItWorksText": "Trascina i film per riordinarli: rilascia nella metà superiore per posizionare sopra, nella metà inferiore per mettere a pari merito. Oppure usa i bottoni numerati per assegnare direttamente un ranking. Il sistema calcolerà automaticamente il vincitore in base alle preferenze di tutti.",
     "votingClosed": "La votazione è chiusa. I risultati sono visibili qui sotto.",
     "confirmVoteTitle": "Conferma il tuo voto",
     "updateVoteTitle": "Aggiorna il tuo voto",

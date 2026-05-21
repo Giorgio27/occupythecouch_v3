@@ -50,7 +50,7 @@
     "cardTitle": "Rank movies by preference",
     "voteRegistered": "Vote registered!",
     "howItWorksTitle": "How voting works",
-    "howItWorksText": "<strong>Drag movies</strong> to reorder them: drop in the <strong>upper half</strong> to position above, in the <strong>lower half</strong> to tie. Or use the numbered buttons to directly assign a ranking. The system will automatically calculate the winner based on everyone's preferences.",
+    "howItWorksText": "Drag movies to reorder them: drop in the upper half to position above, in the lower half to tie. Or use the numbered buttons to directly assign a ranking. The system will automatically calculate the winner based on everyone's preferences.",
     "votingClosed": "Voting is closed. Results are visible below.",
     "confirmVoteTitle": "Confirm your vote",
     "updateVoteTitle": "Update your vote",
