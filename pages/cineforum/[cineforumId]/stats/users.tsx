@@ -3,7 +3,14 @@ import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, CalendarDays } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   fetchUserRankings,
   fetchUserProfileStats,
@@ -39,6 +46,7 @@ import type {
   UserVoteDetailDTO,
   SimilarUserDTO,
 } from "@/lib/shared/types";
+import i18n from "@/lib/i18n";
 
 type Props = {
   cineforumId: string;
@@ -275,22 +283,50 @@ export default function UserStatsPage({ cineforumId, cineforumName }: Props) {
           <label className="block text-sm font-medium text-foreground mb-2">
             {t("users.selectUser")}
           </label>
-          <select
+
+          <Select
             value={selectedUserId || ""}
-            onChange={(e) => setSelectedUserId(e.target.value)}
-            className="w-full sm:w-auto min-w-70 px-4 py-2.5 rounded-xl border border-border bg-card text-foreground
-              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
-              hover:border-primary/50 transition-all duration-200"
+            onValueChange={(val) => setSelectedUserId(val)}
           >
-            {users.map((user) => (
-              <option key={user.user_id} value={user.user_id}>
-                {user.user}{" "}
-                {user.average_rating !== null
-                  ? `(${user.average_rating.toFixed(2)})`
-                  : ""}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full sm:w-80 rounded-xl border-border bg-card">
+              <SelectValue placeholder={t("users.selectUser")} />
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((user) => (
+                <SelectItem key={user.user_id} value={user.user_id}>
+                  {user.user}
+                  {user.average_rating !== null
+                    ? ` (${user.average_rating.toFixed(2)})`
+                    : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Join date — full-width row below the selector */}
+          {selectedUserId && (() => {
+            const selected = users.find((u) => u.user_id === selectedUserId);
+            if (!selected) return null;
+            return (
+              <div className="mt-3 flex items-center gap-2 w-full sm:w-80 rounded-xl border border-border bg-card px-3 py-2.5">
+                <div className="rounded-lg bg-primary/10 p-1.5 shrink-0">
+                  <CalendarDays className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground leading-none mb-0.5">
+                    {t("users.joinedLabel")}
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {new Date(selected.joined_at).toLocaleDateString(i18n.language, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Profile Stats Section */}

@@ -12,7 +12,8 @@
     "postinstall": "prisma generate",
     "db:clear": "tsx scripts/db/clear-database.ts",
     "db:export": "node scripts/db/export-mongodb.js",
-    "db:import": "tsx scripts/db/import-from-mongodb.ts"
+    "db:import": "tsx scripts/db/import-from-mongodb.ts",
+    "db:update_user_createdAt": "tsx scripts/db/backfill-user-created-at.ts"
   },
   "keywords": [],
   "author": "",

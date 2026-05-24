@@ -84,6 +84,11 @@ export default async function handler(
           select: {
             id: true,
             name: true,
+            memberships: {
+              where: { cineforumId },
+              select: { createdAt: true },
+              take: 1,
+            },
           },
         },
         movieRoundRankings: {
@@ -142,6 +147,7 @@ export default async function handler(
         movie_round_rankings: movieRoundRankings,
         user: ranking.user.name,
         user_id: ranking.user.id,
+        joined_at: ranking.user.memberships[0]?.createdAt.toISOString() ?? new Date(0).toISOString(),
       };
     });
 

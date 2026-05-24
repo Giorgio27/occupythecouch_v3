@@ -51,8 +51,13 @@
     "pageTitle": "Classifica Film",
     "pageSubtitle": "Tutti i film votati dal tuo cineforum, ordinati per rating",
     "loading": "Caricamento classifiche...",
+    "loadingMore": "Caricamento...",
     "emptyTitle": "Nessun film in classifica",
     "emptySubtitle": "I film votati appariranno qui",
+    "noResults": "Nessun risultato",
+    "noResultsSubtitle": "Nessun film corrisponde a \"{{query}}\"",
+    "allLoaded": "Tutti i {{count}} film caricati",
+    "searchPlaceholder": "Cerca film...",
     "tableHeaderFilm": "FILM",
     "roundLabel": "Ciclo:",
     "userVotesTitle": "Voti Utenti",
@@ -108,7 +113,8 @@
     "colTable": "Tabella",
     "colChart": "Grafico",
     "colMedia": "Media",
-    "colDeltaLabel": "Delta"
+    "colDeltaLabel": "Delta",
+    "joinedLabel": "Iscritto il"
   },
   "countries": {
     "pageTitle": "Ranking Nazioni",

@@ -15,7 +15,7 @@ import {
   updateUserRole,
   toggleUserDisabled,
 } from "@/lib/client/cineforum/users";
-import { UserPlus, Shield, User, Ban, Crown, UserCheck } from "lucide-react";
+import { UserPlus, Shield, User, Ban, Crown, UserCheck, CalendarDays } from "lucide-react";
 import { useAdminAccess } from "@/lib/client/hooks/useAdminAccess";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 
@@ -334,24 +334,21 @@ export default function CineforumUsersAdminPage({
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {user.email}
-                        {user.name && user.name !== user.email && (
-                          <>
-                            <span className="mx-1">·</span>
-                            <span>
-                              {t("users.joinedLabel")}{" "}
-                              {new Date(user.joinedAt).toLocaleDateString(
-                                i18n.language,
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                },
-                              )}
-                            </span>
-                          </>
-                        )}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                        <span>{user.email}</span>
+                        <span className="text-border">·</span>
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays className="h-3 w-3 shrink-0" />
+                          {t("users.joinedLabel")}{" "}
+                          {new Date(user.joinedAt).toLocaleDateString(
+                            i18n.language,
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )}
+                        </span>
                       </div>
                     </div>
 

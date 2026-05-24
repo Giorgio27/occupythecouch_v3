@@ -50,6 +50,8 @@ export type UserRankingDTO = {
   movie_round_rankings: MovieRoundRankingDTO[];
   user: string;
   user_id: string;
+  /** ISO 8601 date string — membership createdAt (join date to this cineforum). */
+  joined_at: string;
 };
 
 export type MoviesRankingResponseDTO = {

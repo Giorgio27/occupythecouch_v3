@@ -51,8 +51,13 @@
     "pageTitle": "Movies Ranking",
     "pageSubtitle": "All movies voted by your cineforum, sorted by rating",
     "loading": "Loading rankings...",
+    "loadingMore": "Loading more...",
     "emptyTitle": "No movies in ranking",
     "emptySubtitle": "Voted movies will appear here",
+    "noResults": "No results",
+    "noResultsSubtitle": "No movie matches \"{{query}}\"",
+    "allLoaded": "All {{count}} movies loaded",
+    "searchPlaceholder": "Search movies...",
     "tableHeaderFilm": "MOVIE",
     "roundLabel": "Round:",
     "userVotesTitle": "User Votes",
@@ -108,7 +113,8 @@
     "colTable": "Table",
     "colChart": "Chart",
     "colMedia": "Average",
-    "colDeltaLabel": "Delta"
+    "colDeltaLabel": "Delta",
+    "joinedLabel": "Member since"
   },
   "countries": {
     "pageTitle": "Countries Ranking",

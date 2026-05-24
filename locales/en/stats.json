@@ -102,6 +102,7 @@
     "algoFormula": "score = pearson × (1 − avgAbsDiff / 4) × min(commonMovies / 50, 1)",
     "algoCompatFormula": "compatibility% = round(score × 100)",
     "algoMinScore": "Minimum final score threshold: 0.15. Users below this are excluded even if they pass the individual Pearson and common-movies thresholds.",
-    "algoClickHint": "Click on a user in the table to see the movie-by-movie comparison with their respective ratings and the delta."
+    "algoClickHint": "Click on a user in the table to see the movie-by-movie comparison with their respective ratings and the delta.",
+    "joinedLabel": "Member since"
   }
 }

@@ -5,6 +5,7 @@ import {
   Film,
   Table as TableIcon,
   LineChart as LineChartIcon,
+  CalendarDays,
 } from "lucide-react";
 import { RankingCard } from "@/components/cineforum/rankings";
 import UserRankingTrendChart from "@/components/cineforum/rankings/UserRankingTrendChart";
@@ -15,6 +16,7 @@ import type {
   MovieRoundRankingDTO,
   Supplier,
 } from "@/lib/shared/types";
+import i18n from "@/lib/i18n";
 
 type CardViewMode = Record<string, "table" | "chart">;
 
@@ -187,6 +189,25 @@ export default function UserRankingList({
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Join date */}
+                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 w-fit">
+                  <div className="rounded-lg bg-primary/10 p-1.5">
+                    <CalendarDays className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("users.joinedLabel")}
+                    </p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {new Date(ranking.joined_at).toLocaleDateString(i18n.language, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>

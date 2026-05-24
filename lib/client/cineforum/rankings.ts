@@ -16,11 +16,12 @@ import type {
  */
 export async function fetchMovieRankings(
   cineforumId: string,
-  options: { offset?: number; limit?: number } = {},
+  options: { offset?: number; limit?: number; search?: string } = {},
 ): Promise<MoviesRankingResponseDTO> {
-  const { offset = 0, limit = 100 } = options;
+  const { offset = 0, limit = 20, search = "" } = options;
+  const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
   return jsonFetch<MoviesRankingResponseDTO>(
-    `/api/cineforum/${cineforumId}/rankings/movies?offset=${offset}&limit=${limit}`,
+    `/api/cineforum/${cineforumId}/rankings/movies?offset=${offset}&limit=${limit}${searchParam}`,
   );
 }
 

@@ -102,6 +102,7 @@
     "algoFormula": "score = pearson × (1 − avgAbsDiff / 4) × min(filmComuni / 50, 1)",
     "algoCompatFormula": "compatibilità% = round(score × 100)",
     "algoMinScore": "Soglia minima score finale: 0.15. Utenti con score inferiore vengono esclusi anche se superano le soglie individuali di Pearson e film comuni.",
-    "algoClickHint": "Clicca su un utente nella tabella per vedere il confronto film per film con i rispettivi voti e il delta."
+    "algoClickHint": "Clicca su un utente nella tabella per vedere il confronto film per film con i rispettivi voti e il delta.",
+    "joinedLabel": "Iscritto il"
   }
 }
