@@ -83,6 +83,8 @@
     "platformComparison": "Medie per Sito",
     "comparisonTitle": "Confronto Piattaforme",
     "comparisonSubtitle": "Analisi comparativa delle medie di voto tra Cineforum e le piattaforme esterne. Il Delta indica quanto Cineforum vota più alto o più basso rispetto alle piattaforme:",
+    "comparisonPositiveNote": "indicano che Cineforum vota più alto,",
+    "comparisonNegativeNote": "indicano che Cineforum vota più basso.",
     "colDelta": "Delta",
     "positiveValues": "valori positivi",
     "negativeValues": "valori negativi",

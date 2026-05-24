@@ -83,6 +83,8 @@
     "platformComparison": "Site Averages",
     "comparisonTitle": "Platform Comparison",
     "comparisonSubtitle": "Comparative analysis of average ratings between Cineforum and external platforms. The Delta shows how much higher or lower Cineforum rates compared to the platforms:",
+    "comparisonPositiveNote": "indicate that Cineforum rates higher,",
+    "comparisonNegativeNote": "indicate that Cineforum rates lower.",
     "colDelta": "Delta",
     "positiveValues": "positive values",
     "negativeValues": "negative values",

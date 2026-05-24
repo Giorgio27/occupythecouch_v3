@@ -42,10 +42,11 @@ export interface AdminTeamsClient {
 }
 
 export const adminTeamsClient: AdminTeamsClient = {
-  async listTeams(cineforumId: string, options = { offset: 0, limit: 10 }) {
+  async listTeams(cineforumId: string, options: { offset?: number; limit?: number } = {}) {
+    const { offset = 0, limit = 10 } = options;
     try {
       const response = await jsonFetch<AdminTeamsListResponse>(
-        `/api/cineforum/${cineforumId}/admin/teams?offset=${options.offset}&limit=${options.limit}`
+        `/api/cineforum/${cineforumId}/admin/teams?offset=${offset}&limit=${limit}`
       );
       return response;
     } catch (error) {
