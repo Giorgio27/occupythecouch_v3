@@ -11,7 +11,29 @@
   },
   "meta": {
     "title": "CineForum - Scegli film con gli amici",
-    "description": "Crea un round, invita gli amici a proporre film, votate insieme. Il migliore vince. Niente discussioni, solo cinema."
+    "description": "Crea un round, invita gli amici a proporre film, votate insieme. Il migliore vince. Niente discussioni, solo cinema.",
+    "pages": {
+      "proposal": {
+        "title": "{{cineforumName}} — CineForum",
+        "description": "Proponi film, vota e scegli insieme cosa guardare nel cineforum \"{{cineforumName}}\"."
+      },
+      "movies": {
+        "title": "Film — {{cineforumName}} · CineForum",
+        "description": "Tutti i film visti nel cineforum \"{{cineforumName}}\" con statistiche e voti."
+      },
+      "oscars": {
+        "title": "Oscar — {{cineforumName}} · CineForum",
+        "description": "I premi Oscar del cineforum \"{{cineforumName}}\": i migliori film votati dal gruppo."
+      },
+      "timeline": {
+        "title": "Timeline — {{cineforumName}} · CineForum",
+        "description": "Tutti i film del cineforum \"{{cineforumName}}\" ordinati per anno di uscita."
+      },
+      "stats": {
+        "title": "Statistiche — {{cineforumName}} · CineForum",
+        "description": "Le statistiche dei membri del cineforum \"{{cineforumName}}\": voti, preferenze e profili."
+      }
+    }
   },
   "buttons": {
     "save": "Salva",

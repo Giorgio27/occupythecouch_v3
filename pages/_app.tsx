@@ -32,18 +32,35 @@ export default function App({ Component, pageProps }: AppProps) {
               content="cinema, film, amici, votazione, cineforum, movie night"
             />
             <meta name="author" content="CineForum" />
-            <meta name="generator" content="v0.app" />
 
-            {/* Open Graph base */}
+            {/* Open Graph — fallback globale (sovrascritto dalle singole pagine) */}
+            <meta property="og:site_name" content="CineForum" />
             <meta
               property="og:title"
               content="CineForum - Scegli film con gli amici"
             />
             <meta
               property="og:description"
-              content="Crea un round, invita gli amici a proporre film, votate insieme."
+              content="Crea un round, invita gli amici a proporre film, votate insieme. Il migliore vince. Niente discussioni, solo cinema."
             />
             <meta property="og:type" content="website" />
+            <meta property="og:image" content="/og-image.png" />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+            <meta property="og:image:alt" content="CineForum - Scegli film con gli amici" />
+
+            {/* Twitter / X Card */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:site" content="@cineforum" />
+            <meta
+              name="twitter:title"
+              content="CineForum - Scegli film con gli amici"
+            />
+            <meta
+              name="twitter:description"
+              content="Crea un round, invita gli amici a proporre film, votate insieme. Il migliore vince."
+            />
+            <meta name="twitter:image" content="/og-image.png" />
 
             {/* Favicons (fallback globale) */}
             <link
@@ -56,7 +73,7 @@ export default function App({ Component, pageProps }: AppProps) {
               href="/couch-red.svg"
               media="(prefers-color-scheme: dark)"
             />
-            <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+            <link rel="icon" href="/couch-red.svg" type="image/svg+xml" />
             <link rel="apple-touch-icon" href="/couch-red.svg" />
           </Head>
 

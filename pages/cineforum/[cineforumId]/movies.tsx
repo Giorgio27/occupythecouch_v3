@@ -1,5 +1,8 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect, useMemo, useCallback } from "react";
+import Head from "next/head";
+import type { SupportedLocale } from "@/lib/server/get-locale";
+import { getCineforumPageMeta } from "@/lib/server/meta";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
@@ -21,9 +24,15 @@ import type { MovieStatsDTO } from "@/lib/shared/types";
 type Props = {
   cineforumId: string;
   cineforumName: string;
+  initialLocale: SupportedLocale;
 };
 
-export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
+export default function MoviesListPage({ cineforumId, cineforumName, initialLocale }: Props) {
+  const { title: pageTitle, description: pageDescription } = getCineforumPageMeta(
+    "movies",
+    initialLocale,
+    cineforumName,
+  );
   const { t } = useTranslation("rankings");
   const [movies, setMovies] = useState<MovieStatsDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +103,16 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
   const isSearching = search.trim().length > 0;
 
   return (
-    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+    <>
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+      </Head>
+      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="py-4 sm:py-6 animate-fade-in">
         <MoviesPageHeader />
 
@@ -141,6 +159,7 @@ export default function MoviesListPage({ cineforumId, cineforumName }: Props) {
         )}
       </div>
     </CineforumLayout>
+    </>
   );
 }
 

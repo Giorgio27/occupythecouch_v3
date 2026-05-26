@@ -1,5 +1,8 @@
 import * as React from "react";
 import type { GetServerSideProps } from "next";
+import Head from "next/head";
+import type { SupportedLocale } from "@/lib/server/get-locale";
+import { getCineforumPageMeta } from "@/lib/server/meta";
 import prisma from "@/lib/prisma";
 import { CreateProposal } from "@/components/cineforum/proposal/create";
 import { OpenProposal } from "@/components/cineforum/proposal/open";
@@ -22,6 +25,7 @@ type ProposalLite = {
 type Props = {
   cineforumId: string;
   cineforumName: string;
+  initialLocale: SupportedLocale;
   last: ProposalLite | null;
 };
 
@@ -31,9 +35,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return cineforumProps;
   }
 
-  const { cineforumId, cineforumName } = cineforumProps.props as {
+  const { cineforumId, cineforumName, initialLocale } = cineforumProps.props as {
     cineforumId: string;
     cineforumName: string;
+    initialLocale: SupportedLocale;
   };
 
   const last = await prisma.proposal.findFirst({
@@ -49,6 +54,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const props: Props = {
     cineforumId,
     cineforumName,
+    initialLocale,
     last: last
       ? {
           id: last.id,
@@ -86,6 +92,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 export default function ProposalPage({
   cineforumId,
   cineforumName,
+  initialLocale,
   last,
 }: Props) {
   // Determine if the screening date is in the future
@@ -106,15 +113,32 @@ export default function ProposalPage({
   const showCreateProposal = !last || (last.closed && !isScreeningInFuture);
   const showOpenProposal = last && !last.closed;
 
+  const { title: pageTitle, description: pageDescription } = getCineforumPageMeta(
+    "proposal",
+    initialLocale,
+    cineforumName,
+  );
+
   return (
-    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-      <div>
-        {showClosedProposal && <ClosedProposal last={last} />}
+    <>
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+      </Head>
+      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+        <div>
+          {showClosedProposal && <ClosedProposal last={last} />}
 
-        {showCreateProposal && <CreateProposal cineforumId={cineforumId} />}
+          {showCreateProposal && <CreateProposal cineforumId={cineforumId} />}
 
-        {showOpenProposal && <OpenProposal proposalId={last.id} />}
-      </div>
-    </CineforumLayout>
+          {showOpenProposal && <OpenProposal proposalId={last.id} />}
+        </div>
+      </CineforumLayout>
+    </>
   );
 }

@@ -11,7 +11,29 @@
   },
   "meta": {
     "title": "CineForum - Choose movies with friends",
-    "description": "Create a round, invite friends to propose movies, vote together. The best one wins. No arguments, just cinema."
+    "description": "Create a round, invite friends to propose movies, vote together. The best one wins. No arguments, just cinema.",
+    "pages": {
+      "proposal": {
+        "title": "{{cineforumName}} — CineForum",
+        "description": "Propose movies, vote and choose together what to watch in the \"{{cineforumName}}\" cineforum."
+      },
+      "movies": {
+        "title": "Movies — {{cineforumName}} · CineForum",
+        "description": "All movies watched in the \"{{cineforumName}}\" cineforum with stats and ratings."
+      },
+      "oscars": {
+        "title": "Oscars — {{cineforumName}} · CineForum",
+        "description": "The Oscar awards of the \"{{cineforumName}}\" cineforum: the best movies voted by the group."
+      },
+      "timeline": {
+        "title": "Timeline — {{cineforumName}} · CineForum",
+        "description": "All movies in the \"{{cineforumName}}\" cineforum sorted by release year."
+      },
+      "stats": {
+        "title": "Stats — {{cineforumName}} · CineForum",
+        "description": "Member statistics for the \"{{cineforumName}}\" cineforum: ratings, preferences and profiles."
+      }
+    }
   },
   "buttons": {
     "save": "Save",
