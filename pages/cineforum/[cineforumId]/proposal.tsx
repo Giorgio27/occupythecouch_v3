@@ -1,8 +1,6 @@
 import * as React from "react";
 import type { GetServerSideProps } from "next";
-import Head from "next/head";
 import type { SupportedLocale } from "@/lib/server/get-locale";
-import { getCineforumPageMeta } from "@/lib/server/meta";
 import prisma from "@/lib/prisma";
 import { CreateProposal } from "@/components/cineforum/proposal/create";
 import { OpenProposal } from "@/components/cineforum/proposal/open";
@@ -113,24 +111,8 @@ export default function ProposalPage({
   const showCreateProposal = !last || (last.closed && !isScreeningInFuture);
   const showOpenProposal = last && !last.closed;
 
-  const { title: pageTitle, description: pageDescription } = getCineforumPageMeta(
-    "proposal",
-    initialLocale,
-    cineforumName,
-  );
-
   return (
-    <>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-      </Head>
-      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
         <div>
           {showClosedProposal && <ClosedProposal last={last} />}
 
@@ -138,7 +120,6 @@ export default function ProposalPage({
 
           {showOpenProposal && <OpenProposal proposalId={last.id} />}
         </div>
-      </CineforumLayout>
-    </>
-  );
+  </CineforumLayout>
+);
 }

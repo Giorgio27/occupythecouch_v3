@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { GetServerSideProps } from "next";
-import Head from "next/head";
 import type { SupportedLocale } from "@/lib/server/get-locale";
-import { getCineforumPageMeta } from "@/lib/server/meta";
 import { useTranslation } from "react-i18next";
 import CineforumLayout from "@/components/CineforumLayout";
 import { Loader2 } from "lucide-react";
@@ -29,13 +27,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 export default function OscarsPage({
   cineforumId,
   cineforumName,
-  initialLocale,
+  initialLocale: _initialLocale,
 }: OscarsPageProps) {
-  const { title: pageTitle, description: pageDescription } = getCineforumPageMeta(
-    "oscars",
-    initialLocale,
-    cineforumName,
-  );
   const { t } = useTranslation("oscars");
   const [rounds, setRounds] = useState<OscarsRoundDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,16 +101,7 @@ export default function OscarsPage({
   };
 
   return (
-    <>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-      </Head>
-      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <OscarsPageHeader cineforumName={cineforumName} />
 
       {error && (
@@ -163,6 +147,5 @@ export default function OscarsPage({
         </div>
       )}
     </CineforumLayout>
-    </>
   );
 }

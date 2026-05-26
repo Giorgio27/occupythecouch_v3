@@ -97,6 +97,11 @@ export default async function handler(
 
   const movies = proposal.movies.map((pm) => pm.movie);
 
+  const NEXTAUTH_URL = process.env.NEXTAUTH_URL ?? "";
+  // Use the public OG endpoint so Telegram's crawler can generate a rich preview
+  // without hitting the auth wall. The OG page redirects browsers to the real URL.
+  const proposalUrl = `${NEXTAUTH_URL}/api/og/cineforum/${proposal.cineforumId}`;
+
   // Fire-and-forget: never let a Telegram error fail the vote response.
   buildAndSendNotification({
     voterName,
@@ -107,6 +112,7 @@ export default async function handler(
     token: proposal.cineforum?.telegramBotToken ?? null,
     chatId: proposal.cineforum?.telegramChatId ?? null,
     locale: proposal.cineforum?.locale ?? "it",
+    proposalUrl,
   }).catch(() => {});
 
   return res.status(201).json({ ok: true });
@@ -121,6 +127,7 @@ async function buildAndSendNotification(params: {
   token: string | null;
   chatId: string | null;
   locale: string;
+  proposalUrl: string;
 }): Promise<void> {
   const text = buildVoteNotificationText({
     voterName: params.voterName,
@@ -129,6 +136,7 @@ async function buildAndSendNotification(params: {
     movies: params.movies,
     votes: params.votes.map((v) => ({ movieSelection: v.movieSelection })),
     locale: params.locale,
+    proposalUrl: params.proposalUrl,
   });
   await telegramNotify(text, params.token, params.chatId);
 }

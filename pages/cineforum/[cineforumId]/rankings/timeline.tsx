@@ -1,8 +1,6 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect, useMemo } from "react";
-import Head from "next/head";
 import type { SupportedLocale } from "@/lib/server/get-locale";
-import { getCineforumPageMeta } from "@/lib/server/meta";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
@@ -229,13 +227,8 @@ function DecadeSection({
 export default function TimelineRankingPage({
   cineforumId,
   cineforumName,
-  initialLocale,
+  initialLocale: _initialLocale,
 }: Props) {
-  const { title: pageTitle, description: pageDescription } = getCineforumPageMeta(
-    "timeline",
-    initialLocale,
-    cineforumName,
-  );
   const { t } = useTranslation("rankings");
   const [data, setData] = useState<TimelineYearDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -300,16 +293,7 @@ export default function TimelineRankingPage({
   }
 
   return (
-    <>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-      </Head>
-      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="py-6 sm:py-8 animate-fade-in">
         {/* Page Header */}
         <div className="mb-8 sm:mb-10">
@@ -435,7 +419,6 @@ export default function TimelineRankingPage({
         )}
       </div>
     </CineforumLayout>
-    </>
   );
 }
 

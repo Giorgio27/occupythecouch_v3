@@ -1,8 +1,6 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect, useMemo } from "react";
-import Head from "next/head";
 import type { SupportedLocale } from "@/lib/server/get-locale";
-import { getCineforumPageMeta } from "@/lib/server/meta";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
@@ -57,12 +55,7 @@ type Props = {
   initialLocale: SupportedLocale;
 };
 
-export default function UserStatsPage({ cineforumId, cineforumName, initialLocale }: Props) {
-  const { title: pageTitle, description: pageDescription } = getCineforumPageMeta(
-    "stats",
-    initialLocale,
-    cineforumName,
-  );
+export default function UserStatsPage({ cineforumId, cineforumName, initialLocale: _initialLocale }: Props) {
   const { t } = useTranslation("stats");
   const [users, setUsers] = useState<UserRankingDTO[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -267,16 +260,7 @@ export default function UserStatsPage({ cineforumId, cineforumName, initialLocal
   }
 
   return (
-    <>
-      <Head>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-      </Head>
-      <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
+    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="py-6 sm:py-8">
         {/* Page Header */}
         <div className="mb-8 sm:mb-10 animate-fade-in-up">
@@ -413,7 +397,6 @@ export default function UserStatsPage({ cineforumId, cineforumName, initialLocal
         )}
       </div>
     </CineforumLayout>
-    </>
   );
 }
 

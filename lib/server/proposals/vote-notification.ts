@@ -35,6 +35,8 @@ export interface VoteNotificationParams {
   votes: VoteNotificationVote[];
   /** Cineforum locale: "it" (default) or "en". */
   locale?: string;
+  /** Full URL to the proposal page (appended at the end of the message). */
+  proposalUrl?: string;
 }
 
 /**
@@ -53,6 +55,7 @@ export function buildVoteNotificationText(
     movies,
     votes,
     locale = "it",
+    proposalUrl,
   } = params;
 
   const isEn = locale === "en";
@@ -72,7 +75,8 @@ export function buildVoteNotificationText(
       ? `${voterName} has ${rivoted}voted!\n\n`
       : `${voterName} ha ${rivoted}votato!\n\n`;
 
-    return votedLine + `${missingUserNames.join("\n")}\n` + lastLine;
+    const urlSuffix = proposalUrl ? `\n\n${proposalUrl}` : "";
+    return votedLine + `${missingUserNames.join("\n")}\n` + lastLine + urlSuffix;
   }
 
   // Everyone has voted — compute the Schulze ranking and show the final table.
@@ -114,5 +118,6 @@ export function buildVoteNotificationText(
     ? "The final ranking is:\n"
     : "La classifica finale è:\n";
 
-  return firstLine + rankingLabel + movieLines.join("\n");
+  const urlSuffix = proposalUrl ? `\n\n${proposalUrl}` : "";
+  return firstLine + rankingLabel + movieLines.join("\n") + urlSuffix;
 }
