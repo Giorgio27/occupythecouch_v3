@@ -9,7 +9,7 @@ const MIN_PEARSON = 0.25;
 const MIN_FINAL_SCORE = 0.15;
 // Max possible rating difference on a 1–5 scale
 const MAX_RATING_DIFF = 4;
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 20;
 
 // ─── Pure types ────────────────────────────────────────────────────────────
 
