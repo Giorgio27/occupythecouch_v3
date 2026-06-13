@@ -42,7 +42,7 @@ export default function MovieVotingCard({
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const { cardRef, isTouchPressing } = useTouchDrag({
+  const { cardRef, dragHandleRef, isTouchPressing } = useTouchDrag({
     movieId: movie.id,
     onTouchDrop,
     onTouchDragPositionChange,
@@ -79,7 +79,6 @@ export default function MovieVotingCard({
         isTouchPressing
           ? "scale-[1.02] border-primary/70 shadow-md shadow-primary/20"
           : "",
-        isTouchDevice ? "touch-none" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -88,7 +87,21 @@ export default function MovieVotingCard({
 
       <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3">
         <div className="flex items-center gap-3 w-full sm:flex-1 min-w-0">
-          <div className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary">
+          {/* Drag handle — desktop: whole card is draggable via HTML5 DnD.
+              Mobile: long-press this handle to drag; rest of card stays scrollable. */}
+          <div
+            ref={dragHandleRef}
+            className={[
+              "shrink-0 transition-colors",
+              isTouchDevice
+                ? "p-3 -mx-1 rounded-lg text-muted-foreground/60 active:text-primary active:bg-primary/10 cursor-grab"
+                : "text-muted-foreground/40 group-hover:text-primary cursor-grab",
+              isTouchPressing ? "text-primary bg-primary/10 scale-110" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            title={isTouchDevice ? "Tieni premuto per trascinare" : undefined}
+          >
             <GripVertical className="h-5 w-5" />
           </div>
 
