@@ -26,6 +26,8 @@ export default async function handler(
     select: {
       closed: true,
       cineforumId: true,
+      ownerUserId: true,
+      ownerTeam: { select: { users: { select: { userId: true } } } },
       movies: { select: { movie: { select: { id: true, title: true } } } },
       votes: { select: { userId: true, movieSelection: true } },
       cineforum: {
@@ -83,10 +85,14 @@ export default async function handler(
     },
   ];
 
-  // Determine which active members have not yet voted.
+  // Determine which active members have not yet voted, excluding proposer(s).
+  const proposerUserIds = new Set<string>();
+  if (proposal.ownerUserId) proposerUserIds.add(proposal.ownerUserId);
+  for (const tu of proposal.ownerTeam?.users ?? []) proposerUserIds.add(tu.userId);
+
   const votedUserIds = new Set(updatedVotes.map((v) => v.userId));
   const missingUserNames = (proposal.cineforum?.memberships ?? [])
-    .filter((m) => !votedUserIds.has(m.userId))
+    .filter((m) => !votedUserIds.has(m.userId) && !proposerUserIds.has(m.userId))
     .map((m) => m.user.name ?? m.userId);
 
   const voterName =
