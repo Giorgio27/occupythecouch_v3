@@ -88,7 +88,7 @@ export default function MovieVotingCard({
       <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3">
         <div className="flex items-center gap-3 w-full sm:flex-1 min-w-0">
           {/* Drag handle — desktop: whole card is draggable via HTML5 DnD.
-              Mobile: long-press this handle to drag; rest of card stays scrollable. */}
+              Mobile: touch and move this handle to drag; rest of card stays scrollable. */}
           <div
             ref={dragHandleRef}
             className={[
@@ -100,7 +100,7 @@ export default function MovieVotingCard({
             ]
               .filter(Boolean)
               .join(" ")}
-            title={isTouchDevice ? "Tieni premuto per trascinare" : undefined}
+            title={isTouchDevice ? "Trascina per spostare" : undefined}
           >
             <GripVertical className="h-5 w-5" />
           </div>

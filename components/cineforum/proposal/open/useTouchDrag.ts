@@ -6,34 +6,40 @@ interface UseTouchDragOptions {
   onTouchDragPositionChange?: (position: number | null) => void;
 }
 
-const LONG_PRESS_DELAY = 350;
-const LONG_PRESS_MOVE_THRESHOLD = 8;
+// Pixels of movement needed before the drag ghost appears.
+const DRAG_START_THRESHOLD = 4;
 
 /**
- * Handles mobile long-press drag using a dedicated drag handle element.
+ * Mobile drag-and-drop via a dedicated grip handle.
  *
- * Touch events and touch-action:none are scoped to dragHandleRef only,
- * so the rest of the card stays scrollable. The ghost is created from
- * the full card (cardRef) for visual fidelity.
+ * Design principles:
+ * - NO long-press timer. The user touches the grip and moves — ghost starts
+ *   immediately after DRAG_START_THRESHOLD px. This eliminates the entire
+ *   class of "held too long → iOS system event → touchcancel → broken state"
+ *   bugs that plagued the timer-based approach.
+ * - touch-action/callout/user-select are scoped to the handle only so the
+ *   rest of the card remains normally scrollable.
+ * - touchend on the handle always prevents the synthetic click so the
+ *   grip is drag-only (tapping the card body still opens the PositionPicker).
+ * - Sticky drop target: lastHighlightedSlot is not cleared when the finger
+ *   leaves a slot momentarily — only on touchend/touchcancel — so a
+ *   micro-slip before release still commits the drop.
  *
- * Desktop drag is handled separately via the HTML5 draggable API on the card.
+ * cardRef    → outer card div, used only for ghost sizing/positioning.
+ * dragHandleRef → grip icon div, touch events and CSS live here.
  */
 export function useTouchDrag({
   movieId,
   onTouchDrop,
   onTouchDragPositionChange,
 }: UseTouchDragOptions) {
-  /** Outer card div — used only to size/position the drag ghost. */
   const cardRef = useRef<HTMLDivElement | null>(null);
-  /** Grip icon div — touch events live here; touch-action:none scoped here. */
   const dragHandleRef = useRef<HTMLDivElement | null>(null);
-
   const ghostRef = useRef<HTMLDivElement | null>(null);
   const lastHighlightedSlot = useRef<Element | null>(null);
   const touchOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchDragActiveRef = useRef(false);
   const touchStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchDragActiveRef = useRef(false);
   const [isTouchPressing, setIsTouchPressing] = useState(false);
 
   const onTouchDropRef = useRef(onTouchDrop);
@@ -60,10 +66,6 @@ export function useTouchDrag({
     }
   };
 
-  /**
-   * Full cleanup: removes the highlight attribute AND nulls the ref.
-   * Call from touchend / touchcancel only.
-   */
   const clearSlotHighlight = () => {
     if (lastHighlightedSlot.current) {
       lastHighlightedSlot.current.removeAttribute("data-touch-drag-over");
@@ -71,11 +73,6 @@ export function useTouchDrag({
     }
   };
 
-  /**
-   * Removes only the visual attribute, keeps the ref pointing to the last slot.
-   * Used in touchmove so the last confirmed slot stays as a sticky drop target:
-   * a micro-slip just before release still triggers the drop.
-   */
   const removeSlotVisual = () => {
     if (lastHighlightedSlot.current) {
       lastHighlightedSlot.current.removeAttribute("data-touch-drag-over");
@@ -87,10 +84,10 @@ export function useTouchDrag({
     const card = cardRef.current;
     if (!handle || !card) return;
 
-    // Scoped to the handle only — keeps the rest of the card scrollable.
-    // touch-action:none → browser won't start scroll during the 350ms wait.
-    // -webkit-touch-callout:none → iOS won't show the link callout on inner anchors.
-    // user-select:none → prevents text-selection touchcancel.
+    // Scoped to handle only — rest of card stays scrollable on mobile.
+    // touch-action:none → browser never starts scroll for this touch sequence.
+    // -webkit-touch-callout:none → no iOS link/image callout on long press.
+    // user-select:none → no text-selection gesture.
     handle.style.touchAction = "none";
     handle.style.setProperty("-webkit-touch-callout", "none");
     handle.style.userSelect = "none";
@@ -101,37 +98,33 @@ export function useTouchDrag({
       touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
       touchDragActiveRef.current = false;
       setIsTouchPressing(true);
+    };
 
-      longPressTimerRef.current = setTimeout(() => {
-        longPressTimerRef.current = null;
-        setIsTouchPressing(false);
-
-        // Ghost is sized from the full card, not just the handle.
-        const rect = card.getBoundingClientRect();
-        touchOffsetRef.current = {
-          x: touchStartPosRef.current.x - rect.left,
-          y: touchStartPosRef.current.y - rect.top,
-        };
-
-        const ghost = card.cloneNode(true) as HTMLDivElement;
-        ghost.style.cssText = `
-          position: fixed;
-          left: ${rect.left}px;
-          top: ${rect.top}px;
-          width: ${rect.width}px;
-          pointer-events: none;
-          z-index: 9999;
-          opacity: 0.85;
-          transform: scale(1.04) rotate(1.5deg);
-          box-shadow: 0 16px 40px rgba(0,0,0,0.35);
-          border-radius: 0.5rem;
-          transition: none;
-        `;
-        document.body.appendChild(ghost);
-        ghostRef.current = ghost;
-        touchDragActiveRef.current = true;
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, LONG_PRESS_DELAY);
+    const startDrag = (startClientX: number, startClientY: number) => {
+      setIsTouchPressing(false);
+      const rect = card.getBoundingClientRect();
+      touchOffsetRef.current = {
+        x: startClientX - rect.left,
+        y: startClientY - rect.top,
+      };
+      const ghost = card.cloneNode(true) as HTMLDivElement;
+      ghost.style.cssText = `
+        position: fixed;
+        left: ${rect.left}px;
+        top: ${rect.top}px;
+        width: ${rect.width}px;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.85;
+        transform: scale(1.04) rotate(1.5deg);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+        border-radius: 0.5rem;
+        transition: none;
+      `;
+      document.body.appendChild(ghost);
+      ghostRef.current = ghost;
+      touchDragActiveRef.current = true;
+      if (navigator.vibrate) navigator.vibrate(20);
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -142,16 +135,15 @@ export function useTouchDrag({
 
       if (!touchDragActiveRef.current) {
         if (
-          Math.abs(dx) > LONG_PRESS_MOVE_THRESHOLD ||
-          Math.abs(dy) > LONG_PRESS_MOVE_THRESHOLD
+          Math.abs(dx) > DRAG_START_THRESHOLD ||
+          Math.abs(dy) > DRAG_START_THRESHOLD
         ) {
-          if (longPressTimerRef.current !== null) {
-            clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-          }
-          setIsTouchPressing(false);
+          e.preventDefault();
+          startDrag(touchStartPosRef.current.x, touchStartPosRef.current.y);
+          // Fall through immediately to update ghost position on this same event.
+        } else {
+          return;
         }
-        return;
       }
 
       e.preventDefault();
@@ -169,15 +161,14 @@ export function useTouchDrag({
 
       if (slotUnder !== lastHighlightedSlot.current) {
         if (slotUnder) {
-          // Entered a new slot — switch highlight to the new one.
           removeSlotVisual();
           slotUnder.setAttribute("data-touch-drag-over", "true");
           lastHighlightedSlot.current = slotUnder;
           const posAttr = slotUnder.getAttribute("data-position");
           onTouchDragPositionChangeRef.current?.(posAttr ? Number(posAttr) : null);
         } else {
-          // Left all slots — clear visual but keep lastHighlightedSlot sticky.
-          // This ensures a micro-slip at release still drops onto the last slot.
+          // Left all slots — clear visual but keep ref sticky so a micro-slip
+          // just before release still commits the drop.
           removeSlotVisual();
           onTouchDragPositionChangeRef.current?.(null);
         }
@@ -185,24 +176,21 @@ export function useTouchDrag({
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (longPressTimerRef.current !== null) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
       setIsTouchPressing(false);
+      // Always prevent click — the grip handle is drag-only.
+      // Tapping the card body (not the grip) still opens the PositionPicker.
+      e.preventDefault();
       onTouchDragPositionChangeRef.current?.(null);
 
       if (!touchDragActiveRef.current) {
         clearSlotHighlight();
         return;
       }
-      // Prevent the synthetic click (would open PositionPicker on ranked cards).
-      e.preventDefault();
       touchDragActiveRef.current = false;
 
-      // Primary: sticky slot from touchmove.
-      // Fallback: if the drag started but the finger never crossed a slot,
-      // do one final hit-test at the lift position.
+      // Primary: sticky slot tracked during touchmove.
+      // Fallback: finger never crossed a slot, or last touchmove missed it —
+      // do a final hit-test at the lift position.
       let slotEl = lastHighlightedSlot.current;
       if (!slotEl && e.changedTouches.length > 0) {
         const touch = e.changedTouches[0];
@@ -226,10 +214,6 @@ export function useTouchDrag({
     };
 
     const onTouchCancel = () => {
-      if (longPressTimerRef.current !== null) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
       setIsTouchPressing(false);
       touchDragActiveRef.current = false;
       onTouchDragPositionChangeRef.current?.(null);
