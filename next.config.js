@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/api/og/cineforum/:id",
+        destination: "/cineforum/:id/proposal",
+        permanent: false,
+      },
+    ];
+  },
   // Configurazione per NextAuth
   async headers() {
     return [

@@ -164,7 +164,23 @@ export function useTouchDrag({
       e.preventDefault();
       touchDragActiveRef.current = false;
 
-      const slotEl = lastHighlightedSlot.current;
+      // Primary: slot tracked during touchmove.
+      // Fallback: the finger may have slipped 1-2px off the slot in the last
+      // touchmove (clearing lastHighlightedSlot) while the visual highlight
+      // was still visible. Re-check under the final touch point.
+      let slotEl = lastHighlightedSlot.current;
+      if (!slotEl && e.changedTouches.length > 0) {
+        const touch = e.changedTouches[0];
+        const ghost = ghostRef.current;
+        if (ghost) ghost.style.display = "none";
+        const elementUnder = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY,
+        );
+        if (ghost) ghost.style.display = "";
+        slotEl = findSlotElement(elementUnder);
+      }
+
       removeGhost();
       clearSlotHighlight();
 
