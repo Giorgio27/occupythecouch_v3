@@ -98,9 +98,7 @@ export default async function handler(
   const movies = proposal.movies.map((pm) => pm.movie);
 
   const NEXTAUTH_URL = process.env.NEXTAUTH_URL ?? "";
-  // Use the public OG endpoint so Telegram's crawler can generate a rich preview
-  // without hitting the auth wall. The OG page redirects browsers to the real URL.
-  const proposalUrl = `${NEXTAUTH_URL}/api/og/cineforum/${proposal.cineforumId}`;
+  const proposalUrl = `${NEXTAUTH_URL}/cineforum/${proposal.cineforumId}/proposal`;
 
   // Fire-and-forget: never let a Telegram error fail the vote response.
   buildAndSendNotification({

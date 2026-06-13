@@ -159,6 +159,9 @@ export function useTouchDrag({
         clearSlotHighlight();
         return;
       }
+      // Prevent the synthetic click that browsers fire after touchend,
+      // which would open the PositionPicker on ranked cards.
+      e.preventDefault();
       touchDragActiveRef.current = false;
 
       const slotEl = lastHighlightedSlot.current;

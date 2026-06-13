@@ -123,9 +123,7 @@ export default async function handler(
 
   const isEn = cineforum?.locale === "en";
   const ownerName = ownerRecord?.name ?? "";
-  // Use the public OG endpoint so Telegram's crawler can generate a rich preview
-  // without hitting the auth wall. The OG page redirects browsers to the real URL.
-  const siteUrl = `${process.env.NEXTAUTH_URL ?? ""}/api/og/cineforum/${cineforumId}`;
+  const siteUrl = `${process.env.NEXTAUTH_URL ?? ""}/cineforum/${cineforumId}/proposal`;
   const formattedDate = new Date(date).toLocaleDateString(
     isEn ? "en-GB" : "it-IT",
   );

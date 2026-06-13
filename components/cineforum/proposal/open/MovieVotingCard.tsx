@@ -79,6 +79,7 @@ export default function MovieVotingCard({
         isTouchPressing
           ? "scale-[1.02] border-primary/70 shadow-md shadow-primary/20"
           : "",
+        isTouchDevice ? "touch-none" : "",
       ]
         .filter(Boolean)
         .join(" ")}
