@@ -225,6 +225,20 @@ export type CommonMovieVotesResponseDTO = {
   status: string;
 };
 
+// Proposal user statistics types
+export type ProposalUserStatDTO = {
+  user_id: string;
+  user_name: string;
+  proposals_created: number;
+  proposals_voted: number;
+  avg_vote_delay_hours: number | null;
+};
+
+export type ProposalUserStatsResponseDTO = {
+  body: ProposalUserStatDTO[];
+  status: string;
+};
+
 // Timeline types
 export type TimelineMovieDTO = {
   id: string;

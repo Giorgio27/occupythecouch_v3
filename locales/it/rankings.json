@@ -165,5 +165,22 @@
     "votingResults": "Risultati votazione ({{count}} voti)",
     "individualVotes": "Voti individuali",
     "ranksLabel": "ranks"
+  },
+  "proposalStats": {
+    "pageTitle": "Statistiche proposte",
+    "pageSubtitle": "Attività degli utenti sulle proposte del cineforum",
+    "loading": "Caricamento statistiche...",
+    "colUser": "Utente",
+    "colCreated": "Proposte create",
+    "colVoted": "Proposte votate",
+    "colDelay": "Tempo medio voto",
+    "delayHours": "{{h}}h",
+    "delayDays": "{{d}}gg",
+    "statTotalCreated": "Proposte create",
+    "statTotalVoted": "Voti espressi",
+    "statAvgDelay": "Ritardo medio",
+    "statAvgDelayTooltip": "Tempo medio tra la creazione della proposta e il voto dell'utente",
+    "emptyTitle": "Nessun dato disponibile",
+    "emptySubtitle": "Le statistiche sulle proposte appariranno qui quando ci saranno dati."
   }
 }

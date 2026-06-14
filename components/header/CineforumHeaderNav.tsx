@@ -22,6 +22,7 @@ import {
   CalendarDays,
   History,
   Bell,
+  BarChart2,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -213,6 +214,11 @@ export default function CineforumHeaderNav() {
           label: t("rankings.proposals"),
           href: `/cineforum/${cineforumId}/rankings/proposals`,
           icon: History,
+        },
+        {
+          label: t("rankings.proposalStats"),
+          href: `/cineforum/${cineforumId}/rankings/proposals-stats`,
+          icon: BarChart2,
         },
       ]
     : [];

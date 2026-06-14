@@ -165,5 +165,22 @@
     "votingResults": "Voting results ({{count}} votes)",
     "individualVotes": "Individual votes",
     "ranksLabel": "ranks"
+  },
+  "proposalStats": {
+    "pageTitle": "Proposal Statistics",
+    "pageSubtitle": "User activity on cineforum proposals",
+    "loading": "Loading statistics...",
+    "colUser": "User",
+    "colCreated": "Proposals created",
+    "colVoted": "Proposals voted",
+    "colDelay": "Avg. vote delay",
+    "delayHours": "{{h}}h",
+    "delayDays": "{{d}}d",
+    "statTotalCreated": "Proposals created",
+    "statTotalVoted": "Votes cast",
+    "statAvgDelay": "Avg. delay",
+    "statAvgDelayTooltip": "Average time between proposal creation and the user casting their vote",
+    "emptyTitle": "No data available",
+    "emptySubtitle": "Proposal statistics will appear here once data is available."
   }
 }

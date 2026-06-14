@@ -5,6 +5,7 @@ import type {
   DirectorRankingDTO,
   CountriesRankingResponseDTO,
   TimelineResponseDTO,
+  ProposalUserStatsResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -81,5 +82,13 @@ export async function fetchTimelineRankings(
 ): Promise<TimelineResponseDTO> {
   return jsonFetch<TimelineResponseDTO>(
     `/api/cineforum/${cineforumId}/rankings/timeline`,
+  );
+}
+
+export async function fetchProposalUserStats(
+  cineforumId: string,
+): Promise<ProposalUserStatsResponseDTO> {
+  return jsonFetch<ProposalUserStatsResponseDTO>(
+    `/api/cineforum/${cineforumId}/rankings/proposals-stats`,
   );
 }

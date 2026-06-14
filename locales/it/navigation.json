@@ -32,7 +32,9 @@
     "timeline": "Timeline anni",
     "timelineDesc": "Distribuzione anni di uscita",
     "proposals": "Storico proposte",
-    "proposalsDesc": "Tutte le proposte passate"
+    "proposalsDesc": "Tutte le proposte passate",
+    "proposalStats": "Statistiche proposte",
+    "proposalStatsDesc": "Statistiche proposte per utente"
   },
   "admin": {
     "title": "Admin",

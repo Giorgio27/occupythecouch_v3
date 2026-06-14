@@ -32,7 +32,9 @@
     "timeline": "Year timeline",
     "timelineDesc": "Release year distribution",
     "proposals": "Proposals history",
-    "proposalsDesc": "All past proposals"
+    "proposalsDesc": "All past proposals",
+    "proposalStats": "Proposal statistics",
+    "proposalStatsDesc": "Per-user proposal statistics"
   },
   "admin": {
     "title": "Admin",
