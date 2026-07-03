@@ -14,25 +14,30 @@ type Props = { cineforumId: string; cineforumName: string };
 export default function ProposalStatsPage({ cineforumId, cineforumName }: Props) {
   const { t } = useTranslation("rankings");
   const [data, setData] = useState<ProposalUserStatDTO[]>([]);
+  const [totals, setTotals] = useState({ created: 0, voted: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchProposalUserStats(cineforumId)
-      .then((res) => setData(res.body))
+      .then((res) => {
+        setData(res.body);
+        setTotals({ created: res.total_created, voted: res.total_voted });
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [cineforumId]);
 
   const stats = useMemo(() => {
-    const totalCreated = data.reduce((s, u) => s + u.proposals_created, 0);
-    const totalVoted = data.reduce((s, u) => s + u.proposals_voted, 0);
+    // Authoritative totals come from the server (they include team-owned
+    // proposals and proposals by removed members, which the per-user rows
+    // either omit or attribute to multiple team members).
     const withDelay = data.filter((u) => u.avg_vote_delay_hours !== null);
     const avgDelay =
       withDelay.length > 0
         ? withDelay.reduce((s, u) => s + u.avg_vote_delay_hours!, 0) / withDelay.length
         : null;
-    return { totalCreated, totalVoted, avgDelay };
-  }, [data]);
+    return { totalCreated: totals.created, totalVoted: totals.voted, avgDelay };
+  }, [data, totals]);
 
   function formatDelayCompact(h: number | null) {
     if (h === null) return "—";

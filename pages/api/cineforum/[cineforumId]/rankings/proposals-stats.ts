@@ -25,8 +25,14 @@ export default async function handler(
   }
 
   try {
-    const body = await getProposalUserStats(cineforumId);
-    return res.status(200).json({ body, status: "completed" });
+    const { users, totalCreated, totalVoted } =
+      await getProposalUserStats(cineforumId);
+    return res.status(200).json({
+      body: users,
+      status: "completed",
+      total_created: totalCreated,
+      total_voted: totalVoted,
+    });
   } catch (error) {
     console.error("Error fetching proposal user stats:", error);
     return res.status(500).json({ error: "Internal server error" });

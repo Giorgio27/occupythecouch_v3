@@ -3,7 +3,12 @@ import { useTranslation } from "react-i18next";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { ProposalUserStatDTO } from "@/lib/shared/types";
 
-type SortKey = "user_name" | "proposals_created" | "proposals_voted" | "avg_vote_delay_hours";
+type SortKey =
+  | "user_name"
+  | "proposals_created"
+  | "proposals_voted"
+  | "proposals_missed"
+  | "avg_vote_delay_hours";
 type SpeedTier = "fast" | "medium" | "slow";
 
 const TIER_STYLES: Record<SpeedTier, { badge: string; emoji: string; label: string }> = {
@@ -75,6 +80,7 @@ export default function ProposalStatsTable({ data }: Props) {
             <Th col="user_name"             label={t("proposalStats.colUser")}    />
             <Th col="proposals_created"     label={t("proposalStats.colCreated")} />
             <Th col="proposals_voted"       label={t("proposalStats.colVoted")}   />
+            <Th col="proposals_missed"      label={t("proposalStats.colMissed")}  />
             <Th col="avg_vote_delay_hours"  label={t("proposalStats.colDelay")}   />
           </tr>
         </thead>
@@ -87,13 +93,34 @@ export default function ProposalStatsTable({ data }: Props) {
                 <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{i + 1}</td>
                 <td className="px-4 py-3 font-semibold text-foreground">{row.user_name}</td>
                 <td className="px-4 py-3 tabular-nums text-center">
-                  <span className="inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 min-w-7">
-                    {row.proposals_created}
-                  </span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 min-w-7">
+                      {row.proposals_created}
+                    </span>
+                    {row.proposals_created_team > 0 && (
+                      <span className="text-[10px] leading-none text-muted-foreground whitespace-nowrap">
+                        {t("proposalStats.createdBreakdown", {
+                          solo: row.proposals_created_solo,
+                          team: row.proposals_created_team,
+                        })}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 tabular-nums text-center">
                   <span className="inline-flex items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold px-2.5 py-0.5 min-w-7">
                     {row.proposals_voted}
+                  </span>
+                </td>
+                <td className="px-4 py-3 tabular-nums text-center">
+                  <span
+                    className={`inline-flex items-center justify-center rounded-full text-xs font-bold px-2.5 py-0.5 min-w-7 ${
+                      row.proposals_missed > 0
+                        ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {row.proposals_missed}
                   </span>
                 </td>
                 <td className="px-4 py-3">

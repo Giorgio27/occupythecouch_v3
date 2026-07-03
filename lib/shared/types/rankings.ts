@@ -229,14 +229,30 @@ export type CommonMovieVotesResponseDTO = {
 export type ProposalUserStatDTO = {
   user_id: string;
   user_name: string;
+  /** Total proposals attributed to the user: solo + team. */
   proposals_created: number;
+  /** Proposals the user owns directly (not via a team). */
+  proposals_created_solo: number;
+  /** Proposals owned by teams the user belongs to. */
+  proposals_created_team: number;
   proposals_voted: number;
+  /**
+   * Closed proposals (that received at least one vote) created after the user
+   * joined that they never voted on, excluding proposals owned by the user or
+   * one of their teams. The "at least one vote" rule excludes proposals from
+   * before vote tracking existed, which had zero votes for everyone.
+   */
+  proposals_missed: number;
   avg_vote_delay_hours: number | null;
 };
 
 export type ProposalUserStatsResponseDTO = {
   body: ProposalUserStatDTO[];
   status: string;
+  /** Authoritative total number of proposals (user- and team-owned). */
+  total_created: number;
+  /** Authoritative total number of proposal votes. */
+  total_voted: number;
 };
 
 // Timeline types
