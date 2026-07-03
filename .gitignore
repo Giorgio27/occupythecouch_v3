@@ -9,3 +9,4 @@ data/
 .clinerules
 .cline/
 .vscode/
+tsconfig.tsbuildinfo
