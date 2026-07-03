@@ -253,6 +253,11 @@ export default function CineforumHeaderNav() {
             icon: Calendar,
           },
           {
+            label: t("admin.users"),
+            href: `/cineforum/${cineforumId}/admin/users`,
+            icon: User,
+          },
+          {
             label: t("admin.teams"),
             href: `/cineforum/${cineforumId}/admin/teams`,
             icon: Users,
@@ -263,9 +268,9 @@ export default function CineforumHeaderNav() {
             icon: FileText,
           },
           {
-            label: t("admin.users"),
-            href: `/cineforum/${cineforumId}/admin/users`,
-            icon: User,
+            label: t("admin.oscars"),
+            href: `/cineforum/${cineforumId}/admin/oscars`,
+            icon: Award,
           },
           {
             label: t("admin.notifications"),

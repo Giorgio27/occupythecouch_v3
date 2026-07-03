@@ -47,7 +47,9 @@
     "users": "Users",
     "usersDesc": "Manage users",
     "notifications": "Notifications",
-    "notificationsDesc": "Configure Telegram notifications"
+    "notificationsDesc": "Configure Telegram notifications",
+    "oscars": "Oscars",
+    "oscarsDesc": "Open round preview"
   },
   "footer": {
     "about": "About us",

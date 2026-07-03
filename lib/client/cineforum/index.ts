@@ -7,4 +7,5 @@ export * from "./rounds";
 export * from "./users";
 export * from "./admin-proposals";
 export * from "./admin-teams";
+export * from "./admin-oscars";
 export * from "./stats";

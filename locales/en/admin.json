@@ -1,4 +1,15 @@
 {
+  "oscars": {
+    "pageTitle": "Oscars Preview",
+    "pageSubtitle": "Partial status of the current open round",
+    "openBadge": "Open",
+    "leadingBadge": "Leading",
+    "partialAverage": "Partial average",
+    "loading": "Loading preview...",
+    "error": "An error occurred while loading the preview.",
+    "emptyTitle": "No open round",
+    "emptyDescription": "There is no open Oscars round at the moment."
+  },
   "users": {
     "pageTitle": "Users Admin",
     "pageSubtitle": "Manage users for this cineforum",

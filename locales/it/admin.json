@@ -1,4 +1,15 @@
 {
+  "oscars": {
+    "pageTitle": "Anteprima Oscars",
+    "pageSubtitle": "Stato parziale del round aperto corrente",
+    "openBadge": "Aperto",
+    "leadingBadge": "In testa",
+    "partialAverage": "Media parziale",
+    "loading": "Caricamento anteprima...",
+    "error": "Si è verificato un errore durante il caricamento dell'anteprima.",
+    "emptyTitle": "Nessun round aperto",
+    "emptyDescription": "Non c'è nessun round Oscars aperto al momento."
+  },
   "users": {
     "pageTitle": "Gestione Utenti",
     "pageSubtitle": "Gestisci gli utenti di questo cineforum",
