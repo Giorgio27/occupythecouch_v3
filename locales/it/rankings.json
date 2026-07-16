@@ -60,6 +60,7 @@
     "searchPlaceholder": "Cerca film...",
     "tableHeaderFilm": "FILM",
     "roundLabel": "Ciclo:",
+    "proposedByLabel": "Proposto da:",
     "userVotesTitle": "Voti Utenti",
     "colUser": "Utente",
     "colRating": "Voto",

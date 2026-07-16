@@ -60,6 +60,7 @@
     "searchPlaceholder": "Search movies...",
     "tableHeaderFilm": "MOVIE",
     "roundLabel": "Round:",
+    "proposedByLabel": "Proposed by:",
     "userVotesTitle": "User Votes",
     "colUser": "User",
     "colRating": "Rating",

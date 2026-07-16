@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import { Trophy, Film, Users, Star, Search, Loader2 } from "lucide-react";
+import { Trophy, Film, Users, Star, Search, Loader2, User } from "lucide-react";
 import { fetchMovieRankings } from "@/lib/client/cineforum";
 import {
   RankingHeader,
@@ -247,15 +247,26 @@ export default function MoviesRankingPage({
                     }
                   >
                     <div className="space-y-6">
-                      {/* Round badge */}
-                      <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg border border-border">
-                        <Star className="w-4 h-4 text-primary" />
-                        <span className="text-sm text-muted-foreground">
-                          {t("movies.roundLabel")}
-                        </span>
-                        <span className="font-bold text-foreground">
-                          {ranking.round}
-                        </span>
+                      {/* Round + proposer badges */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg border border-border">
+                          <Star className="w-4 h-4 text-primary" />
+                          <span className="text-sm text-muted-foreground">
+                            {t("movies.roundLabel")}
+                          </span>
+                          <span className="font-bold text-foreground">
+                            {ranking.round}
+                          </span>
+                        </div>
+                        <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg border border-border">
+                          <User className="w-4 h-4 text-primary" />
+                          <span className="text-sm text-muted-foreground">
+                            {t("movies.proposedByLabel")}
+                          </span>
+                          <span className="font-bold text-foreground">
+                            {ranking.owner}
+                          </span>
+                        </div>
                       </div>
 
                       {/* User Votes */}
