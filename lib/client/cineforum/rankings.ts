@@ -6,6 +6,7 @@ import type {
   CountriesRankingResponseDTO,
   TimelineResponseDTO,
   ProposalUserStatsResponseDTO,
+  ConsensusResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -90,5 +91,20 @@ export async function fetchProposalUserStats(
 ): Promise<ProposalUserStatsResponseDTO> {
   return jsonFetch<ProposalUserStatsResponseDTO>(
     `/api/cineforum/${cineforumId}/rankings/proposals-stats`,
+  );
+}
+
+/**
+ * Fetches the consensus rankings (how divisive/unanimous each movie was) for a
+ * cineforum.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @returns Promise resolving to the consensus rankings, sorted by divergence
+ */
+export async function fetchConsensusRankings(
+  cineforumId: string,
+): Promise<ConsensusResponseDTO> {
+  return jsonFetch<ConsensusResponseDTO>(
+    `/api/cineforum/${cineforumId}/rankings/consensus`,
   );
 }

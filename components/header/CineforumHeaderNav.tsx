@@ -23,6 +23,7 @@ import {
   History,
   Bell,
   BarChart2,
+  Scale,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -184,6 +185,11 @@ export default function CineforumHeaderNav() {
           label: t("rankings.movies"),
           href: `/cineforum/${cineforumId}/rankings/movies`,
           icon: Film,
+        },
+        {
+          label: t("rankings.consensus"),
+          href: `/cineforum/${cineforumId}/rankings/consensus`,
+          icon: Scale,
         },
         {
           label: t("rankings.users"),

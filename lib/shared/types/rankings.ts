@@ -255,6 +255,34 @@ export type ProposalUserStatsResponseDTO = {
   total_voted: number;
 };
 
+// Consensus types — how much the club agreed (or split) on a movie.
+export type ConsensusMovieDTO = {
+  /** MovieRoundRanking id (one entry per movie-in-round, like MovieRankingDTO). */
+  id: string;
+  movie: string;
+  round: string;
+  /** Proposer (user or team) name. */
+  owner: string;
+  /** Mean of member ratings. */
+  average_rating: number;
+  /** Population standard deviation of member ratings — the consensus axis. */
+  std_dev: number;
+  /** Lowest member rating. */
+  min_rating: number;
+  /** Highest member rating. */
+  max_rating: number;
+  /** Number of member votes counted. */
+  vote_count: number;
+  movie_votes: MovieVoteDTO[];
+};
+
+export type ConsensusResponseDTO = {
+  body: ConsensusMovieDTO[];
+  status: string;
+  /** Minimum member votes required for a movie to appear. */
+  min_votes: number;
+};
+
 // Timeline types
 export type TimelineMovieDTO = {
   id: string;

@@ -185,5 +185,30 @@
     "statAvgDelayTooltip": "Average time between proposal creation and the user casting their vote",
     "emptyTitle": "No data available",
     "emptySubtitle": "Proposal statistics will appear here once data is available."
+  },
+  "consensus": {
+    "pageTitle": "Consensus",
+    "pageSubtitle": "How much the club agreed: the movies that split us and the ones we all felt the same about",
+    "loading": "Computing consensus...",
+    "tabDivisive": "Most divisive",
+    "tabUnanimous": "Most unanimous",
+    "metricTitle": "How to read the number",
+    "metricExplanation": "The value next to each movie is the standard deviation of the member ratings: how far, on average, the votes fall from the movie's mean. The higher it is, the more the club was split; the closer to 0, the more you agreed. Example: ratings 5·4·4·4·4·4·2·1 (mean 3.50) → σ ≈ 1.22.",
+    "showMore": "Show more",
+    "showingCount": "{{shown}} of {{total}}",
+    "statAnalyzed": "Movies analyzed",
+    "statAnalyzedTooltip": "Movies with at least {{count}} member votes.",
+    "statAvgStdDev": "Avg. disagreement",
+    "statAvgStdDevTooltip": "Average standard deviation of member ratings across all movies. Higher = a more divided club.",
+    "statMostDivisive": "Most divisive",
+    "roundLabel": "Round",
+    "proposedByLabel": "Proposed by",
+    "avgLabel": "Average",
+    "votesTitle": "Member votes",
+    "colUser": "User",
+    "colRating": "Rating",
+    "minVotesNote": "Only movies with at least {{count}} member votes.",
+    "emptyTitle": "No data yet",
+    "emptySubtitle": "At least one movie with {{count}} member votes is needed to show up here."
   }
 }

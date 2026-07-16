@@ -185,5 +185,30 @@
     "statAvgDelayTooltip": "Tempo medio tra la creazione della proposta e il voto dell'utente",
     "emptyTitle": "Nessun dato disponibile",
     "emptySubtitle": "Le statistiche sulle proposte appariranno qui quando ci saranno dati."
+  },
+  "consensus": {
+    "pageTitle": "Consenso",
+    "pageSubtitle": "Quanto il club è stato d'accordo: i film che ci hanno spaccato e quelli su cui eravamo tutti d'accordo",
+    "loading": "Calcolo del consenso...",
+    "tabDivisive": "Più divisivi",
+    "tabUnanimous": "Più unanimi",
+    "metricTitle": "Come si legge il numero",
+    "metricExplanation": "Il valore accanto a ogni film è la deviazione standard dei voti dei membri: quanto in media i voti si discostano dalla media del film. Più è alto, più il club si è diviso; più è vicino a 0, più eravate d'accordo. Esempio: voti 5·4·4·4·4·4·2·1 (media 3,50) → σ ≈ 1,22.",
+    "showMore": "Mostra altri",
+    "showingCount": "{{shown}} di {{total}}",
+    "statAnalyzed": "Film analizzati",
+    "statAnalyzedTooltip": "Film con almeno {{count}} voti dei membri.",
+    "statAvgStdDev": "Disaccordo medio",
+    "statAvgStdDevTooltip": "Deviazione standard media dei voti dei membri su tutti i film. Più alta = club più diviso.",
+    "statMostDivisive": "Più divisivo",
+    "roundLabel": "Round",
+    "proposedByLabel": "Proposto da",
+    "avgLabel": "Media",
+    "votesTitle": "Voti dei membri",
+    "colUser": "Utente",
+    "colRating": "Voto",
+    "minVotesNote": "Solo film con almeno {{count}} voti dei membri.",
+    "emptyTitle": "Ancora nessun dato",
+    "emptySubtitle": "Serve almeno un film con {{count}} voti dei membri perché appaia qui."
   }
 }
