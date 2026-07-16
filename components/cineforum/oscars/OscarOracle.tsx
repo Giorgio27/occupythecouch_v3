@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Sparkles, Crown, Medal, Loader2, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { jsonFetch } from "@/lib/client/https";
@@ -51,7 +51,9 @@ export default function OscarOracle({
   closed,
 }: OscarOracleProps) {
   const { t } = useTranslation("oscars");
-  const [armed, setArmed] = useState(false); // has the user asked for it yet?
+  // Open round fetches eagerly (there is only one); closed rounds stay lazy
+  // (a teaser click arms them) so a long list fires no requests up front.
+  const [armed, setArmed] = useState(!closed);
   const [prediction, setPrediction] = useState<OracleResponseDTO | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [fading, setFading] = useState(false);
@@ -60,6 +62,8 @@ export default function OscarOracle({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
+  // Once scratching starts, stop repainting so the strokes aren't wiped.
+  const frozen = useRef(false);
 
   // Lazy fetch: only once the user has armed it (scratch / open recap).
   useEffect(() => {
@@ -93,9 +97,11 @@ export default function OscarOracle({
 
   const ranked = prediction?.body ?? [];
 
-  // Paint the foil (open round only, before reveal).
-  useEffect(() => {
-    if (closed || revealed) return;
+  // Paint the foil (open round only). Runs after layout so it matches the
+  // final content height — repainting when the prediction loads and the card
+  // grows — but never after the user has begun scratching (frozen).
+  useLayoutEffect(() => {
+    if (closed || revealed || frozen.current) return;
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -146,9 +152,15 @@ export default function OscarOracle({
     };
 
     paint();
-    window.addEventListener("resize", paint);
-    return () => window.removeEventListener("resize", paint);
-  }, [closed, revealed]);
+    // Repaint on ANY height change of the card (late text wrap on mobile, poster
+    // load, font swap…) so the foil always covers the content — but freeze once
+    // scratching begins so strokes aren't wiped.
+    const ro = new ResizeObserver(() => {
+      if (!frozen.current) paint();
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [closed, revealed, ranked.length]);
 
   const scratchLine = (x: number, y: number) => {
     const canvas = canvasRef.current;
@@ -200,7 +212,8 @@ export default function OscarOracle({
   };
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    setArmed(true);
+    if (ranked.length < 2) return; // wait until the card is at its final height
+    frozen.current = true; // freeze the foil size — don't repaint over strokes
     drawing.current = true;
     e.currentTarget.setPointerCapture(e.pointerId);
     const p = pointFromEvent(e);
@@ -249,10 +262,18 @@ export default function OscarOracle({
     if (ranked.length < 2) return null;
 
     const predWinner = ranked[0];
-    const actualWinner = winners
-      .filter((w) => w.roundRating != null)
-      .sort((a, b) => (b.roundRating ?? 0) - (a.roundRating ?? 0))[0];
-    const hit = actualWinner && actualWinner.id === predWinner.movie_id;
+    // The round can have several co-winners (a tie on the top rating) — count a
+    // hit if the predicted winner is any of them.
+    const rated = winners.filter((w) => w.roundRating != null);
+    const topRating = rated.length
+      ? Math.max(...rated.map((w) => w.roundRating!))
+      : null;
+    const actualWinners =
+      topRating != null ? rated.filter((w) => w.roundRating === topRating) : [];
+    const hit = actualWinners.some((w) => w.id === predWinner.movie_id);
+    const actualWinnerLabel = actualWinners
+      .map((w) => winnerById.get(w.id)?.title ?? w.title)
+      .join(", ");
 
     return wrap(
       <div className="rounded-xl border border-violet-500/30 bg-linear-to-br from-violet-500/5 to-primary/5 p-4">
@@ -265,11 +286,11 @@ export default function OscarOracle({
           <p className="mb-3 inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
             {t("oracle.hit")}
           </p>
-        ) : actualWinner ? (
+        ) : actualWinners.length > 0 ? (
           <p className="mb-3 text-[11px] text-muted-foreground">
             {t("oracle.miss", {
               predicted: predWinner.title,
-              actual: winnerById.get(actualWinner.id)?.title ?? actualWinner.title,
+              actual: actualWinnerLabel,
             })}
           </p>
         ) : null}
