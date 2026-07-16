@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 import OscarsMovieRow from "./OscarsMovieRow";
 import OscarOracle from "./OscarOracle";
+import RoundReport from "./RoundReport";
 import { useTranslation } from "react-i18next";
 import { ExpandableListItem } from "@/components/cineforum/common";
 
@@ -166,6 +167,11 @@ export default function OscarsRoundCard({
           winners={round.winners}
           closed={round.closed}
         />
+      )}
+
+      {/* Report card ("pagellone") — closed rounds only, lazy. */}
+      {round.closed && round.winners.length > 0 && (
+        <RoundReport cineforumId={cineforumId} roundId={round.id} />
       )}
     </ExpandableListItem>
   );

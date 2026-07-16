@@ -204,3 +204,22 @@ export type OracleResponseDTO = {
   based_on_films: number;
   status: string;
 };
+
+// Round report ("pagellone") — playful awards for a closed oscar round.
+// Only awards actually earned (thresholds met) are returned, so not everyone
+// necessarily gets one.
+export type RoundAwardDTO = {
+  /** Stable award id (maps to a label/emoji client-side), e.g. "generoso". */
+  key: string;
+  /** Whether the award is about a member or a film. */
+  kind: "member" | "film";
+  /** Who/what won it (member name or film title). */
+  subject: string;
+  /** Short stat backing the award (already formatted), e.g. "3.79" or "σ 1.22". */
+  value: string;
+};
+
+export type RoundReportDTO = {
+  body: RoundAwardDTO[];
+  status: string;
+};

@@ -29,5 +29,36 @@
     "miss": "Predicted “{{predicted}}”, “{{actual}}” won",
     "colPred": "pred.",
     "colReal": "actual"
+  },
+  "report": {
+    "teaser": "Cycle report card",
+    "title": "Cycle report card",
+    "membersTitle": "Mentions",
+    "filmsTitle": "Films",
+    "empty": "A middling cycle: no mentions.",
+    "awards": {
+      "generoso": "The Generous",
+      "boia": "The Executioner",
+      "metronomo": "The Metronome",
+      "contrario": "The Contrarian",
+      "fantasma": "The Ghost",
+      "minaVagante": "The Loose Cannon",
+      "spaccaCineforum": "The Divider",
+      "tesoro": "Hidden gem",
+      "sopravvalutato": "The Snubbed",
+      "consensuale": "The Consensus"
+    },
+    "desc": {
+      "generoso": "average {{v}}, the cycle's highest",
+      "boia": "average {{v}}, the lowest",
+      "metronomo": "avg deviation {{v}} from the group",
+      "contrario": "avg deviation {{v}} from the group",
+      "fantasma": "only {{v}} films voted",
+      "minaVagante": "{{v}}",
+      "spaccaCineforum": "split votes ({{v}})",
+      "tesoro": "{{v}} above the platforms",
+      "sopravvalutato": "{{v}} below the platforms",
+      "consensuale": "just {{v}} off the platforms"
+    }
   }
 }

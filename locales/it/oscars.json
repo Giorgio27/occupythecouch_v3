@@ -29,5 +29,36 @@
     "miss": "Previsto «{{predicted}}», ha vinto «{{actual}}»",
     "colPred": "prev.",
     "colReal": "reale"
+  },
+  "report": {
+    "teaser": "Pagellone del ciclo",
+    "title": "Pagellone del ciclo",
+    "membersTitle": "Menzioni",
+    "filmsTitle": "Film",
+    "empty": "Ciclo senza infamia e senza lode: nessuna menzione.",
+    "awards": {
+      "generoso": "Il Generoso",
+      "boia": "Il Boia",
+      "metronomo": "Il Metronomo",
+      "contrario": "Il Bastian Contrario",
+      "fantasma": "Il Fantasma",
+      "minaVagante": "La Mina Vagante",
+      "spaccaCineforum": "Spacca-cineforum",
+      "tesoro": "Tesoro nascosto",
+      "sopravvalutato": "Il Bistrattato",
+      "consensuale": "Il Consensuale"
+    },
+    "desc": {
+      "generoso": "media {{v}}, la più alta del ciclo",
+      "boia": "media {{v}}, la più bassa",
+      "metronomo": "scarto medio {{v}} dal gruppo",
+      "contrario": "scarto medio {{v}} dal gruppo",
+      "fantasma": "solo {{v}} film votati",
+      "minaVagante": "{{v}}",
+      "spaccaCineforum": "voti spaccati ({{v}})",
+      "tesoro": "{{v}} sopra le piattaforme",
+      "sopravvalutato": "{{v}} sotto le piattaforme",
+      "consensuale": "a solo {{v}} dalle piattaforme"
+    }
   }
 }
