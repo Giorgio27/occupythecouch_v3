@@ -65,6 +65,9 @@ export default async function handler(
         details: err.details,
       });
     }
+    if (err?.code === "ROUND_ALREADY_CLOSED") {
+      return res.status(409).json({ error: err.message });
+    }
 
     return res.status(500).json({ error: "Internal server error" });
   }

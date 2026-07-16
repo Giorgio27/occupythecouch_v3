@@ -1,4 +1,5 @@
 // lib/rounds.ts
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 /**
@@ -83,6 +84,17 @@ export async function closeRound(roundId: string) {
     throw new Error("Round not found");
   }
 
+  // Idempotency guard: a closed round has already produced its rankings.
+  // Re-running would create duplicate MovieRoundRanking/UserRanking links
+  // and double-count averages, so bail out early.
+  if (round.closed) {
+    const error: Error & { code?: string } = new Error(
+      "Round is already closed",
+    );
+    error.code = "ROUND_ALREADY_CLOSED";
+    throw error;
+  }
+
   // All movie votes for this round
   const votes = await prisma.movieVote.findMany({
     where: { roundId: round.id },
@@ -152,109 +164,134 @@ export async function closeRound(roundId: string) {
     }
   }
 
-  if (movieToAvg.size === 0) {
-    // No winners or no votes: just mark round as closed and exit.
-    return prisma.round.update({
-      where: { id: round.id },
-      data: { closed: true },
-    });
-  }
-
-  // Find the winning rating and winning movie ids
+  // Find the winning rating and winning movie ids (only meaningful when we
+  // actually have rated movies; otherwise there is nothing to rank).
   const ratings = Array.from(movieToAvg.values());
-  const winningRating = Math.max(...ratings);
+  const winningRating = ratings.length > 0 ? Math.max(...ratings) : null;
 
-  const winningMovieIds = Array.from(movieToAvg.entries())
-    .filter(([_, avg]) => avg === winningRating)
-    .map(([movieId]) => movieId);
+  const winningMovieIds =
+    winningRating === null
+      ? []
+      : Array.from(movieToAvg.entries())
+          .filter(([_, avg]) => avg === winningRating)
+          .map(([movieId]) => movieId);
 
-  // Helper to keep track of which user rankings we must recompute
-  const rankingIdsToRecompute = new Set<string>();
+  // Everything below mutates the DB. Run it inside a single interactive
+  // transaction so a failure halfway through never leaves the round with
+  // partial rankings (which would then be duplicated on retry).
+  return prisma.$transaction(
+    async (tx) => {
+      // Atomic idempotency claim: flip closed false -> true and only proceed
+      // if we were the ones to flip it. Two concurrent close calls (or a
+      // retry after a committed close) will see count === 0 and abort,
+      // rolling back without writing any rankings.
+      const claim = await tx.round.updateMany({
+        where: { id: round.id, closed: false },
+        data: { closed: true },
+      });
+      if (claim.count === 0) {
+        const error: Error & { code?: string } = new Error(
+          "Round is already closed",
+        );
+        error.code = "ROUND_ALREADY_CLOSED";
+        throw error;
+      }
 
-  // For each proposal, create MovieRoundRanking and update UserRanking
-  for (const proposal of round.proposals) {
-    if (!proposal.winnerId) continue;
+      if (movieToAvg.size === 0) {
+        // No winners or no votes: the round is already marked closed above,
+        // nothing else to compute.
+        return tx.round.findUniqueOrThrow({ where: { id: round.id } });
+      }
 
-    const movieId = proposal.winnerId;
-    const averageRating = movieToAvg.get(movieId) ?? null;
-    const isRoundWinner = winningMovieIds.includes(movieId);
+      // Helper to keep track of which user rankings we must recompute
+      const rankingIdsToRecompute = new Set<string>();
 
-    // Decide owner: user or team
-    const ownerUserId = proposal.ownerUserId ?? null;
-    const ownerTeamId = proposal.ownerTeamId ?? null;
+      // For each proposal, create MovieRoundRanking and update UserRanking
+      for (const proposal of round.proposals) {
+        if (!proposal.winnerId) continue;
 
-    // Create MovieRoundRanking row
-    const mrr = await prisma.movieRoundRanking.create({
-      data: {
-        roundId: round.id,
-        movieId,
-        userId: ownerUserId,
-        teamId: ownerTeamId,
-        averageRating,
-        roundWinner: isRoundWinner,
-      },
-    });
+        const movieId = proposal.winnerId;
+        const averageRating = movieToAvg.get(movieId) ?? null;
+        const isRoundWinner = winningMovieIds.includes(movieId);
 
-    // Link movie votes for this movie+round to this ranking
-    await prisma.movieVote.updateMany({
-      where: {
-        roundId: round.id,
-        movieId,
-      },
-      data: {
-        movieRoundRankingId: mrr.id,
-      },
-    });
+        // Decide owner: user or team
+        const ownerUserId = proposal.ownerUserId ?? null;
+        const ownerTeamId = proposal.ownerTeamId ?? null;
 
-    // Collect users that own this proposal (user or team.users)
-    const userIds: string[] = [];
-
-    if (ownerTeamId && proposal.ownerTeam) {
-      userIds.push(...proposal.ownerTeam.users.map((tu) => tu.userId));
-    } else if (ownerUserId) {
-      userIds.push(ownerUserId);
-    }
-
-    // For each user, attach MRR to UserRanking (per user + cineforum)
-    for (const userId of userIds) {
-      const ranking = await prisma.userRanking.upsert({
-        where: {
-          userId_cineforumId: {
-            userId,
-            cineforumId: round.cineforumId,
+        // Create MovieRoundRanking row
+        const mrr = await tx.movieRoundRanking.create({
+          data: {
+            roundId: round.id,
+            movieId,
+            userId: ownerUserId,
+            teamId: ownerTeamId,
+            averageRating,
+            roundWinner: isRoundWinner,
           },
-        },
-        update: {},
-        create: {
-          userId,
-          cineforumId: round.cineforumId,
-        },
-      });
+        });
 
-      await prisma.userRankingMovieRoundRanking.create({
+        // Link movie votes for this movie+round to this ranking
+        await tx.movieVote.updateMany({
+          where: {
+            roundId: round.id,
+            movieId,
+          },
+          data: {
+            movieRoundRankingId: mrr.id,
+          },
+        });
+
+        // Collect users that own this proposal (user or team.users)
+        const userIds: string[] = [];
+
+        if (ownerTeamId && proposal.ownerTeam) {
+          userIds.push(...proposal.ownerTeam.users.map((tu) => tu.userId));
+        } else if (ownerUserId) {
+          userIds.push(ownerUserId);
+        }
+
+        // For each user, attach MRR to UserRanking (per user + cineforum)
+        for (const userId of userIds) {
+          const ranking = await tx.userRanking.upsert({
+            where: {
+              userId_cineforumId: {
+                userId,
+                cineforumId: round.cineforumId,
+              },
+            },
+            update: {},
+            create: {
+              userId,
+              cineforumId: round.cineforumId,
+            },
+          });
+
+          await tx.userRankingMovieRoundRanking.create({
+            data: {
+              userRankingId: ranking.id,
+              movieRoundRankingId: mrr.id,
+            },
+          });
+
+          rankingIdsToRecompute.add(ranking.id);
+        }
+      }
+
+      // Recompute averages for all affected user rankings
+      for (const rankingId of Array.from(rankingIdsToRecompute)) {
+        await recomputeUserRanking(tx, rankingId);
+      }
+
+      // Finally flag the round as oscarable (it is already marked closed).
+      return tx.round.update({
+        where: { id: round.id },
         data: {
-          userRankingId: ranking.id,
-          movieRoundRankingId: mrr.id,
+          oscarable: true,
         },
       });
-
-      rankingIdsToRecompute.add(ranking.id);
-    }
-  }
-
-  // Recompute averages for all affected user rankings
-  for (const rankingId of Array.from(rankingIdsToRecompute)) {
-    await recomputeUserRanking(rankingId);
-  }
-
-  // Finally mark round as closed and oscarable = true
-  return prisma.round.update({
-    where: { id: round.id },
-    data: {
-      closed: true,
-      oscarable: true,
     },
-  });
+    { timeout: 60_000, maxWait: 10_000 },
+  );
 }
 
 /**
@@ -262,8 +299,11 @@ export async function closeRound(roundId: string) {
  * - averageRating: average of mrr.averageRating
  * - external ratings: normalized /10 -> /5 (value / 2) then averaged
  */
-async function recomputeUserRanking(rankingId: string) {
-  const ranking = await prisma.userRanking.findUnique({
+async function recomputeUserRanking(
+  tx: Prisma.TransactionClient,
+  rankingId: string,
+) {
+  const ranking = await tx.userRanking.findUnique({
     where: { id: rankingId },
     include: {
       movieRoundRankings: {
@@ -285,7 +325,7 @@ async function recomputeUserRanking(rankingId: string) {
     .filter((mrr): mrr is NonNullable<typeof mrr> => !!mrr);
 
   if (mrrs.length === 0) {
-    await prisma.userRanking.update({
+    await tx.userRanking.update({
       where: { id: rankingId },
       data: {
         averageRating: null,
@@ -339,7 +379,7 @@ async function recomputeUserRanking(rankingId: string) {
       ? null
       : Number((arr.reduce((sum, v) => sum + v, 0) / arr.length).toFixed(2));
 
-  await prisma.userRanking.update({
+  await tx.userRanking.update({
     where: { id: rankingId },
     data: {
       averageRating,
