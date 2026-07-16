@@ -23,6 +23,11 @@
     "predictedShort": "pred.",
     "revealAll": "Reveal all",
     "basisNote": "Estimated from your historical taste (platform bias, genres, decades) and the platforms' scores — it never uses your votes on these films. Based on {{count}} films from your history.",
-    "basisNoteEmpty": "The Oracle needs some history before it can make a prediction."
+    "basisNoteEmpty": "The Oracle needs some history before it can make a prediction.",
+    "recapTitle": "Oracle: predicted vs actual",
+    "hit": "Nailed it 🎯",
+    "miss": "Predicted “{{predicted}}”, “{{actual}}” won",
+    "colPred": "pred.",
+    "colReal": "actual"
   }
 }

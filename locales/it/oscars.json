@@ -23,6 +23,11 @@
     "predictedShort": "prev.",
     "revealAll": "Rivela tutto",
     "basisNote": "Stima dai vostri gusti storici (bias piattaforme, generi, decenni) e dai voti delle piattaforme — non usa i vostri voti su questi film. Basato su {{count}} film del vostro storico.",
-    "basisNoteEmpty": "Serve un po' di storico prima che l'Oracolo possa pronosticare."
+    "basisNoteEmpty": "Serve un po' di storico prima che l'Oracolo possa pronosticare.",
+    "recapTitle": "Oracolo: previsto vs reale",
+    "hit": "L'aveva azzeccato 🎯",
+    "miss": "Previsto «{{predicted}}», ha vinto «{{actual}}»",
+    "colPred": "prev.",
+    "colReal": "reale"
   }
 }

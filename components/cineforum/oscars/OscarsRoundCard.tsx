@@ -157,12 +157,14 @@ export default function OscarsRoundCard({
         </div>
       )}
 
-      {/* Oracle prediction — only while the round is still open (opt-in scratch). */}
-      {!round.closed && (
+      {/* Oracle — scratch-card forecast while open; a predicted-vs-actual recap
+          once closed (so you can see what it would have called). */}
+      {round.winners.length > 0 && (
         <OscarOracle
           cineforumId={cineforumId}
           roundId={round.id}
           winners={round.winners}
+          closed={round.closed}
         />
       )}
     </ExpandableListItem>
