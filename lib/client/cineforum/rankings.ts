@@ -7,6 +7,7 @@ import type {
   TimelineResponseDTO,
   ProposalUserStatsResponseDTO,
   ConsensusResponseDTO,
+  GenreResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -106,5 +107,20 @@ export async function fetchConsensusRankings(
 ): Promise<ConsensusResponseDTO> {
   return jsonFetch<ConsensusResponseDTO>(
     `/api/cineforum/${cineforumId}/rankings/consensus`,
+  );
+}
+
+/**
+ * Fetches the genre stats (exploration count + average club rating per genre)
+ * for a cineforum.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @returns Promise resolving to the genre stats, sorted by count
+ */
+export async function fetchGenreStats(
+  cineforumId: string,
+): Promise<GenreResponseDTO> {
+  return jsonFetch<GenreResponseDTO>(
+    `/api/cineforum/${cineforumId}/rankings/genres`,
   );
 }

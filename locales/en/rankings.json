@@ -210,5 +210,20 @@
     "minVotesNote": "Only movies with at least {{count}} member votes.",
     "emptyTitle": "No data yet",
     "emptySubtitle": "At least one movie with {{count}} member votes is needed to show up here."
+  },
+  "genres": {
+    "pageTitle": "Genres",
+    "pageSubtitle": "Which genres the club explored the most and which it loved the most",
+    "loading": "Loading genres...",
+    "statGenres": "Genres explored",
+    "statFilms": "Movies watched",
+    "statMostWatched": "Most watched",
+    "statFavourite": "Favourite",
+    "statFavouriteTooltip": "Genre with the highest average rating, among those with at least {{count}} movies.",
+    "sortMostWatched": "Most watched",
+    "sortMostLoved": "Most loved",
+    "filmsCount": "{{count}} movies",
+    "emptyTitle": "No genres yet",
+    "emptySubtitle": "Genres will appear here once you have watched and rated some movies."
   }
 }

@@ -135,6 +135,7 @@ export default function OscarsPage({
             key={round.id}
             round={round}
             isFirst={index === 0}
+            cineforumId={cineforumId}
             onVote={handleVote}
           />
         ))}

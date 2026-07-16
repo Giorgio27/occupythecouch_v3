@@ -210,5 +210,20 @@
     "minVotesNote": "Solo film con almeno {{count}} voti dei membri.",
     "emptyTitle": "Ancora nessun dato",
     "emptySubtitle": "Serve almeno un film con {{count}} voti dei membri perché appaia qui."
+  },
+  "genres": {
+    "pageTitle": "Generi",
+    "pageSubtitle": "Quali generi il cineforum ha esplorato di più e quali ha amato di più",
+    "loading": "Caricamento generi...",
+    "statGenres": "Generi esplorati",
+    "statFilms": "Film visti",
+    "statMostWatched": "Più visto",
+    "statFavourite": "Preferito",
+    "statFavouriteTooltip": "Genere con la media voti più alta, tra quelli con almeno {{count}} film.",
+    "sortMostWatched": "Più visti",
+    "sortMostLoved": "Più amati",
+    "filmsCount": "{{count}} film",
+    "emptyTitle": "Ancora nessun genere",
+    "emptySubtitle": "I generi appariranno qui una volta che avrete visto e votato qualche film."
   }
 }

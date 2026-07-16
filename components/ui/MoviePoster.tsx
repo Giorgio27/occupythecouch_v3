@@ -80,6 +80,11 @@ export default function MoviePoster({
       src={currentSrc}
       alt={alt}
       className={className}
+      loading="lazy"
+      decoding="async"
+      // IMDb/Amazon CDN sometimes blocks hotlinked images based on the referrer;
+      // omitting it makes the fallback chain resolve more reliably.
+      referrerPolicy="no-referrer"
       onError={() => {
         if (index < candidates.length - 1) {
           setIndex((i) => i + 1);

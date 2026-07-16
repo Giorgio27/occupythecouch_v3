@@ -182,3 +182,25 @@ export type OscarsRoundDTO = {
   winners: MovieWinnerDTO[];
   bests: RoundBestDTO[];
 };
+
+// Oracle prediction — forecast of an OPEN oscar round, computed WITHOUT using the
+// club's own votes on the candidate movies. Derived from the club's historical
+// taste (platform bias, genre & decade affinity) applied to the candidates'
+// external platform ratings.
+export type OracleConfidence = "sure" | "likely" | "tossup";
+
+export type OraclePredictionDTO = {
+  movie_id: string;
+  title: string;
+  /** Predicted club rating, on the club's own scale. */
+  predicted_rating: number;
+};
+
+export type OracleResponseDTO = {
+  /** Candidates sorted by predicted rating, highest first. */
+  body: OraclePredictionDTO[];
+  confidence: OracleConfidence;
+  /** Number of past films the taste model was built from. */
+  based_on_films: number;
+  status: string;
+};

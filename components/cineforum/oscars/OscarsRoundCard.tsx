@@ -3,18 +3,21 @@ import { Crown, Sofa, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 import OscarsMovieRow from "./OscarsMovieRow";
+import OscarOracle from "./OscarOracle";
 import { useTranslation } from "react-i18next";
 import { ExpandableListItem } from "@/components/cineforum/common";
 
 interface OscarsRoundCardProps {
   round: OscarsRoundDTO;
   isFirst: boolean;
+  cineforumId: string;
   onVote: (roundId: string, movieId: string, rating: number) => Promise<void>;
 }
 
 export default function OscarsRoundCard({
   round,
   isFirst,
+  cineforumId,
   onVote,
 }: OscarsRoundCardProps) {
   const { t } = useTranslation("oscars");
@@ -152,6 +155,15 @@ export default function OscarsRoundCard({
             <span>{roundAverageRating}</span>
           </div>
         </div>
+      )}
+
+      {/* Oracle prediction — only while the round is still open (opt-in scratch). */}
+      {!round.closed && (
+        <OscarOracle
+          cineforumId={cineforumId}
+          roundId={round.id}
+          winners={round.winners}
+        />
       )}
     </ExpandableListItem>
   );

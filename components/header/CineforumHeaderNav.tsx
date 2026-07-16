@@ -24,6 +24,7 @@ import {
   Bell,
   BarChart2,
   Scale,
+  Drama,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -215,6 +216,11 @@ export default function CineforumHeaderNav() {
           label: t("rankings.timeline"),
           href: `/cineforum/${cineforumId}/rankings/timeline`,
           icon: CalendarDays,
+        },
+        {
+          label: t("rankings.genres"),
+          href: `/cineforum/${cineforumId}/rankings/genres`,
+          icon: Drama,
         },
         {
           label: t("rankings.proposals"),

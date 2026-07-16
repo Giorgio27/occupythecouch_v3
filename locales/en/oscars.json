@@ -10,5 +10,19 @@
     "description": "There are no closed rounds available for the Oscars yet"
   },
   "loadingMore": "Loading more rounds...",
-  "votingError": "Error voting for movie: {{message}}"
+  "votingError": "Error voting for movie: {{message}}",
+  "oracle": {
+    "cover": "The Oracle has a prediction",
+    "coverHint": "Scratch to reveal who will win 🪙",
+    "title": "The Oracle's prediction",
+    "willWin": "The Oracle predicts the winner is",
+    "confidenceSure": "Almost certain",
+    "confidenceLikely": "Likely",
+    "confidenceTossup": "Too close to call",
+    "podium": "Predicted podium",
+    "predictedShort": "pred.",
+    "revealAll": "Reveal all",
+    "basisNote": "Estimated from your historical taste (platform bias, genres, decades) and the platforms' scores — it never uses your votes on these films. Based on {{count}} films from your history.",
+    "basisNoteEmpty": "The Oracle needs some history before it can make a prediction."
+  }
 }

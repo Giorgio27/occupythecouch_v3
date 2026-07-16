@@ -10,5 +10,19 @@
     "description": "Non ci sono ancora round chiusi disponibili per gli Oscars"
   },
   "loadingMore": "Caricamento altri round...",
-  "votingError": "Errore durante il voto del film: {{message}}"
+  "votingError": "Errore durante il voto del film: {{message}}",
+  "oracle": {
+    "cover": "L'Oracolo ha un pronostico",
+    "coverHint": "Gratta per svelare chi vincerà 🪙",
+    "title": "Il pronostico dell'Oracolo",
+    "willWin": "Secondo l'Oracolo vincerà",
+    "confidenceSure": "Quasi certo",
+    "confidenceLikely": "Probabile",
+    "confidenceTossup": "Testa a testa",
+    "podium": "Podio previsto",
+    "predictedShort": "prev.",
+    "revealAll": "Rivela tutto",
+    "basisNote": "Stima dai vostri gusti storici (bias piattaforme, generi, decenni) e dai voti delle piattaforme — non usa i vostri voti su questi film. Basato su {{count}} film del vostro storico.",
+    "basisNoteEmpty": "Serve un po' di storico prima che l'Oracolo possa pronosticare."
+  }
 }

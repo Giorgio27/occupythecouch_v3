@@ -33,6 +33,8 @@
     "countriesDesc": "Country rankings",
     "timeline": "Years",
     "timelineDesc": "Release year distribution",
+    "genres": "Genres",
+    "genresDesc": "Most-watched and best-loved genres",
     "proposals": "History",
     "proposalsDesc": "All past proposals",
     "proposalStats": "Proposals",

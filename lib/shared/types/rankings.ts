@@ -255,6 +255,37 @@ export type ProposalUserStatsResponseDTO = {
   total_voted: number;
 };
 
+// Genre types — how much the club explored and liked each genre.
+export type GenreMovieDTO = {
+  id: string;
+  title: string;
+  director: string | null;
+  poster: string | null;
+  imageMedium: string | null;
+  image: string | null;
+  imdbId: string | null;
+  round: string;
+  roundDate: string | null;
+  /** Club average rating for this movie, if it was voted. */
+  rating: number | null;
+};
+
+export type GenreStatDTO = {
+  genre: string;
+  /** Number of screened (winner) movies tagged with this genre. */
+  count: number;
+  /** Average club rating across this genre's movies (null if none were voted). */
+  average_rating: number | null;
+  movies: GenreMovieDTO[];
+};
+
+export type GenreResponseDTO = {
+  body: GenreStatDTO[];
+  status: string;
+  /** Unique screened films counted (a film with N genres is counted once here). */
+  total_films: number;
+};
+
 // Consensus types — how much the club agreed (or split) on a movie.
 export type ConsensusMovieDTO = {
   /** MovieRoundRanking id (one entry per movie-in-round, like MovieRankingDTO). */
