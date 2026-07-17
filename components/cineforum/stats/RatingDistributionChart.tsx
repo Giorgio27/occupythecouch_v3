@@ -44,7 +44,7 @@ const DistributionTooltip = ({
     >
       <div className="text-xs text-muted-foreground mb-1">{tRating}</div>
       <div className="text-lg font-bold text-primary mb-2">
-        {data.rating.toFixed(1)}
+        {data.rating.toFixed(2)}
       </div>
       <div className="text-sm text-foreground">
         <span className="font-semibold">{data.count}</span> {tMovies}

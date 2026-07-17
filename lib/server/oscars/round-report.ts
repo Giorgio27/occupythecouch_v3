@@ -167,9 +167,9 @@ export async function getRoundReport(
       hot = {
         name: v.user.name ?? "?",
         gap,
-        value: `${films.get(v.movieId)!.title}: ${v.rating.toFixed(1)} vs ${filmAvg
+        value: `${films.get(v.movieId)!.title}: ${v.rating.toFixed(2)} vs ${filmAvg
           .get(v.movieId)!
-          .toFixed(1)}`,
+          .toFixed(2)}`,
       };
     }
   }

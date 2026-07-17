@@ -267,10 +267,10 @@ function DetailPanel({
                   {v.movieTitle}
                 </td>
                 <td className="px-3 py-2 text-right font-bold tabular-nums text-primary">
-                  {v.targetRating.toFixed(1)}
+                  {v.targetRating.toFixed(2)}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
-                  {v.otherRating.toFixed(1)}
+                  {v.otherRating.toFixed(2)}
                 </td>
                 <td className="px-3 py-2 text-right">
                   <DeltaBadge value={v.delta} />

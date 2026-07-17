@@ -199,7 +199,7 @@ export default function ConsensusPage({ cineforumId, cineforumName }: Props) {
                     onToggle={() => setExpandedId(isExpanded ? null : m.id)}
                     badges={
                       <span className="text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
-                        {m.min_rating.toFixed(1)}–{m.max_rating.toFixed(1)}
+                        {m.min_rating.toFixed(2)}–{m.max_rating.toFixed(2)}
                       </span>
                     }
                   >
