@@ -60,5 +60,12 @@
       "sopravvalutato": "{{v}} sotto le piattaforme",
       "consensuale": "a solo {{v}} dalle piattaforme"
     }
+  },
+  "critic": {
+    "teaser": "Chiedi al Critico 🎬",
+    "title": "Il Critico",
+    "loading": "Il critico si accende una sigaretta e guarda i vostri voti...",
+    "error": "Il critico è al bar. Riprova tra poco.",
+    "retry": "Riprova"
   }
 }

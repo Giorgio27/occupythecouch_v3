@@ -60,5 +60,12 @@
       "sopravvalutato": "{{v}} below the platforms",
       "consensuale": "just {{v}} off the platforms"
     }
+  },
+  "critic": {
+    "teaser": "Ask the Critic 🎬",
+    "title": "The Critic",
+    "loading": "The critic lights a cigarette and studies your votes...",
+    "error": "The critic is at the bar. Try again shortly.",
+    "retry": "Retry"
   }
 }
