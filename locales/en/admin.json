@@ -99,7 +99,16 @@
     "closing": "Closing...",
     "closeError": "Failed to close proposal",
     "reopenError": "Failed to reopen proposal",
-    "updateError": "Failed to update proposal"
+    "updateError": "Failed to update proposal",
+    "lock": {
+      "theLeader": "the current leader",
+      "finalTitle": "Result is final",
+      "finalDetail": "All enabled members have voted — the winner can no longer change.",
+      "lockedTitle": "Winner decided: {{movie}}",
+      "lockedDetail": "Its pairwise lead ({{margin}}) is larger than the {{count}} vote(s) still to come, so the remaining members cannot overturn it.",
+      "openTitle": "Not decided yet",
+      "openDetail": "The {{count}} remaining vote(s) could still change the winner."
+    }
   },
   "teams": {
     "pageTitle": "Teams Admin",

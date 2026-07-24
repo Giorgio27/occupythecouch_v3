@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
@@ -30,18 +30,23 @@ import ProposalVotesAccordion from "@/components/cineforum/proposal/shared/Propo
 import ProposalMovieSearch from "@/components/cineforum/admin/ProposalMovieSearch";
 import ProposalActionBar from "@/components/cineforum/admin/ProposalActionBar";
 import CloseProposalDialog from "@/components/cineforum/admin/CloseProposalDialog";
+import VoteLockIndicator from "@/components/cineforum/admin/VoteLockIndicator";
+import { computeVoteLock } from "@/lib/shared/ranking/voteLock";
 import { Calendar, Film, Plus, History } from "lucide-react";
 
 interface AdminProposalsPageProps {
   cineforumId: string;
   cineforumName: string;
   currentProposal: ProposalDetailDTO | null;
+  /** Enabled members who have not voted on the current proposal yet. */
+  remainingVoters: number;
 }
 
 export default function AdminProposalsPage({
   cineforumId,
   cineforumName,
   currentProposal: initialProposal,
+  remainingVoters,
 }: AdminProposalsPageProps) {
   const { t } = useTranslation("admin");
   const { isAdmin, isLoading: isLoadingAccess } = useAdminAccess(cineforumId);
@@ -206,6 +211,17 @@ export default function AdminProposalsPage({
     setEditMovies((prev) => [...prev, movie]);
   };
 
+  // Is the winner already decided by the votes cast so far?
+  // (must run before any early return to keep hook order stable)
+  const voteLock = useMemo(() => {
+    if (!proposal || !proposal.votes || proposal.votes.length === 0) return null;
+    return computeVoteLock(
+      proposal.votes,
+      proposal.movies.map((m) => m.id),
+      remainingVoters,
+    );
+  }, [proposal, remainingVoters]);
+
   if (isLoadingAccess) {
     return (
       <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
@@ -222,6 +238,10 @@ export default function AdminProposalsPage({
     ? editMovies
     : (proposal?.movies ?? []);
   const displayDate = isEditing ? editDate : proposal?.date;
+
+  const voteLockWinnerTitle = voteLock?.winnerId
+    ? (proposal?.movies.find((m) => m.id === voteLock.winnerId)?.title ?? null)
+    : null;
 
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
@@ -402,6 +422,14 @@ export default function AdminProposalsPage({
                 </div>
               </div>
 
+              {/* Vote lock: is the winner already decided? */}
+              {!isEditing && !proposal.closed && voteLock && (
+                <VoteLockIndicator
+                  lock={voteLock}
+                  winnerTitle={voteLockWinnerTitle}
+                />
+              )}
+
               {/* Voting Results */}
               {!isEditing && proposal.votes && proposal.votes.length > 0 && (
                 <div className="space-y-2">
@@ -539,6 +567,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
+  // Enabled members who have not yet voted on this proposal. Used to tell the
+  // admin whether the remaining ballots could still change the winner.
+  let remainingVoters = 0;
+  if (proposal) {
+    const enabledMembers = await prisma.membership.findMany({
+      where: { cineforumId, disabled: false },
+      select: { userId: true },
+    });
+    const votedUserIds = new Set(proposal.votes.map((v) => v.userId));
+    remainingVoters = enabledMembers.filter(
+      (m) => !votedUserIds.has(m.userId),
+    ).length;
+  }
+
   const currentProposal: ProposalDetailDTO | null = proposal
     ? {
         id: proposal.id,
@@ -589,6 +631,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     : null;
 
   return {
-    props: { ...cineforumProps.props, currentProposal },
+    props: { ...cineforumProps.props, currentProposal, remainingVoters },
   };
 };

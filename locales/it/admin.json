@@ -99,7 +99,16 @@
     "closing": "Chiusura...",
     "closeError": "Errore durante la chiusura della proposta",
     "reopenError": "Errore durante la riapertura della proposta",
-    "updateError": "Errore durante l'aggiornamento della proposta"
+    "updateError": "Errore durante l'aggiornamento della proposta",
+    "lock": {
+      "theLeader": "il film in testa",
+      "finalTitle": "Risultato definitivo",
+      "finalDetail": "Tutti i membri abilitati hanno votato — il vincitore non può più cambiare.",
+      "lockedTitle": "Vincitore deciso: {{movie}}",
+      "lockedDetail": "Il suo vantaggio nei confronti diretti ({{margin}}) è maggiore dei {{count}} voti ancora attesi, quindi i membri rimanenti non possono ribaltarlo.",
+      "openTitle": "Ancora da decidere",
+      "openDetail": "I {{count}} voti rimanenti potrebbero ancora cambiare il vincitore."
+    }
   },
   "teams": {
     "pageTitle": "Gestione Team",
