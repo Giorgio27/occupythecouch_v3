@@ -4,4 +4,7 @@ export { default as VotingProfileCard } from "./VotingProfileCard";
 export { default as LoveReceivedTable } from "./LoveReceivedTable";
 export { default as LoveGivenTable } from "./LoveGivenTable";
 export { default as SimilarUsersTable } from "./SimilarUsersTable";
+export { default as UserRankedMoviesTable } from "./UserRankedMoviesTable";
+export { default as RankedMovieDetail } from "./RankedMovieDetail";
+export { default as UserSelectorPanel } from "./UserSelectorPanel";
 export * from "./UserStatsSkeleton";

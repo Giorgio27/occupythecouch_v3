@@ -1,36 +1,33 @@
 import { GetServerSideProps } from "next";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { SupportedLocale } from "@/lib/server/get-locale";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import { BarChart3 } from "lucide-react";
+import { Heart } from "lucide-react";
 import {
   fetchUserProfileStats,
-  fetchRatingDistribution,
-  fetchDeviantMovies,
-  fetchUserRankedMovies,
+  fetchLoveReceived,
+  fetchLoveGiven,
+  fetchSimilarUsers,
 } from "@/lib/client/cineforum";
 import { useCineforumUserSelector } from "@/lib/client/hooks/useCineforumUserSelector";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
-import UserRankingTrendChart from "@/components/cineforum/rankings/UserRankingTrendChart";
 import {
-  ProfileStatsSkeleton,
-  RatingDistributionSkeleton,
-  DeviantMoviesSkeleton,
-  UserRankedMoviesSkeleton,
+  LoveReceivedSkeleton,
+  LoveGivenSkeleton,
+  SimilarUsersSkeleton,
 } from "@/components/cineforum/stats/UserStatsSkeleton";
-import RatingDistributionChart from "@/components/cineforum/stats/RatingDistributionChart";
-import DeviantMoviesTable from "@/components/cineforum/stats/DeviantMoviesTable";
-import VotingProfileCard from "@/components/cineforum/stats/VotingProfileCard";
-import UserRankedMoviesTable from "@/components/cineforum/stats/UserRankedMoviesTable";
+import LoveReceivedTable from "@/components/cineforum/stats/LoveReceivedTable";
+import LoveGivenTable from "@/components/cineforum/stats/LoveGivenTable";
+import SimilarUsersTable from "@/components/cineforum/stats/SimilarUsersTable";
 import UserSelectorPanel from "@/components/cineforum/stats/UserSelectorPanel";
 import type {
   UserProfileStatsDTO,
-  RatingDistributionDTO,
-  UserVoteDetailDTO,
-  UserRankedMovieDTO,
+  LoveReceivedDTO,
+  LoveGivenDTO,
+  SimilarUserDTO,
 } from "@/lib/shared/types";
 
 type Props = {
@@ -39,7 +36,7 @@ type Props = {
   initialLocale: SupportedLocale;
 };
 
-export default function UserStatsPage({
+export default function UserAffinityPage({
   cineforumId,
   cineforumName,
   initialLocale: _initialLocale,
@@ -51,16 +48,14 @@ export default function UserStatsPage({
   const [profileStats, setProfileStats] = useState<UserProfileStatsDTO | null>(
     null,
   );
-  const [ratingDistribution, setRatingDistribution] = useState<
-    RatingDistributionDTO[]
-  >([]);
-  const [deviantMovies, setDeviantMovies] = useState<UserVoteDetailDTO[]>([]);
-  const [rankedMovies, setRankedMovies] = useState<UserRankedMovieDTO[]>([]);
+  const [loveReceived, setLoveReceived] = useState<LoveReceivedDTO[]>([]);
+  const [loveGiven, setLoveGiven] = useState<LoveGivenDTO[]>([]);
+  const [similarUsers, setSimilarUsers] = useState<SimilarUserDTO[]>([]);
 
   const [profileLoading, setProfileLoading] = useState(false);
-  const [distributionLoading, setDistributionLoading] = useState(false);
-  const [deviantLoading, setDeviantLoading] = useState(false);
-  const [rankedMoviesLoading, setRankedMoviesLoading] = useState(false);
+  const [loveReceivedLoading, setLoveReceivedLoading] = useState(false);
+  const [loveGivenLoading, setLoveGivenLoading] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
 
   useEffect(() => {
     if (!selectedUserId) return;
@@ -87,69 +82,59 @@ export default function UserStatsPage({
   useEffect(() => {
     if (!selectedUserId) return;
 
-    const loadRatingDistribution = async () => {
+    const loadLoveReceived = async () => {
       try {
-        setDistributionLoading(true);
-        const response = await fetchRatingDistribution(
-          cineforumId,
-          selectedUserId,
-        );
-        setRatingDistribution(response.body);
+        setLoveReceivedLoading(true);
+        const response = await fetchLoveReceived(cineforumId, selectedUserId);
+        setLoveReceived(response.body);
       } catch (error) {
-        console.error("Error loading rating distribution:", error);
-        setRatingDistribution([]);
+        console.error("Error loading love received:", error);
+        setLoveReceived([]);
       } finally {
-        setDistributionLoading(false);
+        setLoveReceivedLoading(false);
       }
     };
 
-    loadRatingDistribution();
+    loadLoveReceived();
   }, [cineforumId, selectedUserId]);
 
   useEffect(() => {
     if (!selectedUserId) return;
 
-    const loadDeviantMovies = async () => {
+    const loadLoveGiven = async () => {
       try {
-        setDeviantLoading(true);
-        const response = await fetchDeviantMovies(cineforumId, selectedUserId);
-        setDeviantMovies(response.body);
+        setLoveGivenLoading(true);
+        const response = await fetchLoveGiven(cineforumId, selectedUserId);
+        setLoveGiven(response.body);
       } catch (error) {
-        console.error("Error loading deviant movies:", error);
-        setDeviantMovies([]);
+        console.error("Error loading love given:", error);
+        setLoveGiven([]);
       } finally {
-        setDeviantLoading(false);
+        setLoveGivenLoading(false);
       }
     };
 
-    loadDeviantMovies();
+    loadLoveGiven();
   }, [cineforumId, selectedUserId]);
 
   useEffect(() => {
     if (!selectedUserId) return;
 
-    const loadRankedMovies = async () => {
+    const loadSimilarUsers = async () => {
       try {
-        setRankedMoviesLoading(true);
-        const response = await fetchUserRankedMovies(
-          cineforumId,
-          selectedUserId,
-        );
-        setRankedMovies(response.body);
+        setSimilarLoading(true);
+        const response = await fetchSimilarUsers(cineforumId, selectedUserId);
+        setSimilarUsers(response.body);
       } catch (error) {
-        console.error("Error loading ranked movies:", error);
-        setRankedMovies([]);
+        console.error("Error loading similar users:", error);
+        setSimilarUsers([]);
       } finally {
-        setRankedMoviesLoading(false);
+        setSimilarLoading(false);
       }
     };
 
-    loadRankedMovies();
+    loadSimilarUsers();
   }, [cineforumId, selectedUserId]);
-
-  const selectedUserRanking = useMemo(() => {
-    return users.find((u) => u.user_id === selectedUserId);
-  }, [users, selectedUserId]);
 
   if (loading) {
     return (
@@ -181,14 +166,14 @@ export default function UserStatsPage({
         <div className="mb-8 sm:mb-10 animate-fade-in-up">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10 glow-red-soft">
-              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              {t("users.pageTitle")}
+              {t("users.affinityPageTitle")}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">
-            {t("users.pageSubtitle")}
+            {t("users.affinityPageSubtitle")}
           </p>
         </div>
 
@@ -198,47 +183,38 @@ export default function UserStatsPage({
           onSelect={setSelectedUserId}
         />
 
-        {/* Profile Stats Section */}
-        {profileLoading ? (
-          <ProfileStatsSkeleton />
-        ) : profileStats ? (
-          <VotingProfileCard
+        {/* Love Received Section */}
+        {loveReceivedLoading ? (
+          <LoveReceivedSkeleton />
+        ) : loveReceived.length > 0 && profileStats ? (
+          <LoveReceivedTable
+            loveReceived={loveReceived}
             profileStats={profileStats}
             users={users}
             selectedUserId={selectedUserId!}
           />
         ) : null}
 
-        {/* Rating Distribution Section */}
-        {distributionLoading ? (
-          <RatingDistributionSkeleton />
-        ) : ratingDistribution.length > 0 ? (
-          <RatingDistributionChart data={ratingDistribution} />
+        {/* Love Given Section */}
+        {loveGivenLoading || profileLoading ? (
+          <LoveGivenSkeleton />
+        ) : loveGiven.length > 0 && profileStats ? (
+          <LoveGivenTable loveGiven={loveGiven} profileStats={profileStats} />
         ) : null}
 
-        {/* Most Deviant Movies Section */}
-        {deviantLoading ? (
-          <DeviantMoviesSkeleton />
-        ) : deviantMovies.length > 0 ? (
-          <DeviantMoviesTable movies={deviantMovies} />
-        ) : null}
-
-        {/* All Ranked Movies Section */}
-        {rankedMoviesLoading ? (
-          <UserRankedMoviesSkeleton />
-        ) : rankedMovies.length > 0 && selectedUserRanking ? (
-          <UserRankedMoviesTable
-            movies={rankedMovies}
-            userName={selectedUserRanking.user}
+        {/* Similar Users Section */}
+        {similarLoading ? (
+          <SimilarUsersSkeleton />
+        ) : selectedUserId ? (
+          <SimilarUsersTable
+            similarUsers={similarUsers}
+            cineforumId={cineforumId}
+            targetUserId={selectedUserId}
+            targetUserName={
+              users.find((u) => u.user_id === selectedUserId)?.user ?? ""
+            }
           />
         ) : null}
-
-        {/* Trend Chart */}
-        {selectedUserRanking && (
-          <div>
-            <UserRankingTrendChart ranking={selectedUserRanking} />
-          </div>
-        )}
       </div>
     </CineforumLayout>
   );

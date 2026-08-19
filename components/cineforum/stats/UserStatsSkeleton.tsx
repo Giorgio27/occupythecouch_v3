@@ -6,6 +6,7 @@ import {
   TrendingUp,
   AlertCircle,
   Users,
+  Star,
 } from "lucide-react";
 
 export function ProfileStatsSkeleton() {
@@ -212,6 +213,60 @@ export function DeviantMoviesSkeleton() {
                 </td>
                 <td className="px-4 py-3.5 text-right">
                   <Skeleton className="h-4 w-12 ml-auto" />
+                </td>
+                <td className="px-4 py-3.5 text-right">
+                  <Skeleton className="h-4 w-12 ml-auto" />
+                </td>
+                <td className="px-4 py-3.5 text-right">
+                  <Skeleton className="h-4 w-12 ml-auto" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export function UserRankedMoviesSkeleton() {
+  return (
+    <div className="cine-card p-6 mb-8 animate-fade-in-up">
+      <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+        <Star className="w-4 h-4" />
+        I Miei Film Votati
+      </h3>
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-secondary/50">
+              <th className="px-4 py-3 w-10" />
+              <th className="px-4 py-3 text-left">
+                <Skeleton className="h-3 w-32" />
+              </th>
+              <th className="px-4 py-3 text-left">
+                <Skeleton className="h-3 w-16" />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <Skeleton className="h-3 w-16 ml-auto" />
+              </th>
+              <th className="px-4 py-3 text-right">
+                <Skeleton className="h-3 w-20 ml-auto" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+              <tr key={i} className="border-b border-border">
+                <td className="px-4 py-3.5">
+                  <Skeleton className="h-4 w-4" />
+                </td>
+                <td className="px-4 py-3.5">
+                  <Skeleton className="h-4 w-40" />
+                </td>
+                <td className="px-4 py-3.5">
+                  <Skeleton className="h-5 w-16 rounded-full" />
                 </td>
                 <td className="px-4 py-3.5 text-right">
                   <Skeleton className="h-4 w-12 ml-auto" />

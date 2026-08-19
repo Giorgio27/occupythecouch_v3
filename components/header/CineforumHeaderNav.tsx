@@ -25,6 +25,7 @@ import {
   BarChart2,
   Scale,
   Drama,
+  Heart,
 } from "lucide-react";
 import { fetchCurrentMembership } from "@/lib/client/cineforum/membership";
 import { useCineforum } from "@/lib/client/contexts/CineforumContext";
@@ -201,6 +202,11 @@ export default function CineforumHeaderNav() {
           label: t("rankings.userStats"),
           href: `/cineforum/${cineforumId}/stats/users`,
           icon: Award,
+        },
+        {
+          label: t("rankings.userAffinity"),
+          href: `/cineforum/${cineforumId}/stats/users/affinity`,
+          icon: Heart,
         },
         {
           label: t("rankings.directors"),

@@ -8,6 +8,7 @@ import type {
   DeviantMoviesResponseDTO,
   SimilarUsersResponseDTO,
   CommonMovieVotesResponseDTO,
+  UserRankedMoviesResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -103,6 +104,22 @@ export async function fetchDeviantMovies(
 ): Promise<DeviantMoviesResponseDTO> {
   return jsonFetch<DeviantMoviesResponseDTO>(
     `/api/cineforum/${cineforumId}/stats/users/deviant-movies?userId=${userId}`,
+  );
+}
+
+/**
+ * Fetches every movie a user has voted on, sorted by their own rating.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @param userId - The unique identifier of the user
+ * @returns Promise resolving to the user's ranked movies
+ */
+export async function fetchUserRankedMovies(
+  cineforumId: string,
+  userId: string,
+): Promise<UserRankedMoviesResponseDTO> {
+  return jsonFetch<UserRankedMoviesResponseDTO>(
+    `/api/cineforum/${cineforumId}/stats/users/ranked-movies?userId=${userId}`,
   );
 }
 

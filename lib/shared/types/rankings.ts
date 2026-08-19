@@ -190,6 +190,32 @@ export type DeviantMoviesResponseDTO = {
   status: string;
 };
 
+// User's full movie ranking (all voted movies, sorted by the user's own rating)
+export type UserRankedMovieDTO = {
+  movieId: string;
+  roundId: string;
+  movie: string;
+  round: string;
+  /** ISO 8601 date string — round screening date, if set. */
+  roundDate: string | null;
+  userRating: number;
+  movieAverage: number | null;
+  roundWinner: boolean;
+  /** Name of the proposal owner (user or team) that proposed this movie. */
+  owner: string;
+  /** ISO 8601 date string — when the movie was proposed, if known. */
+  proposalDate: string | null;
+  tmdbVote: number | null;
+  imdbRating: number | null;
+  tomatometer: number | null;
+  metascore: number | null;
+};
+
+export type UserRankedMoviesResponseDTO = {
+  body: UserRankedMovieDTO[];
+  status: string;
+};
+
 // Similar users types
 
 /** A user with similar cinematic taste to the target user. */

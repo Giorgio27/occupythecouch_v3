@@ -3,8 +3,10 @@
     "loading": "Caricamento statistiche...",
     "emptyTitle": "Nessun utente trovato",
     "emptySubtitle": "Non ci sono ancora utenti con voti in questo cineforum",
-    "pageTitle": "Statistiche Utenti",
-    "pageSubtitle": "Analisi comportamentale dei voti e tendenze individuali",
+    "pageTitle": "Profilo Voti",
+    "pageSubtitle": "Comportamento di voto individuale: tendenze, distribuzione e tutti i film votati",
+    "affinityPageTitle": "Amore e Affinità",
+    "affinityPageSubtitle": "Quanto questo utente si accorda con gli altri: voti ricevuti, voti dati e utenti con gusti simili",
     "selectUser": "Seleziona Utente",
     "userAverage": "Media Utente",
     "globalAverage": "Media Globale",
@@ -103,6 +105,14 @@
     "algoCompatFormula": "compatibilità% = round(score × 100)",
     "algoMinScore": "Soglia minima score finale: 0.15. Utenti con score inferiore vengono esclusi anche se superano le soglie individuali di Pearson e film comuni.",
     "algoClickHint": "Clicca su un utente nella tabella per vedere il confronto film per film con i rispettivi voti e il delta.",
-    "joinedLabel": "Iscritto il"
+    "joinedLabel": "Iscritto il",
+    "rankedMoviesTitle": "Tutti i Film Votati da {{user}}",
+    "rankedMoviesSubtitle": "Tutti i film votati dall'utente, ordinati dal voto più alto al più basso. Clicca su una riga per i dettagli.",
+    "proposedByLabel": "Proposto da:",
+    "proposedOnLabel": "Proposto il:",
+    "roundDateLabel": "Visto il:",
+    "winnerTitle": "Vincitore del ciclo: {{round}}",
+    "comparisonTitle": "Confronto Siti",
+    "notAvailable": "N/D"
   }
 }
