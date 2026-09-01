@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import type { OscarsRoundDTO } from "@/lib/shared/types";
 import { toMovieWinner } from "./transform";
+import { getVoterParticipation } from "./voter-participation";
 
 /**
  * Fetches the most recent still-open round, together with each winner movie's
@@ -66,6 +67,13 @@ export async function getLastOpenOscarRound(
     .filter((p) => p.winner)
     .map((proposal) => toMovieWinner(proposal, votes, userId));
 
+  const winnerMovieIds = new Set(winners.map((w) => w.id));
+  const voterParticipation = await getVoterParticipation(
+    cineforumId,
+    votes,
+    winnerMovieIds,
+  );
+
   return {
     id: round.id,
     name: round.name,
@@ -78,5 +86,6 @@ export async function getLastOpenOscarRound(
     winners,
     // Round is still open — no winner has been decided yet.
     bests: [],
+    voterParticipation,
   };
 }

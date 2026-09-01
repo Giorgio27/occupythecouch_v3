@@ -8,7 +8,8 @@
     "loading": "Loading preview...",
     "error": "An error occurred while loading the preview.",
     "emptyTitle": "No open round",
-    "emptyDescription": "There is no open Oscars round at the moment."
+    "emptyDescription": "There is no open Oscars round at the moment.",
+    "voterParticipation": "Voting participation"
   },
   "users": {
     "pageTitle": "Users Admin",

@@ -181,6 +181,14 @@ export type OscarsRoundDTO = {
   } | null;
   winners: MovieWinnerDTO[];
   bests: RoundBestDTO[];
+  voterParticipation: VoterParticipationDTO[];
+};
+
+/** How many of the round's movies an active member has voted on so far. */
+export type VoterParticipationDTO = {
+  userId: string;
+  name: string;
+  votedCount: number;
 };
 
 // Oracle prediction — forecast of an OPEN oscar round, computed WITHOUT using the

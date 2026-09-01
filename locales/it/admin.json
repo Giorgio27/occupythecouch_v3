@@ -8,7 +8,8 @@
     "loading": "Caricamento anteprima...",
     "error": "Si è verificato un errore durante il caricamento dell'anteprima.",
     "emptyTitle": "Nessun round aperto",
-    "emptyDescription": "Non c'è nessun round Oscars aperto al momento."
+    "emptyDescription": "Non c'è nessun round Oscars aperto al momento.",
+    "voterParticipation": "Partecipazione al voto"
   },
   "users": {
     "pageTitle": "Gestione Utenti",

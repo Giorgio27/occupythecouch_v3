@@ -5,6 +5,7 @@ import { OscarsRoundDTO } from "@/lib/shared/types/cineforum";
 import { ExpandableListItem } from "@/components/cineforum/common";
 import { useTranslation } from "react-i18next";
 import OscarsPreviewMovieRow from "./OscarsPreviewMovieRow";
+import VoterParticipation from "./VoterParticipation";
 
 interface OscarsPreviewRoundCardProps {
   round: OscarsRoundDTO;
@@ -76,6 +77,11 @@ export default function OscarsPreviewRoundCard({
           />
         ))}
       </div>
+
+      <VoterParticipation
+        voters={round.voterParticipation}
+        totalMovies={round.winners.length}
+      />
 
       {round.winners.length > 0 && (
         <div className="mt-2 flex items-center justify-between border-t border-border/40 pt-2 text-xs text-muted-foreground">
