@@ -108,6 +108,7 @@
     "globalAverage": "Global Average",
     "colUser": "User",
     "colAverage": "Average",
+    "colWeightedAverage": "Weighted Avg.",
     "colMovies": "Movies",
     "colWins": "Wins",
     "referenceLabel": "(reference)",
@@ -116,16 +117,21 @@
     "colChart": "Chart",
     "colMedia": "Average",
     "colDeltaLabel": "Delta",
-    "joinedLabel": "Member since"
+    "joinedLabel": "Member since",
+    "weightedRatingTitle": "How Average and Weighted Average are calculated",
+    "mediaExplanation": "\"Average\" is the average rating the club gave to the movies you proposed: the more your movies are loved, the higher it goes. It doesn't account for how many movies you proposed, though — a single movie rated very highly can give you a very high Average.",
+    "weightedRatingExplanation": "\"Weighted Average\" (selectable in \"Sort by\") corrects for that: it pulls your Average toward the whole club's average the fewer proposals you have, so a single highly-rated movie can't outrank someone who consistently earned high ratings across more proposals. It's the same technique behind the \"Weighted\" score in the Positions tab, applied here to the average rating instead of position points."
   },
   "positions": {
     "colUser": "User",
     "colPoints": "Points",
+    "colWeighted": "Weighted",
     "scrollHint": "Scroll to see all positions",
     "emptyTitle": "No positions yet",
     "emptySubtitle": "Positions will appear here once the first round with multiple rated proposals closes.",
-    "metricTitle": "How points are counted",
-    "metricExplanation": "For each closed round, proposals are ranked by average rating: the highest-rated proposal earns 25 points, the second 18, then 15-12-10-8-6-4-2-1 down to 10th place (beyond that, 0 points). Proposals tied on average rating share the same place. When a proposal belongs to a team, every team member is credited with that same position and points."
+    "metricTitle": "How Points and Weighted are calculated",
+    "metricExplanation": "\"Points\": for each closed round, proposals are ranked by average rating. The highest-rated proposal earns 25 points, the second 18, then 15-12-10-8-6-4-2-1 down to 10th place (beyond that, 0 points). Proposals tied on average rating share the same place. When a proposal belongs to a team, every member is credited with that same position and points.",
+    "weightedExplanation": "\"Weighted\": your points per proposal (total points divided by number of proposals), corrected so it doesn't just reward whoever proposes the most. With few proposals the value stays close to the whole club's average; the more proposals you make (while keeping good results), the closer it gets to your real average. Example: a single movie that placed 1st (25 points) doesn't immediately give a Weighted score of 25 — with only one data point the group average still counts a lot; someone who's proposed for a while with consistently good placements will see their Weighted score converge on their real average."
   },
   "countries": {
     "pageTitle": "Countries Ranking",

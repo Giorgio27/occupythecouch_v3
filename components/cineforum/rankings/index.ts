@@ -12,3 +12,8 @@ export { default as UsersViewTabs } from "./UsersViewTabs";
 export type { UsersViewMode } from "./UsersViewTabs";
 export { default as UsersStatsRow } from "./UsersStatsRow";
 export { default as UsersPositionsSection } from "./UsersPositionsSection";
+export { default as UserRankingCards } from "./UserRankingCards";
+export { default as UserRankingTable } from "./UserRankingTable";
+export { default as UserRankingTableRow } from "./UserRankingTableRow";
+export { default as UserRankingCardContent } from "./UserRankingCardContent";
+export { default as UserMoviesVotedList } from "./UserMoviesVotedList";

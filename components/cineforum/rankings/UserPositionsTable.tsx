@@ -11,11 +11,11 @@ function positionLabel(position: number): string {
   return MEDALS[position] ?? `${position}°`;
 }
 
-type SortKey = "user_name" | "points" | number;
+type SortKey = "user_name" | "points" | "weighted_score" | number;
 
 type Props = { data: UserPositionDTO[] };
 
-/** F1-style points leaderboard: one sortable column per position, plus total points. */
+/** F1-style points leaderboard: one sortable column per position, plus total and weighted points. */
 export default function UserPositionsTable({ data }: Props) {
   const { t } = useTranslation("rankings");
   const [sortKey, setSortKey] = useState<SortKey>("points");
@@ -32,6 +32,7 @@ export default function UserPositionsTable({ data }: Props) {
   const getValue = (row: UserPositionDTO, key: SortKey): number | string => {
     if (key === "user_name") return row.user_name;
     if (key === "points") return row.points;
+    if (key === "weighted_score") return row.weighted_score;
     return row.positions[key] ?? 0;
   };
 
@@ -84,6 +85,12 @@ export default function UserPositionsTable({ data }: Props) {
                 />
               ))}
               <SortableTh
+                label={t("positions.colWeighted")}
+                active={sortKey === "weighted_score"}
+                sortAsc={sortAsc}
+                onClick={() => toggle("weighted_score")}
+              />
+              <SortableTh
                 label={t("positions.colPoints")}
                 sticky="right"
                 active={sortKey === "points"}
@@ -117,6 +124,11 @@ export default function UserPositionsTable({ data }: Props) {
                     </td>
                   );
                 })}
+                <td className="px-2 py-2.5 sm:px-3 sm:py-3 text-center bg-card transition-colors group-hover:bg-muted/30">
+                  <span className="font-bold text-gradient tabular-nums">
+                    {row.weighted_score.toFixed(1)}
+                  </span>
+                </td>
                 <td
                   className={`px-2 py-2.5 sm:px-3 sm:py-3 text-center bg-card border-border transition-colors group-hover:bg-muted/30 ${STICKY_CLASSES.right}`}
                 >

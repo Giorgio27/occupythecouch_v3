@@ -1,3 +1,4 @@
+import { toUserPositions } from "@/lib/server/rankings/weighted-score";
 import type { UserPositionDTO } from "@/lib/shared/types";
 
 /** F1-style points by 1-based rank; ranks beyond this list score 0. */
@@ -13,8 +14,9 @@ export type ScoringRow = {
 /**
  * Ranks each round's rows by average rating (competition ranking — ties
  * share a place) and scores them with F1-style points; team-owned rows
- * credit every team member individually. Returns one entry per scoring
- * user, sorted by points descending.
+ * credit every team member individually. Weighting/shaping into DTOs is
+ * delegated to `toUserPositions`. Returns one entry per scoring user, sorted
+ * by (raw) points descending.
  */
 export function scorePositions(rows: ScoringRow[]): UserPositionDTO[] {
   const byRound = new Map<string, ScoringRow[]>();
@@ -60,16 +62,5 @@ export function scorePositions(rows: ScoringRow[]): UserPositionDTO[] {
     });
   }
 
-  return Array.from(stats.entries())
-    .map(([userId, s]) => ({
-      user_id: userId,
-      user_name: s.name,
-      points: s.points,
-      positions: Object.fromEntries(s.positions),
-      total_participations: Array.from(s.positions.values()).reduce(
-        (sum, count) => sum + count,
-        0,
-      ),
-    }))
-    .sort((a, b) => b.points - a.points);
+  return toUserPositions(stats);
 }

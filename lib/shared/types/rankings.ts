@@ -52,6 +52,13 @@ export type UserRankingDTO = {
   user_id: string;
   /** ISO 8601 date string — membership createdAt (join date to this cineforum). */
   joined_at: string;
+  /**
+   * `average_rating`, regularized toward the club-wide average rating by
+   * number of rated proposals (Bayesian / IMDB-style weighted rating) — so
+   * a single great pick can't automatically outrank a longer, consistently
+   * strong track record. Null if the user has no rated proposals yet.
+   */
+  weighted_average_rating: number | null;
 };
 
 export type MoviesRankingResponseDTO = {
@@ -324,6 +331,12 @@ export type UserPositionDTO = {
   positions: Record<number, number>;
   /** Total rounds in which the user (directly or via a team) had a rated proposal. */
   total_participations: number;
+  /**
+   * Points per proposal, regularized toward the club-wide average (Bayesian /
+   * IMDB-style weighted rating) so that a handful of great results don't
+   * automatically outrank a long, consistently strong track record.
+   */
+  weighted_score: number;
 };
 
 export type UserPositionsResponseDTO = {

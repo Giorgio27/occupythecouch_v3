@@ -108,6 +108,7 @@
     "globalAverage": "Media Globale",
     "colUser": "Utente",
     "colAverage": "Media",
+    "colWeightedAverage": "Media Pond.",
     "colMovies": "Film",
     "colWins": "Vittorie",
     "referenceLabel": "(riferimento)",
@@ -116,16 +117,21 @@
     "colChart": "Grafico",
     "colMedia": "Media",
     "colDeltaLabel": "Delta",
-    "joinedLabel": "Iscritto il"
+    "joinedLabel": "Iscritto il",
+    "weightedRatingTitle": "Come si calcolano Media e Media Ponderata",
+    "mediaExplanation": "\"Media\" è la media dei voti che il club ha dato ai film che hai proposto: più i tuoi film piacciono, più sale. Non tiene però conto di quanti film hai proposto — con un solo film votato benissimo la tua Media può essere altissima.",
+    "weightedRatingExplanation": "\"Media Ponderata\" (selezionabile in \"Ordina per\") corregge questo: avvicina la tua Media a quella di tutto il club tanto più poche sono le tue proposte, così un solo film con un voto altissimo non scavalca chi, con più proposte, ha ottenuto voti alti in modo costante. È la stessa tecnica del punteggio \"Ponderato\" nella tab Posizioni, applicata qui al voto medio invece che ai punti per posizione."
   },
   "positions": {
     "colUser": "Utente",
     "colPoints": "Punti",
+    "colWeighted": "Ponderato",
     "scrollHint": "Scorri per vedere tutte le posizioni",
     "emptyTitle": "Nessuna posizione ancora",
     "emptySubtitle": "Le posizioni appariranno qui dopo la chiusura del primo round con più proposte votate.",
-    "metricTitle": "Come si calcolano i punti",
-    "metricExplanation": "Ogni round chiuso, le proposte vengono ordinate per voto medio: chi propone il film col voto più alto prende 25 punti, il secondo 18, poi 15-12-10-8-6-4-2-1 fino al decimo posto (oltre, 0 punti). In caso di pari media, le proposte condividono la stessa posizione. Se una proposta è di un team, ogni membro del team riceve la stessa posizione e gli stessi punti."
+    "metricTitle": "Come si calcolano Punti e Ponderato",
+    "metricExplanation": "\"Punti\": ogni round chiuso, le proposte vengono ordinate per voto medio. Chi propone il film col voto più alto prende 25 punti, il secondo 18, poi 15-12-10-8-6-4-2-1 fino al decimo posto (oltre, 0 punti). In caso di pari media, le proposte condividono la stessa posizione. Se una proposta è di un team, ogni membro riceve la stessa posizione e gli stessi punti.",
+    "weightedExplanation": "\"Ponderato\": è la tua media punti a proposta (punti totali diviso numero di proposte), corretta per non premiare solo chi ne propone di più. Con poche proposte il valore si avvicina alla media di tutto il club; più proposte fai (mantenendo buoni risultati), più si avvicina alla tua vera media. Esempio: un solo film arrivato 1° (25 punti) non dà subito un Ponderato di 25 — con un solo dato a disposizione conta ancora molto la media del gruppo; chi invece propone da tempo con buoni piazzamenti costanti vede il suo Ponderato avvicinarsi alla propria media reale."
   },
   "countries": {
     "pageTitle": "Ranking Nazioni",

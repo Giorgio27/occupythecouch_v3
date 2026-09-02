@@ -4,3 +4,4 @@ export { default as SectionHeader } from "./SectionHeader";
 export { default as StatCard } from "./StatCard";
 export { default as ExpandableListItem } from "./ExpandableListItem";
 export { default as ExpandableList } from "./ExpandableList";
+export { default as InfoNote } from "./InfoNote";

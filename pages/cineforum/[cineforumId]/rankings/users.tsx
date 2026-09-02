@@ -14,7 +14,11 @@ import {
   UsersPositionsSection,
   type UsersViewMode,
 } from "@/components/cineforum/rankings";
-import { LoadingCard, EmptyState } from "@/components/cineforum/common";
+import {
+  LoadingCard,
+  EmptyState,
+  InfoNote,
+} from "@/components/cineforum/common";
 import type {
   UserRankingDTO,
   UserPositionDTO,
@@ -23,6 +27,7 @@ import type {
 
 const suppliers: Supplier[] = [
   { id: "cineforum", name: "Cineforum" },
+  { id: "weighted", name: "Media Ponderata" },
   { id: "tmdb", name: "TMDB" },
   { id: "imdb", name: "IMDB" },
   { id: "rotten_tomatoes", name: "Rotten Tomatoes" },
@@ -131,6 +136,8 @@ export default function UsersRankingPage({
       switch (selectedSupplier.id) {
         case "cineforum":
           return ranking.average_rating;
+        case "weighted":
+          return ranking.weighted_average_rating;
         case "tmdb":
           return ranking.tmdb_vote;
         case "imdb":
@@ -302,6 +309,15 @@ export default function UsersRankingPage({
                 />
               </div>
             )}
+
+            <InfoNote
+              className="mt-6"
+              title={t("users.weightedRatingTitle")}
+              paragraphs={[
+                t("users.mediaExplanation"),
+                t("users.weightedRatingExplanation"),
+              ]}
+            />
           </>
         )}
       </div>

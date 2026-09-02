@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Info, Search, Trophy } from "lucide-react";
+import { Search, Trophy } from "lucide-react";
 import { UserPositionsTable } from "@/components/cineforum/rankings";
-import { EmptyState } from "@/components/cineforum/common";
+import { EmptyState, InfoNote } from "@/components/cineforum/common";
 import type { UserPositionDTO } from "@/lib/shared/types";
 
 type Props = {
@@ -54,20 +54,14 @@ export default function UsersPositionsSection({
         <UserPositionsTable data={filtered} />
       )}
 
-      {/* How the score is computed */}
-      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-muted/30 p-4">
-        <div className="h-fit shrink-0 rounded-lg bg-primary/10 p-2">
-          <Info className="w-4 h-4 text-primary" />
-        </div>
-        <div className="min-w-0">
-          <p className="mb-1 text-sm font-semibold text-foreground">
-            {t("positions.metricTitle")}
-          </p>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {t("positions.metricExplanation")}
-          </p>
-        </div>
-      </div>
+      <InfoNote
+        className="mt-6"
+        title={t("positions.metricTitle")}
+        paragraphs={[
+          t("positions.metricExplanation"),
+          t("positions.weightedExplanation"),
+        ]}
+      />
     </div>
   );
 }
