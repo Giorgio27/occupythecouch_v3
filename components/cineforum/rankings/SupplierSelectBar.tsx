@@ -1,11 +1,5 @@
 import { useTranslation } from "react-i18next";
-import {
-  Search,
-  SlidersHorizontal,
-  LayoutGrid,
-  List,
-  Film,
-} from "lucide-react";
+import { Search, SlidersHorizontal, Film } from "lucide-react";
 import { SupplierSelect } from "@/components/cineforum/rankings";
 import type { Supplier } from "@/lib/shared/types";
 
@@ -15,8 +9,6 @@ type Props = {
   onSupplierChange: (supplier: Supplier) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  viewMode: "cards" | "table";
-  onViewModeChange: (mode: "cards" | "table") => void;
   showFilters: boolean;
   onToggleFilters: () => void;
   allRounds: string[];
@@ -24,15 +16,13 @@ type Props = {
   onRoundRangeChange: (range: [number, number]) => void;
 };
 
-/** Controls bar: supplier selector, search input, view toggle, and round-range filter. */
+/** Controls bar: supplier selector, search input, and round-range filter. */
 export default function SupplierSelectBar({
   suppliers,
   selectedSupplier,
   onSupplierChange,
   searchQuery,
   onSearchChange,
-  viewMode,
-  onViewModeChange,
   showFilters,
   onToggleFilters,
   allRounds,
@@ -72,7 +62,7 @@ export default function SupplierSelectBar({
           {allRounds.length > 1 && (
             <button
               onClick={onToggleFilters}
-              className={`px-3 lg:px-4 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200
+              className={`shrink-0 px-3 lg:px-4 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200
                 ${
                   showFilters
                     ? "bg-primary text-primary-foreground border-primary"
@@ -84,40 +74,18 @@ export default function SupplierSelectBar({
               <span className="hidden lg:inline">{t("users.filters")}</span>
             </button>
           )}
-
-          {/* Cards / Table toggle (hidden in delta mode) */}
-          {selectedSupplier.id !== "delta" && (
-            <div className="flex rounded-xl border border-border overflow-hidden bg-card">
-              <button
-                onClick={() => onViewModeChange("cards")}
-                className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors
-                  ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                title={t("users.viewCards")}
-              >
-                <LayoutGrid className="w-4 h-4" />
-                <span className="hidden lg:inline">{t("users.viewCards")}</span>
-              </button>
-              <button
-                onClick={() => onViewModeChange("table")}
-                className={`px-3 lg:px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium transition-colors border-l border-border
-                  ${viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"}`}
-                title={t("users.viewTable")}
-              >
-                <List className="w-4 h-4" />
-                <span className="hidden lg:inline">{t("users.viewTable")}</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Round range filter */}
       {showFilters && allRounds.length > 1 && (
         <div className="cine-card p-4 animate-fade-in">
-          <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-4">
-            <Film className="w-4 h-4 text-primary" />
-            {t("users.filterByRound")}
-            <span className="text-primary font-bold">
+          <label className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground mb-4">
+            <span className="flex items-center gap-2">
+              <Film className="w-4 h-4 text-primary shrink-0" />
+              {t("users.filterByRound")}
+            </span>
+            <span className="text-primary font-bold break-words">
               {allRounds[roundRange[0] - 1]} → {allRounds[roundRange[1] - 1]}
             </span>
           </label>
@@ -166,9 +134,9 @@ export default function SupplierSelectBar({
               />
             </div>
 
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{allRounds[0]}</span>
-              <span>{allRounds[allRounds.length - 1]}</span>
+            <div className="flex justify-between gap-2 text-xs text-muted-foreground">
+              <span className="truncate">{allRounds[0]}</span>
+              <span className="truncate">{allRounds[allRounds.length - 1]}</span>
             </div>
           </div>
         </div>

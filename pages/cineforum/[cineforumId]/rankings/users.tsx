@@ -3,19 +3,23 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
-import { Trophy, Users, Award, Film } from "lucide-react";
-import { fetchUserRankings } from "@/lib/client/cineforum";
+import { Users } from "lucide-react";
+import { fetchUserRankings, fetchUserPositions } from "@/lib/client/cineforum";
 import {
   SupplierSelectBar,
   UserRankingList,
   ComparisonSection,
+  UsersViewTabs,
+  UsersStatsRow,
+  UsersPositionsSection,
+  type UsersViewMode,
 } from "@/components/cineforum/rankings";
-import {
-  LoadingCard,
-  StatCard,
-  EmptyState,
-} from "@/components/cineforum/common";
-import type { UserRankingDTO, Supplier } from "@/lib/shared/types";
+import { LoadingCard, EmptyState } from "@/components/cineforum/common";
+import type {
+  UserRankingDTO,
+  UserPositionDTO,
+  Supplier,
+} from "@/lib/shared/types";
 
 const suppliers: Supplier[] = [
   { id: "cineforum", name: "Cineforum" },
@@ -41,6 +45,7 @@ export default function UsersRankingPage({
   const { t } = useTranslation("rankings");
 
   const [rankings, setRankings] = useState<UserRankingDTO[]>([]);
+  const [positions, setPositions] = useState<UserPositionDTO[]>([]);
   const [totalMoviesVoted, setTotalMoviesVoted] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier>(
@@ -49,7 +54,7 @@ export default function UsersRankingPage({
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [roundRange, setRoundRange] = useState<[number, number]>([0, 0]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [viewMode, setViewMode] = useState<UsersViewMode>("cards");
   const [showFilters, setShowFilters] = useState(false);
   const [cardViewMode, setCardViewMode] = useState<
     Record<string, "table" | "chart">
@@ -58,17 +63,18 @@ export default function UsersRankingPage({
   const loadRankings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetchUserRankings(cineforumId, {
-        offset: 0,
-        limit: 100,
-      });
+      const [rankingsRes, positionsRes] = await Promise.all([
+        fetchUserRankings(cineforumId, { offset: 0, limit: 100 }),
+        fetchUserPositions(cineforumId),
+      ]);
 
-      setRankings(response.body);
-      setTotalMoviesVoted(response.total_movies_voted ?? 0);
+      setRankings(rankingsRes.body);
+      setTotalMoviesVoted(rankingsRes.total_movies_voted ?? 0);
+      setPositions(positionsRes.body);
 
-      if (response.body.length > 0) {
+      if (rankingsRes.body.length > 0) {
         const allRounds = new Set<string>();
-        response.body.forEach((ranking) => {
+        rankingsRes.body.forEach((ranking) => {
           ranking.movie_round_rankings.forEach((mrr) =>
             allRounds.add(mrr.round),
           );
@@ -226,93 +232,77 @@ export default function UsersRankingPage({
           </p>
         </div>
 
-        {/* Stats */}
-        <div
-          className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 animate-fade-in-up"
-          style={{ animationDelay: "100ms" }}
-        >
-          <StatCard
-            icon={<Users className="w-5 h-5 text-primary" />}
-            iconBg="bg-primary/10"
-            label={t("users.statUsers")}
-            value={stats.totalUsers}
-          />
-          <StatCard
-            icon={<Film className="w-5 h-5 text-green-500" />}
-            iconBg="bg-green-500/10"
-            label={t("users.statMoviesVoted")}
-            value={totalMoviesVoted}
-          />
-          <StatCard
-            icon={<Award className="w-5 h-5 text-amber-500" />}
-            iconBg="bg-amber-500/10"
-            label={t("users.statAverage")}
-            value={stats.avgRating.toFixed(2)}
-          />
-          <StatCard
-            icon={<Trophy className="w-5 h-5 text-yellow-500" />}
-            iconBg="bg-yellow-500/10"
-            label={t("users.statWins")}
-            value={stats.totalWins}
-          />
-        </div>
-
-        {/* Controls */}
-        <SupplierSelectBar
-          suppliers={suppliers}
-          selectedSupplier={selectedSupplier}
-          onSupplierChange={setSelectedSupplier}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          showFilters={showFilters}
-          onToggleFilters={() => setShowFilters((v) => !v)}
-          allRounds={allRounds}
-          roundRange={roundRange}
-          onRoundRangeChange={setRoundRange}
+        <UsersStatsRow
+          totalUsers={stats.totalUsers}
+          totalMoviesVoted={totalMoviesVoted}
+          avgRating={stats.avgRating}
+          totalWins={stats.totalWins}
         />
 
-        {/* Cards / Table view */}
-        {sortedAndFilteredRankings.length > 0 &&
-          selectedSupplier.id !== "delta" && (
-            <UserRankingList
-              displayedRankings={sortedAndFilteredRankings}
-              sortedAndFilteredRankings={sortedAndFilteredRankings}
+        <UsersViewTabs viewMode={viewMode} onViewModeChange={setViewMode} />
+
+        {viewMode === "positions" ? (
+          <UsersPositionsSection
+            positions={positions}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
+        ) : (
+          <>
+            <SupplierSelectBar
+              suppliers={suppliers}
               selectedSupplier={selectedSupplier}
-              viewMode={viewMode}
-              expandedIndex={expandedIndex}
-              cardViewMode={cardViewMode}
-              onToggleExpand={setExpandedIndex}
-              onSetCardMode={setCardMode}
-              getRatingForSupplier={getRatingForSupplier}
-              getPosition={getPosition}
+              onSupplierChange={setSelectedSupplier}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              showFilters={showFilters}
+              onToggleFilters={() => setShowFilters((v) => !v)}
+              allRounds={allRounds}
+              roundRange={roundRange}
+              onRoundRangeChange={setRoundRange}
             />
-          )}
 
-        {/* Platform comparison (delta) */}
-        {selectedSupplier.id === "delta" &&
-          sortedAndFilteredRankings.length > 0 && (
-            <ComparisonSection
-              displayedRankings={sortedAndFilteredRankings}
-              sortedAndFilteredRankings={sortedAndFilteredRankings}
-              getPosition={getPosition}
-            />
-          )}
+            {sortedAndFilteredRankings.length > 0 &&
+              selectedSupplier.id !== "delta" && (
+                <UserRankingList
+                  displayedRankings={sortedAndFilteredRankings}
+                  sortedAndFilteredRankings={sortedAndFilteredRankings}
+                  selectedSupplier={selectedSupplier}
+                  viewMode={viewMode}
+                  expandedIndex={expandedIndex}
+                  cardViewMode={cardViewMode}
+                  onToggleExpand={setExpandedIndex}
+                  onSetCardMode={setCardMode}
+                  getRatingForSupplier={getRatingForSupplier}
+                  getPosition={getPosition}
+                />
+              )}
 
-        {/* Empty state */}
-        {!loading && sortedAndFilteredRankings.length === 0 && (
-          <div className="animate-fade-in">
-            <EmptyState
-              icon={<Users className="w-8 h-8 text-muted-foreground" />}
-              title={searchQuery ? t("users.noResults") : t("users.emptyTitle")}
-              subtitle={
-                searchQuery
-                  ? t("users.noResultsQuery", { query: searchQuery })
-                  : t("users.emptySubtitle")
-              }
-            />
-          </div>
+            {selectedSupplier.id === "delta" &&
+              sortedAndFilteredRankings.length > 0 && (
+                <ComparisonSection
+                  displayedRankings={sortedAndFilteredRankings}
+                  sortedAndFilteredRankings={sortedAndFilteredRankings}
+                  getPosition={getPosition}
+                />
+              )}
+
+            {sortedAndFilteredRankings.length === 0 && (
+              <div className="animate-fade-in">
+                <EmptyState
+                  icon={<Users className="w-8 h-8 text-muted-foreground" />}
+                  title={
+                    searchQuery ? t("users.noResults") : t("users.emptyTitle")
+                  }
+                  subtitle={
+                    searchQuery
+                      ? t("users.noResultsQuery", { query: searchQuery })
+                      : t("users.emptySubtitle")
+                  }
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </CineforumLayout>

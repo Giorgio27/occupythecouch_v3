@@ -82,6 +82,7 @@
     "filterTo": "Fine:",
     "viewCards": "Griglia",
     "viewTable": "Tabella",
+    "viewPositions": "Posizioni",
     "viewChart": "Grafico",
     "moviesVoted": "Film Votati",
     "noMoviesVoted": "Nessun film votato",
@@ -116,6 +117,15 @@
     "colMedia": "Media",
     "colDeltaLabel": "Delta",
     "joinedLabel": "Iscritto il"
+  },
+  "positions": {
+    "colUser": "Utente",
+    "colPoints": "Punti",
+    "scrollHint": "Scorri per vedere tutte le posizioni",
+    "emptyTitle": "Nessuna posizione ancora",
+    "emptySubtitle": "Le posizioni appariranno qui dopo la chiusura del primo round con più proposte votate.",
+    "metricTitle": "Come si calcolano i punti",
+    "metricExplanation": "Ogni round chiuso, le proposte vengono ordinate per voto medio: chi propone il film col voto più alto prende 25 punti, il secondo 18, poi 15-12-10-8-6-4-2-1 fino al decimo posto (oltre, 0 punti). In caso di pari media, le proposte condividono la stessa posizione. Se una proposta è di un team, ogni membro del team riceve la stessa posizione e gli stessi punti."
   },
   "countries": {
     "pageTitle": "Ranking Nazioni",

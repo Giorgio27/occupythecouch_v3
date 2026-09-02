@@ -312,6 +312,25 @@ export type GenreResponseDTO = {
   total_films: number;
 };
 
+// Position types — F1-style points leaderboard based on each user's
+// per-round rank (their proposed movie's average rating vs. the round's
+// other proposals).
+export type UserPositionDTO = {
+  user_id: string;
+  user_name: string;
+  /** Total F1-style points (25-18-15-12-10-8-6-4-2-1, 0 beyond 10th place). */
+  points: number;
+  /** Position (1-based, competition ranking — ties share a place) -> number of times achieved. */
+  positions: Record<number, number>;
+  /** Total rounds in which the user (directly or via a team) had a rated proposal. */
+  total_participations: number;
+};
+
+export type UserPositionsResponseDTO = {
+  body: UserPositionDTO[];
+  status: string;
+};
+
 // Consensus types — how much the club agreed (or split) on a movie.
 export type ConsensusMovieDTO = {
   /** MovieRoundRanking id (one entry per movie-in-round, like MovieRankingDTO). */

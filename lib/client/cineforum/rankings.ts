@@ -8,6 +8,7 @@ import type {
   ProposalUserStatsResponseDTO,
   ConsensusResponseDTO,
   GenreResponseDTO,
+  UserPositionsResponseDTO,
 } from "@/lib/shared/types";
 
 /**
@@ -42,6 +43,21 @@ export async function fetchUserRankings(
   const { offset = 0, limit = 100 } = options;
   return jsonFetch<UsersRankingResponseDTO>(
     `/api/cineforum/${cineforumId}/rankings/users?offset=${offset}&limit=${limit}`,
+  );
+}
+
+/**
+ * Fetches the F1-style points leaderboard (positions per round) for a
+ * cineforum's active members.
+ *
+ * @param cineforumId - The unique identifier of the cineforum
+ * @returns Promise resolving to the per-user position/points breakdown
+ */
+export async function fetchUserPositions(
+  cineforumId: string,
+): Promise<UserPositionsResponseDTO> {
+  return jsonFetch<UserPositionsResponseDTO>(
+    `/api/cineforum/${cineforumId}/rankings/positions`,
   );
 }
 

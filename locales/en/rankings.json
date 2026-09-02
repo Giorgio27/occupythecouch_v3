@@ -82,6 +82,7 @@
     "filterTo": "To:",
     "viewCards": "Cards",
     "viewTable": "Table",
+    "viewPositions": "Positions",
     "viewChart": "Chart",
     "moviesVoted": "Movies Voted",
     "noMoviesVoted": "No movies voted",
@@ -116,6 +117,15 @@
     "colMedia": "Average",
     "colDeltaLabel": "Delta",
     "joinedLabel": "Member since"
+  },
+  "positions": {
+    "colUser": "User",
+    "colPoints": "Points",
+    "scrollHint": "Scroll to see all positions",
+    "emptyTitle": "No positions yet",
+    "emptySubtitle": "Positions will appear here once the first round with multiple rated proposals closes.",
+    "metricTitle": "How points are counted",
+    "metricExplanation": "For each closed round, proposals are ranked by average rating: the highest-rated proposal earns 25 points, the second 18, then 15-12-10-8-6-4-2-1 down to 10th place (beyond that, 0 points). Proposals tied on average rating share the same place. When a proposal belongs to a team, every team member is credited with that same position and points."
   },
   "countries": {
     "pageTitle": "Countries Ranking",
