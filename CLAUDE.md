@@ -451,8 +451,9 @@ try {
 }
 ```
 
-- `console.error` is the only allowed `console.*` in production code
-- Never `console.log` in production code
+- `console.error` is reserved for actual failures (caught errors, aborted operations). Hosting platforms (Vercel included) tag every `console.error` call as an "error" in logs/alerts, so using it for routine tracing creates false alarms.
+- `console.info` is allowed for operational/diagnostic tracing in server code (e.g. step-by-step progress logs in a long-running process) that isn't itself a failure — it shows up in logs without triggering error-level alerting.
+- Never `console.log` / `console.debug` / `console.warn` in production code.
 - Never expose internal error messages or stack traces to the client
 
 ---
@@ -625,7 +626,7 @@ import { ExpandableList, ExpandableListItem } from "@/components/cineforum/commo
 **Code quality**
 
 - [ ] JSDoc on all exported functions
-- [ ] No `console.log` (only `console.error` in server-side error handlers)
+- [ ] No `console.log`/`console.debug`/`console.warn` — `console.error` only for actual failures, `console.info` only for operational tracing
 - [ ] No commented-out code
 - [ ] No magic numbers/strings — use named constants or union types
 - [ ] Imports in correct order

@@ -17,11 +17,11 @@ export async function notifyRoundClosed(roundId: string): Promise<void> {
   try {
     const data = await getRoundCloseNotificationData(roundId);
     if (!data) {
-      console.error(`[notifyRoundClosed] round ${roundId}: no rankings to report, skipping`);
+      console.info(`[notifyRoundClosed] round ${roundId}: no rankings to report, skipping`);
       return;
     }
     if (!data.telegramBotToken || !data.telegramChatId) {
-      console.error(`[notifyRoundClosed] round ${roundId}: no Telegram credentials, skipping`);
+      console.info(`[notifyRoundClosed] round ${roundId}: no Telegram credentials, skipping`);
       return;
     }
 
@@ -34,13 +34,13 @@ export async function notifyRoundClosed(roundId: string): Promise<void> {
     const resultsMessage = buildRoundResultsMessage(data, pagelloneSection);
     const rankingMessage = buildRoundFullRankingMessage(data);
 
-    console.error(`[notifyRoundClosed] round ${roundId}: sending results message`);
+    console.info(`[notifyRoundClosed] round ${roundId}: sending results message`);
     await telegramNotify(resultsMessage, data.telegramBotToken, data.telegramChatId);
 
-    console.error(`[notifyRoundClosed] round ${roundId}: sending full ranking message`);
+    console.info(`[notifyRoundClosed] round ${roundId}: sending full ranking message`);
     await telegramNotify(rankingMessage, data.telegramBotToken, data.telegramChatId);
 
-    console.error(`[notifyRoundClosed] round ${roundId}: notification complete`);
+    console.info(`[notifyRoundClosed] round ${roundId}: notification complete`);
   } catch (error: unknown) {
     console.error(`[notifyRoundClosed] round ${roundId}: failed`, error);
   }
