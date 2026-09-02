@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 import { closeRound } from "@/lib/server/rounds";
+import { notifyRoundClosed } from "@/lib/server/rounds/notify-round-closed";
 
 export default async function handler(
   req: NextApiRequest,
@@ -54,6 +55,9 @@ export default async function handler(
 
   try {
     const result = await closeRound(roundId);
+    // Sent last, once closed, awaited to run to completion; it swallows and
+    // logs its own errors, so a Telegram failure can't fail this response.
+    await notifyRoundClosed(roundId);
     return res.status(200).json(result);
   } catch (e: unknown) {
     console.error("POST /api/cineforum/rounds/[roundId]/close error", e);

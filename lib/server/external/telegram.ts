@@ -1,4 +1,15 @@
 /**
+ * Escapes characters that are special in Telegram's legacy Markdown
+ * `parse_mode` (`_`, `*`, `` ` ``, `[`). Apply this to any dynamic text
+ * (movie titles, user names, etc.) interpolated into a Markdown message —
+ * an unescaped/unbalanced special character makes Telegram reject the
+ * whole message with a "can't parse entities" error.
+ */
+export function escapeMarkdown(text: string): string {
+  return text.replace(/([_*`[])/g, "\\$1");
+}
+
+/**
  * Send a Telegram message.
  *
  * Credentials are resolved in this order:

@@ -57,6 +57,8 @@ export async function createRound(options: {
  * Close a round and compute MovieRoundRanking + UserRanking
  */
 export async function closeRound(roundId: string) {
+  console.error(`[closeRound] starting for round ${roundId}`);
+
   // Fetch round with proposals, winners, owner user/team and team users
   const round = await prisma.round.findUnique({
     where: { id: roundId },
@@ -81,6 +83,7 @@ export async function closeRound(roundId: string) {
   });
 
   if (!round) {
+    console.error(`[closeRound] round ${roundId} not found`);
     throw new Error("Round not found");
   }
 
@@ -88,6 +91,7 @@ export async function closeRound(roundId: string) {
   // Re-running would create duplicate MovieRoundRanking/UserRanking links
   // and double-count averages, so bail out early.
   if (round.closed) {
+    console.error(`[closeRound] round ${roundId} is already closed`);
     const error: Error & { code?: string } = new Error(
       "Round is already closed",
     );
@@ -99,6 +103,9 @@ export async function closeRound(roundId: string) {
   const votes = await prisma.movieVote.findMany({
     where: { roundId: round.id },
   });
+  console.error(
+    `[closeRound] round ${roundId}: ${round.proposals.length} proposals, ${votes.length} votes`,
+  );
 
   // Check that all proposals are closed, have a winner and have votes
   const votesByMovieId = new Map<string, number>();
@@ -122,6 +129,10 @@ export async function closeRound(roundId: string) {
     proposalsWithoutVotes.length > 0;
 
   if (hasIssues) {
+    console.error(
+      `[closeRound] round ${roundId} not ready: ${openProposals.length} open, ` +
+        `${proposalsWithoutWinner.length} without winner, ${proposalsWithoutVotes.length} without votes`,
+    );
     const error: Error & { code?: string; details?: unknown } = new Error(
       "Round cannot be closed: some proposals are still open or are missing winner/votes",
     );
@@ -176,10 +187,14 @@ export async function closeRound(roundId: string) {
           .filter(([_, avg]) => avg === winningRating)
           .map(([movieId]) => movieId);
 
+  console.error(
+    `[closeRound] round ${roundId}: ${movieToAvg.size} rated movies, winningRating=${winningRating}, winners=${winningMovieIds.length}`,
+  );
+
   // Everything below mutates the DB. Run it inside a single interactive
   // transaction so a failure halfway through never leaves the round with
   // partial rankings (which would then be duplicated on retry).
-  return prisma.$transaction(
+  const closedRound = await prisma.$transaction(
     async (tx) => {
       // Atomic idempotency claim: flip closed false -> true and only proceed
       // if we were the ones to flip it. Two concurrent close calls (or a
@@ -190,6 +205,9 @@ export async function closeRound(roundId: string) {
         data: { closed: true },
       });
       if (claim.count === 0) {
+        console.error(
+          `[closeRound] round ${roundId}: idempotency claim lost (already closed concurrently)`,
+        );
         const error: Error & { code?: string } = new Error(
           "Round is already closed",
         );
@@ -200,6 +218,9 @@ export async function closeRound(roundId: string) {
       if (movieToAvg.size === 0) {
         // No winners or no votes: the round is already marked closed above,
         // nothing else to compute.
+        console.error(
+          `[closeRound] round ${roundId}: no rated movies, closed with no rankings`,
+        );
         return tx.round.findUniqueOrThrow({ where: { id: round.id } });
       }
 
@@ -278,6 +299,9 @@ export async function closeRound(roundId: string) {
       }
 
       // Recompute averages for all affected user rankings
+      console.error(
+        `[closeRound] round ${roundId}: recomputing ${rankingIdsToRecompute.size} user rankings`,
+      );
       for (const rankingId of Array.from(rankingIdsToRecompute)) {
         await recomputeUserRanking(tx, rankingId);
       }
@@ -292,6 +316,9 @@ export async function closeRound(roundId: string) {
     },
     { timeout: 60_000, maxWait: 10_000 },
   );
+
+  console.error(`[closeRound] round ${roundId}: transaction committed`);
+  return closedRound;
 }
 
 /**
