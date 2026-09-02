@@ -194,130 +194,147 @@ export async function closeRound(roundId: string) {
   // Everything below mutates the DB. Run it inside a single interactive
   // transaction so a failure halfway through never leaves the round with
   // partial rankings (which would then be duplicated on retry).
-  const closedRound = await prisma.$transaction(
-    async (tx) => {
-      // Atomic idempotency claim: flip closed false -> true and only proceed
-      // if we were the ones to flip it. Two concurrent close calls (or a
-      // retry after a committed close) will see count === 0 and abort,
-      // rolling back without writing any rankings.
-      const claim = await tx.round.updateMany({
-        where: { id: round.id, closed: false },
-        data: { closed: true },
-      });
-      if (claim.count === 0) {
-        console.error(
-          `[closeRound] round ${roundId}: idempotency claim lost (already closed concurrently)`,
-        );
-        const error: Error & { code?: string } = new Error(
-          "Round is already closed",
-        );
-        error.code = "ROUND_ALREADY_CLOSED";
-        throw error;
-      }
-
-      if (movieToAvg.size === 0) {
-        // No winners or no votes: the round is already marked closed above,
-        // nothing else to compute.
-        console.error(
-          `[closeRound] round ${roundId}: no rated movies, closed with no rankings`,
-        );
-        return tx.round.findUniqueOrThrow({ where: { id: round.id } });
-      }
-
-      // Helper to keep track of which user rankings we must recompute
-      const rankingIdsToRecompute = new Set<string>();
-
-      // For each proposal, create MovieRoundRanking and update UserRanking
-      for (const proposal of round.proposals) {
-        if (!proposal.winnerId) continue;
-
-        const movieId = proposal.winnerId;
-        const averageRating = movieToAvg.get(movieId) ?? null;
-        const isRoundWinner = winningMovieIds.includes(movieId);
-
-        // Decide owner: user or team
-        const ownerUserId = proposal.ownerUserId ?? null;
-        const ownerTeamId = proposal.ownerTeamId ?? null;
-
-        // Create MovieRoundRanking row
-        const mrr = await tx.movieRoundRanking.create({
-          data: {
-            roundId: round.id,
-            movieId,
-            userId: ownerUserId,
-            teamId: ownerTeamId,
-            averageRating,
-            roundWinner: isRoundWinner,
-          },
+  const transactionStartedAt = Date.now();
+  let closedRound;
+  try {
+    closedRound = await prisma.$transaction(
+      async (tx) => {
+        // Atomic idempotency claim: flip closed false -> true and only proceed
+        // if we were the ones to flip it. Two concurrent close calls (or a
+        // retry after a committed close) will see count === 0 and abort,
+        // rolling back without writing any rankings.
+        const claim = await tx.round.updateMany({
+          where: { id: round.id, closed: false },
+          data: { closed: true },
         });
-
-        // Link movie votes for this movie+round to this ranking
-        await tx.movieVote.updateMany({
-          where: {
-            roundId: round.id,
-            movieId,
-          },
-          data: {
-            movieRoundRankingId: mrr.id,
-          },
-        });
-
-        // Collect users that own this proposal (user or team.users)
-        const userIds: string[] = [];
-
-        if (ownerTeamId && proposal.ownerTeam) {
-          userIds.push(...proposal.ownerTeam.users.map((tu) => tu.userId));
-        } else if (ownerUserId) {
-          userIds.push(ownerUserId);
+        if (claim.count === 0) {
+          console.error(
+            `[closeRound] round ${roundId}: idempotency claim lost (already closed concurrently)`,
+          );
+          const error: Error & { code?: string } = new Error(
+            "Round is already closed",
+          );
+          error.code = "ROUND_ALREADY_CLOSED";
+          throw error;
         }
 
-        // For each user, attach MRR to UserRanking (per user + cineforum)
-        for (const userId of userIds) {
-          const ranking = await tx.userRanking.upsert({
-            where: {
-              userId_cineforumId: {
-                userId,
-                cineforumId: round.cineforumId,
-              },
-            },
-            update: {},
-            create: {
-              userId,
-              cineforumId: round.cineforumId,
+        if (movieToAvg.size === 0) {
+          // No winners or no votes: the round is already marked closed above,
+          // nothing else to compute.
+          console.error(
+            `[closeRound] round ${roundId}: no rated movies, closed with no rankings`,
+          );
+          return tx.round.findUniqueOrThrow({ where: { id: round.id } });
+        }
+
+        // Helper to keep track of which user rankings we must recompute
+        const rankingIdsToRecompute = new Set<string>();
+
+        // For each proposal, create MovieRoundRanking and update UserRanking
+        for (const proposal of round.proposals) {
+          if (!proposal.winnerId) continue;
+
+          const movieId = proposal.winnerId;
+          const averageRating = movieToAvg.get(movieId) ?? null;
+          const isRoundWinner = winningMovieIds.includes(movieId);
+
+          // Decide owner: user or team
+          const ownerUserId = proposal.ownerUserId ?? null;
+          const ownerTeamId = proposal.ownerTeamId ?? null;
+
+          // Create MovieRoundRanking row
+          const mrr = await tx.movieRoundRanking.create({
+            data: {
+              roundId: round.id,
+              movieId,
+              userId: ownerUserId,
+              teamId: ownerTeamId,
+              averageRating,
+              roundWinner: isRoundWinner,
             },
           });
 
-          await tx.userRankingMovieRoundRanking.create({
+          // Link movie votes for this movie+round to this ranking
+          await tx.movieVote.updateMany({
+            where: {
+              roundId: round.id,
+              movieId,
+            },
             data: {
-              userRankingId: ranking.id,
               movieRoundRankingId: mrr.id,
             },
           });
 
-          rankingIdsToRecompute.add(ranking.id);
+          // Collect users that own this proposal (user or team.users)
+          const userIds: string[] = [];
+
+          if (ownerTeamId && proposal.ownerTeam) {
+            userIds.push(...proposal.ownerTeam.users.map((tu) => tu.userId));
+          } else if (ownerUserId) {
+            userIds.push(ownerUserId);
+          }
+
+          // For each user, attach MRR to UserRanking (per user + cineforum)
+          for (const userId of userIds) {
+            const ranking = await tx.userRanking.upsert({
+              where: {
+                userId_cineforumId: {
+                  userId,
+                  cineforumId: round.cineforumId,
+                },
+              },
+              update: {},
+              create: {
+                userId,
+                cineforumId: round.cineforumId,
+              },
+            });
+
+            await tx.userRankingMovieRoundRanking.create({
+              data: {
+                userRankingId: ranking.id,
+                movieRoundRankingId: mrr.id,
+              },
+            });
+
+            rankingIdsToRecompute.add(ranking.id);
+          }
         }
-      }
 
-      // Recompute averages for all affected user rankings
-      console.error(
-        `[closeRound] round ${roundId}: recomputing ${rankingIdsToRecompute.size} user rankings`,
-      );
-      for (const rankingId of Array.from(rankingIdsToRecompute)) {
-        await recomputeUserRanking(tx, rankingId);
-      }
+        // Recompute averages for all affected user rankings
+        console.error(
+          `[closeRound] round ${roundId}: recomputing ${rankingIdsToRecompute.size} user rankings`,
+        );
+        for (const rankingId of Array.from(rankingIdsToRecompute)) {
+          await recomputeUserRanking(tx, rankingId);
+        }
 
-      // Finally flag the round as oscarable (it is already marked closed).
-      return tx.round.update({
-        where: { id: round.id },
-        data: {
-          oscarable: true,
-        },
-      });
-    },
-    { timeout: 60_000, maxWait: 10_000 },
+        // Finally flag the round as oscarable (it is already marked closed).
+        return tx.round.update({
+          where: { id: round.id },
+          data: {
+            oscarable: true,
+          },
+        });
+      },
+      // Prisma Accelerate caps interactive transactions at 15000ms — asking
+      // for more (e.g. the previous 60_000) makes it reject the transaction
+      // outright with P6005 before it even starts.
+      { timeout: 14_000, maxWait: 5_000 },
+    );
+  } catch (error: unknown) {
+    const elapsedMs = Date.now() - transactionStartedAt;
+    const err = error as { code?: string; message?: string };
+    console.error(
+      `[closeRound] round ${roundId}: transaction failed after ${elapsedMs}ms ` +
+        `(code=${err?.code ?? "?"}): ${err?.message ?? error}`,
+    );
+    throw error;
+  }
+
+  console.error(
+    `[closeRound] round ${roundId}: transaction committed after ${Date.now() - transactionStartedAt}ms`,
   );
-
-  console.error(`[closeRound] round ${roundId}: transaction committed`);
   return closedRound;
 }
 
