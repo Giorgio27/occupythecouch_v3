@@ -57,7 +57,7 @@ export async function createRound(options: {
  * Close a round and compute MovieRoundRanking + UserRanking
  */
 export async function closeRound(roundId: string) {
-  console.error(`[closeRound] starting for round ${roundId}`);
+  console.info(`[closeRound] starting for round ${roundId}`);
 
   // Fetch round with proposals, winners, owner user/team and team users
   const round = await prisma.round.findUnique({
@@ -103,7 +103,7 @@ export async function closeRound(roundId: string) {
   const votes = await prisma.movieVote.findMany({
     where: { roundId: round.id },
   });
-  console.error(
+  console.info(
     `[closeRound] round ${roundId}: ${round.proposals.length} proposals, ${votes.length} votes`,
   );
 
@@ -187,7 +187,7 @@ export async function closeRound(roundId: string) {
           .filter(([_, avg]) => avg === winningRating)
           .map(([movieId]) => movieId);
 
-  console.error(
+  console.info(
     `[closeRound] round ${roundId}: ${movieToAvg.size} rated movies, winningRating=${winningRating}, winners=${winningMovieIds.length}`,
   );
 
@@ -221,7 +221,7 @@ export async function closeRound(roundId: string) {
         if (movieToAvg.size === 0) {
           // No winners or no votes: the round is already marked closed above,
           // nothing else to compute.
-          console.error(
+          console.info(
             `[closeRound] round ${roundId}: no rated movies, closed with no rankings`,
           );
           return tx.round.findUniqueOrThrow({ where: { id: round.id } });
@@ -242,29 +242,6 @@ export async function closeRound(roundId: string) {
           const ownerUserId = proposal.ownerUserId ?? null;
           const ownerTeamId = proposal.ownerTeamId ?? null;
 
-          // Create MovieRoundRanking row
-          const mrr = await tx.movieRoundRanking.create({
-            data: {
-              roundId: round.id,
-              movieId,
-              userId: ownerUserId,
-              teamId: ownerTeamId,
-              averageRating,
-              roundWinner: isRoundWinner,
-            },
-          });
-
-          // Link movie votes for this movie+round to this ranking
-          await tx.movieVote.updateMany({
-            where: {
-              roundId: round.id,
-              movieId,
-            },
-            data: {
-              movieRoundRankingId: mrr.id,
-            },
-          });
-
           // Collect users that own this proposal (user or team.users)
           const userIds: string[] = [];
 
@@ -274,40 +251,59 @@ export async function closeRound(roundId: string) {
             userIds.push(ownerUserId);
           }
 
-          // For each user, attach MRR to UserRanking (per user + cineforum)
-          for (const userId of userIds) {
-            const ranking = await tx.userRanking.upsert({
-              where: {
-                userId_cineforumId: {
-                  userId,
-                  cineforumId: round.cineforumId,
-                },
-              },
-              update: {},
-              create: {
-                userId,
-                cineforumId: round.cineforumId,
-              },
-            });
+          // Vote ids for this movie, already loaded above — no extra query.
+          const movieVoteIds = votes
+            .filter((v) => v.movieId === movieId)
+            .map((v) => v.id);
 
-            await tx.userRankingMovieRoundRanking.create({
-              data: {
-                userRankingId: ranking.id,
-                movieRoundRankingId: mrr.id,
+          // Single nested write: creates the MovieRoundRanking row, links
+          // its votes (connect), and gets-or-creates + links each owner's
+          // UserRanking (connectOrCreate) — all in one round trip instead
+          // of the create + updateMany + upsert + create sequence this
+          // used to be (this loop is the bulk of a round close's latency
+          // through Prisma Accelerate, so fewer round trips matters a lot).
+          const mrr = await tx.movieRoundRanking.create({
+            data: {
+              roundId: round.id,
+              movieId,
+              userId: ownerUserId,
+              teamId: ownerTeamId,
+              averageRating,
+              roundWinner: isRoundWinner,
+              movieVotes: {
+                connect: movieVoteIds.map((id) => ({ id })),
               },
-            });
+              userRankings: {
+                create: userIds.map((userId) => ({
+                  userRanking: {
+                    connectOrCreate: {
+                      where: {
+                        userId_cineforumId: {
+                          userId,
+                          cineforumId: round.cineforumId,
+                        },
+                      },
+                      create: { userId, cineforumId: round.cineforumId },
+                    },
+                  },
+                })),
+              },
+            },
+            include: {
+              userRankings: { select: { userRankingId: true } },
+            },
+          });
 
-            rankingIdsToRecompute.add(ranking.id);
+          for (const link of mrr.userRankings) {
+            rankingIdsToRecompute.add(link.userRankingId);
           }
         }
 
         // Recompute averages for all affected user rankings
-        console.error(
+        console.info(
           `[closeRound] round ${roundId}: recomputing ${rankingIdsToRecompute.size} user rankings`,
         );
-        for (const rankingId of Array.from(rankingIdsToRecompute)) {
-          await recomputeUserRanking(tx, rankingId);
-        }
+        await recomputeUserRankings(tx, Array.from(rankingIdsToRecompute));
 
         // Finally flag the round as oscarable (it is already marked closed).
         return tx.round.update({
@@ -332,23 +328,30 @@ export async function closeRound(roundId: string) {
     throw error;
   }
 
-  console.error(
+  console.info(
     `[closeRound] round ${roundId}: transaction committed after ${Date.now() - transactionStartedAt}ms`,
   );
   return closedRound;
 }
 
 /**
- * Recompute UserRanking averages from its MovieRoundRankings:
+ * Recompute UserRanking averages for many rankings at once:
  * - averageRating: average of mrr.averageRating
  * - external ratings: normalized /10 -> /5 (value / 2) then averaged
+ *
+ * Fetches every ranking (with its MovieRoundRankings + movies) in a single
+ * query instead of one findUnique per ranking — the per-ranking update still
+ * has to run individually since each writes different computed values, but
+ * this halves the round trips this step needs.
  */
-async function recomputeUserRanking(
+async function recomputeUserRankings(
   tx: Prisma.TransactionClient,
-  rankingId: string,
-) {
-  const ranking = await tx.userRanking.findUnique({
-    where: { id: rankingId },
+  rankingIds: string[],
+): Promise<void> {
+  if (rankingIds.length === 0) return;
+
+  const rankings = await tx.userRanking.findMany({
+    where: { id: { in: rankingIds } },
     include: {
       movieRoundRankings: {
         include: {
@@ -362,75 +365,75 @@ async function recomputeUserRanking(
     },
   });
 
-  if (!ranking) return;
+  for (const ranking of rankings) {
+    const mrrs = ranking.movieRoundRankings
+      .map((link) => link.movieRoundRanking)
+      .filter((mrr): mrr is NonNullable<typeof mrr> => !!mrr);
 
-  const mrrs = ranking.movieRoundRankings
-    .map((link) => link.movieRoundRanking)
-    .filter((mrr): mrr is NonNullable<typeof mrr> => !!mrr);
+    if (mrrs.length === 0) {
+      await tx.userRanking.update({
+        where: { id: ranking.id },
+        data: {
+          averageRating: null,
+          averageImdbRating: null,
+          averageTmdbRating: null,
+          averageRotoRating: null,
+          averageMetaRating: null,
+        },
+      });
+      continue;
+    }
 
-  if (mrrs.length === 0) {
+    // Internal average rating
+    const ratings = mrrs
+      .map((m) => m.averageRating)
+      .filter((x): x is number => x != null);
+
+    const averageRating =
+      ratings.length > 0
+        ? Number(
+            (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(2),
+          )
+        : null;
+
+    // External averages: IMDb, TMDB, Rotten Tomatoes, Metacritic
+    const imdbValues: number[] = [];
+    const tmdbValues: number[] = [];
+    const rotoValues: number[] = [];
+    const metaValues: number[] = [];
+
+    for (const mrr of mrrs) {
+      const movie = mrr.movie;
+      if (!movie) continue;
+
+      if (movie.imdbRating != null) {
+        imdbValues.push(movie.imdbRating / 2); // /10 -> /5
+      }
+      if (movie.voteAverage != null) {
+        tmdbValues.push(movie.voteAverage / 2);
+      }
+      if (movie.tomatometer != null) {
+        rotoValues.push(movie.tomatometer / 2);
+      }
+      if (movie.metascore != null) {
+        metaValues.push(movie.metascore / 2);
+      }
+    }
+
+    const avgOrNull = (arr: number[]) =>
+      arr.length === 0
+        ? null
+        : Number((arr.reduce((sum, v) => sum + v, 0) / arr.length).toFixed(2));
+
     await tx.userRanking.update({
-      where: { id: rankingId },
+      where: { id: ranking.id },
       data: {
-        averageRating: null,
-        averageImdbRating: null,
-        averageTmdbRating: null,
-        averageRotoRating: null,
-        averageMetaRating: null,
+        averageRating,
+        averageImdbRating: avgOrNull(imdbValues),
+        averageTmdbRating: avgOrNull(tmdbValues),
+        averageRotoRating: avgOrNull(rotoValues),
+        averageMetaRating: avgOrNull(metaValues),
       },
     });
-    return;
   }
-
-  // Internal average rating
-  const ratings = mrrs
-    .map((m) => m.averageRating)
-    .filter((x): x is number => x != null);
-
-  const averageRating =
-    ratings.length > 0
-      ? Number(
-          (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(2),
-        )
-      : null;
-
-  // External averages: IMDb, TMDB, Rotten Tomatoes, Metacritic
-  const imdbValues: number[] = [];
-  const tmdbValues: number[] = [];
-  const rotoValues: number[] = [];
-  const metaValues: number[] = [];
-
-  for (const mrr of mrrs) {
-    const movie = mrr.movie;
-    if (!movie) continue;
-
-    if (movie.imdbRating != null) {
-      imdbValues.push(movie.imdbRating / 2); // /10 -> /5
-    }
-    if (movie.voteAverage != null) {
-      tmdbValues.push(movie.voteAverage / 2);
-    }
-    if (movie.tomatometer != null) {
-      rotoValues.push(movie.tomatometer / 2);
-    }
-    if (movie.metascore != null) {
-      metaValues.push(movie.metascore / 2);
-    }
-  }
-
-  const avgOrNull = (arr: number[]) =>
-    arr.length === 0
-      ? null
-      : Number((arr.reduce((sum, v) => sum + v, 0) / arr.length).toFixed(2));
-
-  await tx.userRanking.update({
-    where: { id: rankingId },
-    data: {
-      averageRating,
-      averageImdbRating: avgOrNull(imdbValues),
-      averageTmdbRating: avgOrNull(tmdbValues),
-      averageRotoRating: avgOrNull(rotoValues),
-      averageMetaRating: avgOrNull(metaValues),
-    },
-  });
 }
