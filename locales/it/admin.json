@@ -108,7 +108,12 @@
       "lockedTitle": "Vincitore deciso: {{movie}}",
       "lockedDetail": "Il suo vantaggio nei confronti diretti ({{margin}}) è maggiore dei {{count}} voti ancora attesi, quindi i membri rimanenti non possono ribaltarlo.",
       "openTitle": "Ancora da decidere",
-      "openDetail": "I {{count}} voti rimanenti potrebbero ancora cambiare il vincitore."
+      "openDetail": "I {{count}} voti rimanenti potrebbero ancora cambiare il vincitore.",
+      "pairwiseTitle": "Confronti diretti",
+      "pairwiseHint": "Il margine è il vantaggio di un film sull'altro negli scontri uno contro uno. Ogni voto che manca può spostarlo di 1, quindi i confronti con margine fino a {{count}} possono ancora ribaltarsi.",
+      "pairwiseHintFinal": "Il margine è il vantaggio di un film sull'altro negli scontri uno contro uno. Non manca nessun voto: questi sono i margini definitivi.",
+      "pairwiseMargin": "+{{count}}",
+      "pairwiseAtRisk": "+{{count}} ribaltabile"
     }
   },
   "teams": {

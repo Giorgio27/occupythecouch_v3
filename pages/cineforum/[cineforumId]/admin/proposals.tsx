@@ -6,6 +6,7 @@ import { GetServerSideProps } from "next";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
+import { countRemainingVoters } from "@/lib/server/proposals/remaining-voters";
 import CineforumLayout from "@/components/CineforumLayout";
 import type {
   ProposalDetailDTO,
@@ -239,10 +240,6 @@ export default function AdminProposalsPage({
     : (proposal?.movies ?? []);
   const displayDate = isEditing ? editDate : proposal?.date;
 
-  const voteLockWinnerTitle = voteLock?.winnerId
-    ? (proposal?.movies.find((m) => m.id === voteLock.winnerId)?.title ?? null)
-    : null;
-
   return (
     <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
       <div className="flex w-full flex-col gap-6">
@@ -426,7 +423,7 @@ export default function AdminProposalsPage({
               {!isEditing && !proposal.closed && voteLock && (
                 <VoteLockIndicator
                   lock={voteLock}
-                  winnerTitle={voteLockWinnerTitle}
+                  movies={proposal.movies}
                 />
               )}
 
@@ -567,19 +564,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   });
 
-  // Enabled members who have not yet voted on this proposal. Used to tell the
-  // admin whether the remaining ballots could still change the winner.
-  let remainingVoters = 0;
-  if (proposal) {
-    const enabledMembers = await prisma.membership.findMany({
-      where: { cineforumId, disabled: false },
-      select: { userId: true },
-    });
-    const votedUserIds = new Set(proposal.votes.map((v) => v.userId));
-    remainingVoters = enabledMembers.filter(
-      (m) => !votedUserIds.has(m.userId),
-    ).length;
-  }
+  // Enabled members who are still expected to vote on this proposal. Used to
+  // tell the admin whether the remaining ballots could still change the winner.
+  const remainingVoters = proposal
+    ? await countRemainingVoters({
+        cineforumId,
+        ownerUserId: proposal.ownerUserId,
+        ownerTeamId: proposal.ownerTeamId,
+        votedUserIds: proposal.votes.map((v) => v.userId),
+      })
+    : 0;
 
   const currentProposal: ProposalDetailDTO | null = proposal
     ? {

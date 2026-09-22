@@ -22,7 +22,14 @@
 // Schulze winner that wins via beat-paths without being a Condorcet winner),
 // but it will never claim a winner is locked when it could still be overturned.
 
-type VoteLike = { movie_selection: Record<string, string[]> };
+import {
+  buildPairwiseMatrix,
+  collectPairwiseMargins,
+} from "@/lib/shared/ranking/pairwise";
+import type {
+  PairwiseMargin,
+  VoteLike,
+} from "@/lib/shared/ranking/pairwise";
 
 export type VoteLockResult = {
   /** Remaining enabled members who have not voted yet. */
@@ -39,52 +46,9 @@ export type VoteLockResult = {
    * Condorcet winner exists. Null otherwise.
    */
   minMargin: number | null;
+  /** Every head-to-head confrontation, tightest first. */
+  pairwise: PairwiseMargin[];
 };
-
-/**
- * Build the Schulze pairwise "beats" matrix d, where d[i][j] is the number of
- * ballots ranking candidate i strictly above candidate j. Mirrors the ballot
- * handling in lib/server/ranking/schulze.ts: unranked candidates are all tied
- * at the bottom, below every ranked group.
- */
-function buildPairwiseMatrix(
-  votes: VoteLike[],
-  candidates: string[],
-): number[][] {
-  const n = candidates.length;
-  const d = Array.from({ length: n }, () => Array(n).fill(0));
-
-  for (const vote of votes) {
-    const selection = vote.movie_selection ?? {};
-    const rankKeys = Object.keys(selection)
-      .map((k) => parseInt(k, 10))
-      .filter((k) => !Number.isNaN(k))
-      .sort((a, b) => a - b);
-
-    // rankIndex: candidate -> group position (lower is better).
-    const rankIndex = new Map<string, number>();
-    rankKeys.forEach((rank, groupPos) => {
-      for (const id of selection[String(rank)] ?? []) {
-        if (candidates.includes(id) && !rankIndex.has(id)) {
-          rankIndex.set(id, groupPos);
-        }
-      }
-    });
-    const bottom = rankKeys.length;
-    for (const c of candidates) if (!rankIndex.has(c)) rankIndex.set(c, bottom);
-
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        if (rankIndex.get(candidates[i])! < rankIndex.get(candidates[j])!) {
-          d[i][j] += 1;
-        }
-      }
-    }
-  }
-
-  return d;
-}
 
 /**
  * Compute whether the winner is already decided given the votes cast so far and
@@ -108,11 +72,13 @@ export function computeVoteLock(
       locked: true,
       winnerId: candidates[0] ?? null,
       minMargin: null,
+      pairwise: [],
     };
   }
 
   const n = candidates.length;
   const d = buildPairwiseMatrix(votes, candidates);
+  const pairwise = collectPairwiseMargins(d, candidates);
 
   // Find a strict Condorcet winner: beats every other candidate pairwise.
   let winnerIdx = -1;
@@ -144,6 +110,7 @@ export function computeVoteLock(
       locked: safeRemaining === 0,
       winnerId: null,
       minMargin: null,
+      pairwise,
     };
   }
 
@@ -156,5 +123,6 @@ export function computeVoteLock(
     locked,
     winnerId: candidates[winnerIdx],
     minMargin,
+    pairwise,
   };
 }

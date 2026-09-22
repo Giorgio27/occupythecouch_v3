@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { Lock, Hourglass, CheckCircle2 } from "lucide-react";
+import VoteLockPairwiseTable from "@/components/cineforum/admin/VoteLockPairwiseTable";
 import type { VoteLockResult } from "@/lib/shared/ranking/voteLock";
 
 type Props = {
   lock: VoteLockResult;
-  /** Title of the guaranteed winner, when the lock resolves to one. */
-  winnerTitle?: string | null;
+  /** Movies in the proposal, used to label the head-to-head breakdown. */
+  movies: { id: string; title: string }[];
 };
 
 /**
@@ -13,10 +14,20 @@ type Props = {
  * given how many enabled members still have to vote. See computeVoteLock for
  * the (sound) clinch condition.
  */
-export default function VoteLockIndicator({ lock, winnerTitle }: Props) {
+export default function VoteLockIndicator({ lock, movies }: Props) {
   const { t } = useTranslation("admin");
 
-  const { locked, remaining, winnerId, minMargin } = lock;
+  const { locked, remaining, winnerId, minMargin, pairwise } = lock;
+
+  const titles = Object.fromEntries(movies.map((m) => [m.id, m.title]));
+  const winnerTitle = winnerId ? (titles[winnerId] ?? null) : null;
+  const breakdown = (
+    <VoteLockPairwiseTable
+      pairwise={pairwise}
+      titles={titles}
+      remaining={remaining}
+    />
+  );
 
   // Everyone enabled has voted: the result is final.
   if (remaining === 0) {
@@ -26,7 +37,9 @@ export default function VoteLockIndicator({ lock, winnerTitle }: Props) {
         icon={<CheckCircle2 className="h-4 w-4 shrink-0" />}
         title={t("proposals.lock.finalTitle")}
         detail={t("proposals.lock.finalDetail")}
-      />
+      >
+        {breakdown}
+      </Banner>
     );
   }
 
@@ -42,7 +55,9 @@ export default function VoteLockIndicator({ lock, winnerTitle }: Props) {
           count: remaining,
           margin: minMargin,
         })}
-      />
+      >
+        {breakdown}
+      </Banner>
     );
   }
 
@@ -52,7 +67,9 @@ export default function VoteLockIndicator({ lock, winnerTitle }: Props) {
       icon={<Hourglass className="h-4 w-4 shrink-0" />}
       title={t("proposals.lock.openTitle")}
       detail={t("proposals.lock.openDetail", { count: remaining })}
-    />
+    >
+      {breakdown}
+    </Banner>
   );
 }
 
@@ -61,11 +78,13 @@ function Banner({
   icon,
   title,
   detail,
+  children,
 }: {
   tone: "locked" | "open";
   icon: React.ReactNode;
   title: string;
   detail: string;
+  children?: React.ReactNode;
 }) {
   const toneClasses =
     tone === "locked"
@@ -77,9 +96,10 @@ function Banner({
       className={`flex items-start gap-2.5 rounded-xl border px-3 py-2.5 text-sm ${toneClasses}`}
     >
       <div className="mt-0.5">{icon}</div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="font-semibold">{title}</p>
         <p className="text-xs opacity-90">{detail}</p>
+        {children}
       </div>
     </div>
   );

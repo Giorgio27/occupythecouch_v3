@@ -108,7 +108,12 @@
       "lockedTitle": "Winner decided: {{movie}}",
       "lockedDetail": "Its pairwise lead ({{margin}}) is larger than the {{count}} vote(s) still to come, so the remaining members cannot overturn it.",
       "openTitle": "Not decided yet",
-      "openDetail": "The {{count}} remaining vote(s) could still change the winner."
+      "openDetail": "The {{count}} remaining vote(s) could still change the winner.",
+      "pairwiseTitle": "Head-to-head",
+      "pairwiseHint": "The margin is how far one movie leads another one-on-one. Every missing vote can shift it by 1, so head-to-heads with a margin up to {{count}} can still flip.",
+      "pairwiseHintFinal": "The margin is how far one movie leads another one-on-one. No vote is missing: these margins are final.",
+      "pairwiseMargin": "+{{count}}",
+      "pairwiseAtRisk": "+{{count}} can flip"
     }
   },
   "teams": {
