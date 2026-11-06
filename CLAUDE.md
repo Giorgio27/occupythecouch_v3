@@ -6,6 +6,18 @@ Next.js 16 (Pages Router) · React 18 · PostgreSQL + Prisma 6 · NextAuth v4 ·
 
 These rules apply to **new and changed code**. Some older files don't comply (e.g. single-file API routes, inline Prisma in handlers); don't refactor them unless asked.
 
+## ⚠️ Production data: never erase
+
+The Vercel Postgres database holds the clubs' real data, with no migrations and no automatic backups. **Assume `DATABASE_URL` is production.**
+
+**Claude never runs anything that connects to a database**, local or production: no `prisma db *`, `prisma migrate *`, `prisma studio`, `npm run db:*`, `scripts/db/*`, `psql`/`pg_dump`, or ad-hoc Prisma scripts. Claude writes the schema change or script and **suggests the exact commands; the user runs them** and reports back. Offline commands are fine: `prisma format`, `prisma validate`, `prisma generate`.
+
+Schema changes are additive only; nothing may delete, reset or overwrite data. Follow the `db-change` skill for anything touching the schema or data.
+
+## Domain in one breath
+
+A **Cineforum** (club) runs **Rounds**. In a round, members or **Teams** make **Proposals** (a few candidate movies); members rank them (**ProposalVote**) and the **Schulze** method picks the winner. Members then rate each winner movie 0–5 (**MovieVote**, the "**Oscars**" vote). **Closing a round** freezes it into **MovieRoundRanking** + **UserRanking**, feeding all rankings/stats, and posts to Telegram. Movies are global; everything else is per cineforum. Details, files and invariants: the `cineforum-domain` skill.
+
 ## Commands
 
 | Task | Command |
@@ -14,11 +26,11 @@ These rules apply to **new and changed code**. Some older files don't comply (e.
 | Type check (must pass, zero errors) | `npx tsc --noEmit` |
 | Production build | `npm run build` |
 | Regenerate Prisma client after schema edits | `npx prisma generate` |
-| Local Postgres | `docker compose -f docker-compose.postgres.yml up -d` |
+| Local Postgres (user runs it) | `docker compose -f docker-compose.postgres.yml up -d` |
 
 - There is no test suite. Verification = `tsc` + `npm run build` + manual check on a Vercel Preview.
 - `next build` rewrites `next-env.d.ts` (dev ↔ build route types). Don't commit that diff.
-- No migrations folder: schema changes are applied with `prisma db push` against whatever `DATABASE_URL` points to. Never run it, or any `db:*` script, without asking.
+- No migrations folder: schema changes are applied with `prisma db push` against whatever `DATABASE_URL` points to (see "Production data" above).
 - npm 11 blocks dependency install scripts; the project `postinstall` still runs `prisma generate`.
 
 ## Deploy
@@ -79,6 +91,7 @@ lib/shared/   pure: DTOs, domain types, pure utils (no Prisma, fetch, window, en
 - **Order:** method guard → `getServerSession` auth → validate params (`typeof x !== "string"` → 400) → membership (`!membership || membership.disabled` → 403) → admin check (`["ADMIN","OWNER"]`) → logic delegated to `lib/server/` → try/catch → 500.
 - Known business failures: throw from `lib/server/` an `Error` with a `code` (e.g. `ROUND_NOT_READY`) and map it to a 4xx in the route. Never throw HTTP errors from `lib/server/`.
 - Never return raw Prisma models; always map to a DTO.
+- **Authorize through the resource.** When a route gets a `roundId`/`proposalId`/`teamId` instead of a `cineforumId`, load the resource first, then check membership (and admin role) on *its* `cineforumId`. Never trust a `userId` or `cineforumId` from the body; use the session.
 - Response shapes: single resource → flat object; list → `{ body: T[] }`; paginated → `{ body, status: "completed" | "progress", total }`; mutation → `{ ok: true }` or the resource; error → `{ error, details? }`. Never leak internal messages or stacks.
 
 Templates for every layer: the `feature-scaffolding` skill.
@@ -87,6 +100,9 @@ Templates for every layer: the `feature-scaffolding` skill.
 
 - `import prisma from "@/lib/prisma"` (singleton), only in `lib/server/` and API routes.
 - Always `select`/`include` only what's needed. `Promise.all` for independent queries, `prisma.$transaction` for atomic multi-step writes.
+- **Prisma Accelerate caps interactive transactions at 15s** (asking for more fails with P6005). Use `{ timeout: 14_000, maxWait: 5_000 }`; inside a transaction do no reads you could do before it and no per-row query loops; prefer nested writes, `createMany`, `updateMany`. Every query is a network round trip.
+- **One-way state changes are idempotent:** claim with `updateMany({ where: { id, closed: false }, data: { closed: true } })` and continue only if `count === 1` (see `closeRound`).
+- **External calls** (TMDB, OMDB, IMDb, Telegram) only through `lib/server/external/`. Telegram goes **after** the DB write commits, is **awaited** (Vercel may freeze the function once the response is sent), and its failure never fails the request.
 - JSDoc on every exported function.
 
 ## DTOs (`lib/shared/types/`)
@@ -106,7 +122,8 @@ Pure data only: dates as ISO `string`, never `Date`; optional fields as `T | nul
 - Semantic tokens only (`bg-card`, `text-muted-foreground`, `border-border`, `text-primary`…), never hardcoded colors. Utilities: `cine-card`, `text-gradient`, `glow-red-soft`, `animate-fade-in-up`.
 - Mobile-first (`sm:`/`lg:`), `tabular-nums` on numbers, `rounded-xl` cards/inputs, `rounded-lg` inner, `rounded-full` badges.
 - Reuse `StatCard`, `SectionHeader`, `EmptyState`, `ExpandableList(Item)`, `LoadingCard`, `InfoNote` from `@/components/cineforum/common`.
-- User-facing strings through `useTranslation("<namespace>")`; add keys to both `it` and `en`.
+- User-facing strings through `useTranslation("<namespace>")`; add keys to both `it` and `en`. Markup inside a translation goes through `<Trans>`, never `dangerouslySetInnerHTML`.
+- Most users are on phones. Drag-and-drop and touch interactions (proposal ranking) have broken repeatedly: keep the existing mobile fallbacks and ask the user to test on a real phone.
 
 Patterns and examples: the `frontend-components` skill.
 
