@@ -1,7 +1,7 @@
 # Compliance Checklist — Stack Conventions Audit
 
 Ogni sezione è un gruppo di file da pulire insieme. Spunta i file man mano che vengono sistemati.
-Regole di riferimento: `.roo/skills/stack-conventions/SKILL.md`
+Regole di riferimento: `CLAUDE.md`
 
 ---
 

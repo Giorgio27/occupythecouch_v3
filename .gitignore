@@ -4,9 +4,6 @@ node_modules/
 .env
 .vercel
 data/
-.roomodes
-.roo/
-.clinerules
-.cline/
 .vscode/
 tsconfig.tsbuildinfo
+.claude/settings.local.json
