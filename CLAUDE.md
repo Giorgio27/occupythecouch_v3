@@ -1,635 +1,141 @@
-# OccupyTheCouch v3 — Project Conventions
+# OccupyTheCouch v3
 
-Mirrors `.clinerules`, itself consolidated from `.roo/rules-skill-writer/` and `.roo/skills/`. Keep the two files in sync — update both when conventions change.
+Collaborative movie selection and voting app for cineforum communities.
 
----
+Next.js 16 (Pages Router) · React 18 · PostgreSQL + Prisma 6 · NextAuth v4 · Tailwind 4 + shadcn-ui · TypeScript strict · react-i18next (it, en)
 
-## Stack Overview
+These rules apply to **new and changed code**. Some older files don't comply (e.g. single-file API routes, inline Prisma in handlers); don't refactor them unless asked.
 
-Next.js (Pages Router) · PostgreSQL · Prisma · React · Tailwind CSS · shadcn-ui · TypeScript (strict) · react-i18next
+## ⚠️ Production data: never erase
 
----
+The Vercel Postgres database holds the clubs' real data, with no migrations and no automatic backups. **Assume `DATABASE_URL` is production.**
 
-## 0. File Size Limits (hard rules)
+**Claude never runs anything that connects to a database**, local or production: no `prisma db *`, `prisma migrate *`, `prisma studio`, `npm run db:*`, `scripts/db/*`, `psql`/`pg_dump`, or ad-hoc Prisma scripts. Claude writes the schema change or script and **suggests the exact commands; the user runs them** and reports back. Offline commands are fine: `prisma format`, `prisma validate`, `prisma generate`.
 
-| File type              | Max lines | Action when exceeded                                      |
-| ---------------------- | --------- | --------------------------------------------------------- |
-| React component        | 150       | Extract named sub-components into the same feature folder |
-| Page component         | 300       | Delegate rendering to feature components; keep page thin  |
-| API route handler      | 80        | Move business logic to `lib/server/<domain>/`             |
-| `lib/server/` function | 100       | Split by responsibility into separate files               |
-| `lib/client/` file     | 60        | One domain per file; split if needed                      |
-| Shared type file       | 80        | Split by domain                                           |
+Schema changes are additive only; nothing may delete, reset or overwrite data. Follow the `db-change` skill for anything touching the schema or data.
 
-Never add unrelated logic to an existing file for convenience.
+## Domain in one breath
 
----
+A **Cineforum** (club) runs **Rounds**. In a round, members or **Teams** make **Proposals** (a few candidate movies); members rank them (**ProposalVote**) and the **Schulze** method picks the winner. Members then rate each winner movie 0–5 (**MovieVote**, the "**Oscars**" vote). **Closing a round** freezes it into **MovieRoundRanking** + **UserRanking**, feeding all rankings/stats, and posts to Telegram. Movies are global; everything else is per cineforum. Details, files and invariants: the `cineforum-domain` skill.
 
-## 1. Execution-Context Boundaries (CRITICAL)
+## Commands
 
-```
-lib/
-├── client/    # Browser only — React hooks, API clients, contexts
-├── server/    # Server only — Prisma, external APIs, SSR helpers
-└── shared/    # Pure — DTOs, domain types, pure utilities (no side effects)
-```
+| Task | Command |
+| --- | --- |
+| Dev server | `npm run dev` |
+| Type check (must pass, zero errors) | `npx tsc --noEmit` |
+| Production build | `npm run build` |
+| Regenerate Prisma client after schema edits | `npx prisma generate` |
+| Local Postgres (user runs it) | `docker compose -f docker-compose.postgres.yml up -d` |
 
-**Hard rules:**
+- There is no test suite. Verification = `tsc` + `npm run build` + manual check on a Vercel Preview.
+- `next build` rewrites `next-env.d.ts` (dev ↔ build route types). Don't commit that diff.
+- No migrations folder: schema changes are applied with `prisma db push` against whatever `DATABASE_URL` points to (see "Production data" above).
+- npm 11 blocks dependency install scripts; the project `postinstall` still runs `prisma generate`.
 
-- ❌ Never import `lib/server/` in client components, hooks, or contexts
-- ❌ Never import `lib/client/` in API routes or `getServerSideProps`
-- ✅ `lib/shared/` is the only safe cross-boundary import
-- ✅ `lib/shared/` must stay pure: no Prisma, no `fetch`, no `window`, no env vars
+## Deploy
 
----
+Vercel, from `main`. The Node version comes from `engines.node` in `package.json` (`24.x`, keep it in sync with `.nvmrc`) and overrides the dashboard. Always use an exact `NN.x`, never a range like `>=20`, or Vercel silently moves to its newest default.
 
-## 2. File Placement
+## File size limits (hard)
 
-| What                                                 | Where                                   |
-| ---------------------------------------------------- | --------------------------------------- |
-| UI primitive (no business logic, shadcn-ui based)    | `components/ui/`                        |
-| Feature component (business logic / data)            | `components/cineforum/<feature>/`       |
-| Home / landing / public page component               | `components/home/`                      |
-| Layout / global header / footer                      | `components/` root                      |
-| Prisma queries / external API calls / SSR helpers    | `lib/server/<domain>/`                  |
-| HTTP client functions                                | `lib/client/cineforum/<domain>.ts`      |
-| Custom React hooks                                   | `lib/client/hooks/`                     |
-| React Context providers                              | `lib/client/contexts/`                  |
-| DTO / domain type (shared between client and server) | `lib/shared/types/<domain>.ts`          |
-| Global type augmentation (NextAuth, Next.js, etc.)   | `types/`                                |
-| Cineforum page (auth-protected)                      | `pages/cineforum/[cineforumId]/`        |
-| Public page (no auth required)                       | `pages/` root                           |
-| API route                                            | `pages/api/cineforum/[cineforumId]/...` |
-| i18n translation files                               | `locales/<lang>/<namespace>.json`       |
+| File | Max lines | When exceeded |
+| --- | --- | --- |
+| React component | 150 | Extract sub-components into the same feature folder |
+| Page | 300 | Delegate rendering to feature components |
+| API route handler | 80 | Move logic to `lib/server/<domain>/` |
+| `lib/server/` function | 100 | Split by responsibility |
+| `lib/client/` file | 60 | One domain per file |
+| Shared type file | 80 | Split by domain |
 
----
-
-## 3. Naming Conventions
-
-| Kind                  | Convention                    | Example                                 |
-| --------------------- | ----------------------------- | --------------------------------------- |
-| React component file  | PascalCase `.tsx`             | `MovieListCard.tsx`                     |
-| Utility / type file   | camelCase `.ts`               | `rankings.ts`, `movies.ts`              |
-| API route file        | camelCase or kebab-case `.ts` | `close.ts`, `last.ts`                   |
-| React component fn    | PascalCase                    | `MovieListCard`                         |
-| Hook                  | `use` prefix + camelCase      | `useAdminAccess`                        |
-| API client fn         | camelCase, verb first         | `fetchMoviesList`, `createRound`        |
-| Server fn             | camelCase, verb first         | `getCineforumLayoutProps`, `closeRound` |
-| DTO / type            | PascalCase + `DTO` suffix     | `MovieStatsDTO`, `RoundSummaryDTO`      |
-| Response wrapper type | PascalCase + `ResponseDTO`    | `MoviesListResponseDTO`                 |
-| Props type            | PascalCase + `Props` suffix   | `MovieListCardProps`                    |
-| Barrel file           | `index.ts`                    | named re-exports only, no default       |
-
----
-
-## 4. API Routes — Complete Pattern
-
-### 4a. Standard cineforum route (GET)
-
-```typescript
-// pages/api/cineforum/[cineforumId]/my-resource.ts
-import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
-import prisma from "@/lib/prisma";
-import { getMyResourceData } from "@/lib/server/my-resource";
-import type { MyResourceDTO } from "@/lib/shared/types";
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  // 1. Method guard — always first
-  if (req.method !== "GET")
-    return res.status(405).json({ error: "Method not allowed" });
-
-  // 2. Auth check
-  const session = await getServerSession(req, res, authOptions);
-  if (!session?.user?.id)
-    return res.status(401).json({ error: "Unauthorized" });
-
-  // 3. Validate path params
-  const { cineforumId } = req.query;
-  if (typeof cineforumId !== "string")
-    return res.status(400).json({ error: "Invalid cineforumId" });
-
-  // 4. Membership check
-  const membership = await prisma.membership.findUnique({
-    where: { userId_cineforumId: { userId: session.user.id, cineforumId } },
-  });
-  if (!membership || membership.disabled)
-    return res.status(403).json({ error: "Forbidden" });
-
-  // 5. Business logic (delegated to lib/server/)
-  try {
-    const data = await getMyResourceData(cineforumId);
-    return res.status(200).json({ body: data, status: "completed" });
-  } catch (error) {
-    console.error(
-      "Error in GET /api/cineforum/[cineforumId]/my-resource:",
-      error,
-    );
-    return res.status(500).json({ error: "Internal server error" });
-  }
-}
-```
-
-### 4b. One file per endpoint (HARD RULE)
-
-Each API file must handle **exactly one HTTP method**. Use a folder with one file per method:
+## Execution-context boundaries (critical)
 
 ```
-pages/api/cineforum/[cineforumId]/
-├── my-resource/
-│   ├── index.ts      ← GET
-│   └── create.ts     ← POST
-├── my-resource/[id]/
-│   ├── index.ts      ← GET
-│   ├── update.ts     ← PUT
-│   └── delete.ts     ← DELETE
+lib/client/   browser only: hooks, API clients, contexts
+lib/server/   server only: Prisma, external APIs, SSR helpers
+lib/shared/   pure: DTOs, domain types, pure utils (no Prisma, fetch, window, env)
 ```
 
-### 4c. Admin-only route
-
-Add after membership check:
-
-```typescript
-if (!["ADMIN", "OWNER"].includes(membership.role)) {
-  return res.status(403).json({ error: "Admin access required" });
-}
-```
-
-### 4d. Structured error codes
-
-```typescript
-// In lib/server/
-const error: Error & { code?: string; details?: unknown } = new Error("Round cannot be closed");
-error.code = "ROUND_NOT_READY";
-throw error;
-
-// In the API route
-} catch (e: unknown) {
-  const err = e as { code?: string; message?: string; details?: unknown };
-  if (err?.code === "ROUND_NOT_READY") {
-    return res.status(400).json({ error: err.message, details: err.details });
-  }
-  return res.status(500).json({ error: "Internal server error" });
-}
-```
-
-### 4e. API response shape conventions
-
-| Scenario             | Shape                                                           |
-| -------------------- | --------------------------------------------------------------- |
-| Single resource      | `{ ...fields }` (flat)                                          |
-| List with pagination | `{ body: T[], status: "completed"\|"progress", total: number }` |
-| Simple list          | `{ body: T[] }`                                                 |
-| Mutation success     | `{ ok: true }` or the created/updated resource                  |
-| Error                | `{ error: string, details?: unknown }`                          |
-
-**Never** return raw Prisma model objects — always map to a DTO.
-
----
-
-## 5. `lib/server/` — Server Function Pattern
-
-```typescript
-// lib/server/my-domain/index.ts
-import prisma from "@/lib/prisma";
-import type { MyResourceDTO } from "@/lib/shared/types";
-
-/**
- * Fetches my resource data for a given cineforum.
- */
-export async function getMyResourceData(
-  cineforumId: string,
-): Promise<MyResourceDTO[]> {
-  const rows = await prisma.myModel.findMany({
-    where: { cineforumId },
-    orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, createdAt: true },
-  });
-  return rows.map((r) => ({ id: r.id, title: r.title }));
-}
-```
-
-**Rules:**
-
-- Always use `select` or `include` — never return the full Prisma model
-- Use `Promise.all` for parallel independent queries
-- Use `prisma.$transaction` for multi-step writes that must be atomic
-- Never throw HTTP errors from `lib/server/` — throw domain errors with `code`
-- JSDoc on every exported function
-
----
-
-## 6. `lib/shared/types/` — DTO Pattern
-
-```typescript
-export type MyResourceDTO = {
-  id: string;
-  title: string;
-  createdAt: string; // ISO string — never Date objects in DTOs
-  count: number;
-  optionalField: string | null; // explicit null, never undefined for optional API fields
-};
-```
-
-**Rules:**
-
-- Export from `lib/shared/types/index.ts` via `export * from "./my-domain"`
-- Use `string` for dates (ISO 8601), never `Date`
-- Use `T | null` for optional fields, not `T | undefined`
-- No functions, no class instances, no Prisma types — pure data shapes only
-
----
-
-## 7. `lib/client/cineforum/` — Client Function Pattern
-
-```typescript
-import { jsonFetch } from "@/lib/client/https";
-import type { MyResourceListResponseDTO } from "@/lib/shared/types";
-
-export async function fetchMyResources(
-  cineforumId: string,
-): Promise<MyResourceListResponseDTO> {
-  return jsonFetch<MyResourceListResponseDTO>(
-    `/api/cineforum/${cineforumId}/my-resource`,
-  );
-}
-```
-
-**Rules:**
-
-- Always type the generic on `jsonFetch<T>`
-- Export from `lib/client/cineforum/index.ts`
-- No React hooks, no `useState`, no `useEffect` in client function files
-- One domain per file; keep files ≤ 60 lines
-
----
-
-## 8. Pages — SSR Patterns
-
-### 8a. Cineforum pages (always SSR)
-
-All pages under `pages/cineforum/[cineforumId]/` **must** use `getServerSideProps` with `getCineforumLayoutProps`.
-
-```typescript
-// Minimal form
-export const getServerSideProps: GetServerSideProps = async (ctx) =>
-  getCineforumLayoutProps(ctx);
-
-// Extended form (extra server data)
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const cineforumProps = await getCineforumLayoutProps(ctx);
-  if ("redirect" in cineforumProps || "notFound" in cineforumProps)
-    return cineforumProps;
-  const { cineforumId } = cineforumProps.props as { cineforumId: string };
-  // ... additional server data
-  return { props: { ...cineforumProps.props, extra } };
-};
-```
-
-### 8b. Client-side data fetching in pages
-
-```typescript
-export default function MyPage({ cineforumId, cineforumName }: Props) {
-  const [data, setData] = useState<MyResourceDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchMyResources(cineforumId)
-      .then((res) => setData(res.body))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [cineforumId]);
-
-  if (loading) return <CineforumLayout ...><LoadingCard text="Caricamento..." /></CineforumLayout>;
-
-  return (
-    <CineforumLayout cineforumId={cineforumId} cineforumName={cineforumName}>
-      {data.length === 0
-        ? <EmptyState title="Nessun dato" subtitle="Nessun elemento trovato." />
-        : <div className="space-y-3">{data.map((item) => <MyCard key={item.id} item={item} />)}</div>
-      }
-    </CineforumLayout>
-  );
-}
-```
-
-**Always handle all three states:** loading → empty → data.
-
-### 8c. When NOT to use `getServerSideProps`
-
-- ❌ Don't fetch list data in `getServerSideProps` for cineforum pages — fetch client-side
-- ❌ Don't pass large data arrays as SSR props
-- ✅ Only pass: auth/membership data, initial locale, small critical data for first render
-
----
-
-## 9. Authentication & Authorization
-
-Order in API routes: **method guard → auth → param validation → membership → admin check → logic → error handler**
-
-In pages: use `getCineforumLayoutProps` — never re-implement auth logic.
-
-In components (admin UI): use `useAdminAccess` hook.
-
----
-
-## 10. Prisma Usage
-
-```typescript
-import prisma from "@/lib/prisma"; // always the singleton
-
-// Always select only needed fields
-const user = await prisma.user.findUnique({
-  where: { id: userId },
-  select: { id: true, name: true, email: true },
-});
-
-// Parallel queries
-const [items, total] = await Promise.all([
-  prisma.item.findMany({ where: { cineforumId }, skip: offset, take: limit }),
-  prisma.item.count({ where: { cineforumId } }),
-]);
-
-// Atomic multi-step writes
-await prisma.$transaction(async (tx) => { ... });
-```
-
-**Rules:**
-
-- Never use `prisma` in `lib/client/` or component files
-- Never return raw Prisma model objects — map to DTOs
-- Use `select` to avoid over-fetching
-- Pagination: always return `{ items, total, status: offset + limit >= total ? "completed" : "progress" }`
-
----
-
-## 11. TypeScript Strictness
-
-- No `any` — use proper types or `unknown` with type guards
-- Prefer `satisfies` over `as`
-- Explicit return types on all exported functions
-- `import type` for type-only imports
-- No unused imports or variables
-- `npx tsc --noEmit` must pass with zero errors
-
----
-
-## 12. i18n (react-i18next)
-
-```typescript
-import { useTranslation } from "react-i18next";
-const { t } = useTranslation("rankings"); // namespace matches locales/<lang>/rankings.json
-```
-
-Every page must pass `initialLocale` from `getServerSideProps`. `getCineforumLayoutProps` already includes it.
-
----
-
-## 13. Component Structure Rules
-
-- **No `"use client"` directive** — this is Pages Router, not App Router
-- **No default exports from barrel `index.ts`** — named re-exports only
-- **Import shadcn-ui from `components/ui/`**, never from `@radix-ui` directly
-- **Icons always from `lucide-react`**
-
----
-
-## 14. Design System Tokens
-
-Always use semantic Tailwind tokens — never hardcode colors.
-
-| Token                  | Tailwind class               | Use for                |
-| ---------------------- | ---------------------------- | ---------------------- |
-| `--background`         | `bg-background`              | Page background        |
-| `--foreground`         | `text-foreground`            | Primary text           |
-| `--card`               | `bg-card`                    | Card surfaces          |
-| `--primary` (cine-red) | `bg-primary`, `text-primary` | Accent, CTAs           |
-| `--secondary`          | `bg-secondary`               | Subtle backgrounds     |
-| `--muted-foreground`   | `text-muted-foreground`      | Secondary text, labels |
-| `--border`             | `border-border`              | All borders            |
-
-**Custom utility classes** (defined in globals.css):
-
-```
-cine-card          → styled card with border + bg-card
-cine-card-fit      → card that fits its content width
-text-gradient      → primary-colored gradient text (ratings, highlights)
-glow-red-soft      → subtle red glow shadow
-animate-fade-in-up → entrance animation
-animate-fade-in    → simple fade
-```
-
----
-
-## 15. Tailwind Class Conventions
-
-- Semantic tokens only — never hardcode colors
-- Conditional classes: template literals or `clsx`
-- Numbers/ratings: always `tabular-nums`
-- Transitions: `transition-all duration-200` or `transition-colors`
-- Rounded: `rounded-xl` for cards/inputs, `rounded-lg` for inner elements, `rounded-full` for badges/dots
-- Responsive: always mobile-first (`sm:`, `lg:` overrides)
-- Recharts tooltips: use CSS vars (`var(--border)`, `var(--popover)`) not Tailwind classes
-
----
-
-## 16. Error Handling
-
-### API routes
-
-```typescript
-try {
-  const data = await doSomething();
-  return res.status(200).json({ body: data });
-} catch (error) {
-  console.error("Error in [route name]:", error);
-  return res.status(500).json({ error: "Internal server error" });
-}
-```
-
-- `console.error` is reserved for actual failures (caught errors, aborted operations). Hosting platforms (Vercel included) tag every `console.error` call as an "error" in logs/alerts, so using it for routine tracing creates false alarms.
-- `console.info` is allowed for operational/diagnostic tracing in server code (e.g. step-by-step progress logs in a long-running process) that isn't itself a failure — it shows up in logs without triggering error-level alerting.
-- Never `console.log` / `console.debug` / `console.warn` in production code.
-- Never expose internal error messages or stack traces to the client
-
----
-
-## 17. Code Readability & Style
-
-### Import order
-
-```typescript
-// 1. React / Next.js
-import { useState, useEffect } from "react";
-import type { GetServerSideProps } from "next";
-
-// 2. Third-party
-import { useTranslation } from "react-i18next";
-import { Trophy } from "lucide-react";
-
-// 3. lib/server (API routes / getServerSideProps only)
-import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
-
-// 4. lib/client
-import { fetchMoviesList } from "@/lib/client/cineforum/movies";
-
-// 5. Components
-import CineforumLayout from "@/components/CineforumLayout";
-import { Button } from "@/components/ui/button";
-
-// 6. Shared types (type-only)
-import type { MovieStatsDTO } from "@/lib/shared/types";
-```
-
-### Component file structure
-
-```
-1. Imports
-2. Local types
-3. Small tightly-coupled sub-components (if any)
-4. Main exported component:
-   4a. Hooks (never conditional)
-   4b. State
-   4c. Derived / memoized values
-   4d. Callbacks
-   4e. Effects
-   4f. Early returns
-   4g. Main render
-```
-
-### JSX readability
-
-- One prop per line when 3+ props
-- Extract complex conditions into named booleans
-- Extract repeated JSX into sub-components
-- Avoid nesting deeper than 4 levels
-
-### State management
-
-- Group state that always changes together
-- Keep independent state separate
-
-### Async in components
-
-Prefer named async functions over inline IIFEs:
-
-```typescript
-const loadMovies = async () => {
-  try {
-    setLoading(true);
-    const response = await fetchMoviesList(cineforumId);
-    setMovies(response.body);
-  } catch (error) {
-    console.error("Error loading movies:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-useEffect(() => {
-  loadMovies();
-}, [cineforumId]);
-```
-
-### Magic values
-
-Extract magic numbers/strings into named constants or union types.
-
-### Comments
-
-Explain **why**, not **what**. Use `// TODO:`, `// FIXME:`, `// NOTE:`. Never leave commented-out code.
-
----
-
-## 18. Common UI Patterns
-
-### StatCard
-
-```typescript
-import { StatCard } from "@/components/cineforum/common";
-<StatCard icon={<Trophy className="w-5 h-5 text-primary" />} iconBg="bg-primary/10" label="Media" value={avg?.toFixed(2) ?? "N/A"} />
-```
-
-### SectionHeader
-
-```typescript
-import { SectionHeader } from "@/components/cineforum/common";
-<SectionHeader icon={<Heart className="w-4 h-4" />} title="Amore Ricevuto" subtitle="..." />
-```
-
-### EmptyState
-
-```typescript
-import { EmptyState } from "@/components/cineforum/common";
-<EmptyState title="Nessun risultato" subtitle="Prova a cambiare i filtri." icon={<Search className="w-8 h-8 text-muted-foreground" />} />
-// Inside an existing card section:
-<EmptyState title="Nessun film" variant="muted" />
-```
-
-### ExpandableList + ExpandableListItem
-
-```typescript
-import { ExpandableList, ExpandableListItem } from "@/components/cineforum/common";
-<ExpandableList
-  items={directors}
-  renderItem={(director, index, isExpanded, onToggle) => (
-    <ExpandableListItem
-      key={director.id}
-      position={index + 1}
-      title={director.name}
-      metric={director.average_rating.toFixed(2)}
-      isExpanded={isExpanded}
-      onToggle={onToggle}
-      animationDelay={index * 30}
-    >
-      <DirectorMoviesTable movies={director.movies} />
-    </ExpandableListItem>
-  )}
-/>
-```
-
----
-
-## 19. Pre-Commit Checklist
-
-**Architecture & boundaries**
-
-- [ ] No `lib/server/` imports in client components, hooks, or contexts
-- [ ] No `lib/client/` imports in API routes or `getServerSideProps`
-- [ ] All DTOs in `lib/shared/types/` and exported from `index.ts`
-- [ ] All client functions in `lib/client/cineforum/` and exported from `index.ts`
-
-**API routes**
-
-- [ ] One file per endpoint — never mix multiple HTTP methods in one file
-- [ ] Order: method guard → auth → param validation → membership → (admin check) → logic → error handler
-- [ ] No raw Prisma models returned — always map to DTOs
-- [ ] Structured error codes for known business failures
-
-**Pages**
-
-- [ ] Every cineforum page uses `getCineforumLayoutProps` in `getServerSideProps`
-- [ ] No large data arrays passed as SSR props — fetch client-side instead
-- [ ] All three states handled: loading → empty → data
-
-**TypeScript**
-
-- [ ] No `any` — use proper types or `unknown` with type guards
-- [ ] No unused imports or variables
-- [ ] Explicit return types on all exported functions
-- [ ] `import type` for type-only imports
-- [ ] `npx tsc --noEmit` passes with zero errors
-
-**Code quality**
-
-- [ ] JSDoc on all exported functions
-- [ ] No `console.log`/`console.debug`/`console.warn` — `console.error` only for actual failures, `console.info` only for operational tracing
-- [ ] No commented-out code
-- [ ] No magic numbers/strings — use named constants or union types
-- [ ] Imports in correct order
-- [ ] Component file structure followed
-- [ ] JSX with 3+ props: one prop per line
-- [ ] Long Tailwind class strings broken with `clsx` or template literals
+- Never import `lib/server/` from components, hooks or contexts.
+- Never import `lib/client/` from API routes or `getServerSideProps`.
+- `lib/shared/` is the only cross-boundary import.
+
+## File placement
+
+| What | Where |
+| --- | --- |
+| UI primitive (shadcn) | `components/ui/` |
+| Feature component | `components/cineforum/<feature>/` |
+| Landing / public component | `components/home/` |
+| Layout, header, footer | `components/` root, `components/header/` |
+| Prisma queries, external APIs, SSR helpers | `lib/server/<domain>/` |
+| HTTP client functions | `lib/client/cineforum/<domain>.ts` (+ export from `index.ts`) |
+| Hooks / contexts | `lib/client/hooks/`, `lib/client/contexts/` |
+| DTOs | `lib/shared/types/<domain>.ts` (+ `export *` from `index.ts`) |
+| Global type augmentation | `types/` |
+| Cineforum page (auth) | `pages/cineforum/[cineforumId]/` |
+| Public page | `pages/` root |
+| API route | `pages/api/cineforum/[cineforumId]/...` |
+| Translations | `locales/<it|en>/<namespace>.json` |
+
+## Naming
+
+- Components: PascalCase `.tsx`, default export, props type `XxxProps`. Barrels re-export as named: `export { default as X } from "./X"`.
+- Utility/type files: camelCase `.ts`. Hooks: `useXxx`.
+- Client fns verb-first (`fetchMoviesList`, `createRound`); server fns verb-first (`getCineforumLayoutProps`, `closeRound`).
+- DTOs: `XxxDTO`; response wrappers: `XxxResponseDTO`.
+
+## API routes
+
+- **One file per HTTP method.** Use a folder: `resource/index.ts` (GET), `resource/create.ts` (POST), `resource/[id]/update.ts` (PUT), `resource/[id]/delete.ts` (DELETE).
+- **Order:** method guard → `getServerSession` auth → validate params (`typeof x !== "string"` → 400) → membership (`!membership || membership.disabled` → 403) → admin check (`["ADMIN","OWNER"]`) → logic delegated to `lib/server/` → try/catch → 500.
+- Known business failures: throw from `lib/server/` an `Error` with a `code` (e.g. `ROUND_NOT_READY`) and map it to a 4xx in the route. Never throw HTTP errors from `lib/server/`.
+- Never return raw Prisma models; always map to a DTO.
+- **Authorize through the resource.** When a route gets a `roundId`/`proposalId`/`teamId` instead of a `cineforumId`, load the resource first, then check membership (and admin role) on *its* `cineforumId`. Never trust a `userId` or `cineforumId` from the body; use the session.
+- Response shapes: single resource → flat object; list → `{ body: T[] }`; paginated → `{ body, status: "completed" | "progress", total }`; mutation → `{ ok: true }` or the resource; error → `{ error, details? }`. Never leak internal messages or stacks.
+
+Templates for every layer: the `feature-scaffolding` skill.
+
+## Server code & Prisma
+
+- `import prisma from "@/lib/prisma"` (singleton), only in `lib/server/` and API routes.
+- Always `select`/`include` only what's needed. `Promise.all` for independent queries, `prisma.$transaction` for atomic multi-step writes.
+- **Prisma Accelerate caps interactive transactions at 15s** (asking for more fails with P6005). Use `{ timeout: 14_000, maxWait: 5_000 }`; inside a transaction do no reads you could do before it and no per-row query loops; prefer nested writes, `createMany`, `updateMany`. Every query is a network round trip.
+- **One-way state changes are idempotent:** claim with `updateMany({ where: { id, closed: false }, data: { closed: true } })` and continue only if `count === 1` (see `closeRound`).
+- **External calls** (TMDB, OMDB, IMDb, Telegram) only through `lib/server/external/`. Telegram goes **after** the DB write commits, is **awaited** (Vercel may freeze the function once the response is sent), and its failure never fails the request.
+- JSDoc on every exported function.
+
+## DTOs (`lib/shared/types/`)
+
+Pure data only: dates as ISO `string`, never `Date`; optional fields as `T | null`, not `undefined`; no functions, classes or Prisma types.
+
+## Pages
+
+- Every page under `pages/cineforum/[cineforumId]/` uses `getServerSideProps` with `getCineforumLayoutProps` (handles auth, membership, `initialLocale`). Never re-implement auth.
+- SSR props carry only auth/membership/locale and small first-render data. Fetch lists client-side.
+- Always render all three states: loading (`LoadingCard`) → empty (`EmptyState`) → data.
+- Admin UI uses the `useAdminAccess` hook.
+
+## UI
+
+- No `"use client"` (Pages Router). shadcn from `components/ui/`, never `@radix-ui/*` directly. Icons from `lucide-react`.
+- Semantic tokens only (`bg-card`, `text-muted-foreground`, `border-border`, `text-primary`…), never hardcoded colors. Utilities: `cine-card`, `text-gradient`, `glow-red-soft`, `animate-fade-in-up`.
+- Mobile-first (`sm:`/`lg:`), `tabular-nums` on numbers, `rounded-xl` cards/inputs, `rounded-lg` inner, `rounded-full` badges.
+- Reuse `StatCard`, `SectionHeader`, `EmptyState`, `ExpandableList(Item)`, `LoadingCard`, `InfoNote` from `@/components/cineforum/common`.
+- User-facing strings through `useTranslation("<namespace>")`; add keys to both `it` and `en`. Markup inside a translation goes through `<Trans>`, never `dangerouslySetInnerHTML`.
+- Most users are on phones. Drag-and-drop and touch interactions (proposal ranking) have broken repeatedly: keep the existing mobile fallbacks and ask the user to test on a real phone.
+
+Patterns and examples: the `frontend-components` skill.
+
+## TypeScript & style
+
+- No `any` (use `unknown` + guards); prefer `satisfies` over `as`; `import type` for types; explicit return types on exports; no unused code.
+- Imports order: React/Next → third-party → `lib/server` → `lib/client` → components → types.
+- Component order: types → small sub-components → hooks → state → derived → callbacks → effects → early returns → render.
+- JSX: one prop per line at 3+ props; name complex conditions; max ~4 nesting levels.
+- Named constants or union types instead of magic values. Comments explain *why*; no commented-out code.
+- Logging: `console.error` only for real failures, `console.info` for server operational tracing. Never `console.log`/`debug`/`warn` (Vercel flags `console.error` as an error).
+
+## Before finishing
+
+A Stop hook runs `npx tsc --noEmit` when `.ts`/`.tsx` files changed and reports errors back; fix them. For dependency or config changes, also run `npm run build`.
