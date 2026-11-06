@@ -6,6 +6,7 @@ import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import { LoadingCard, StatCard, EmptyState } from "@/components/cineforum/common";
 import { RankingCard } from "@/components/cineforum/rankings";
+import MoviePageButton from "@/components/cineforum/movies/MoviePageButton";
 import { fetchConsensusRankings } from "@/lib/client/cineforum";
 import type { ConsensusMovieDTO } from "@/lib/shared/types";
 
@@ -226,6 +227,7 @@ export default function ConsensusPage({ cineforumId, cineforumName }: Props) {
                             {m.average_rating.toFixed(2)}
                           </span>
                         </div>
+                        <MoviePageButton movieId={m.movie_id} title={m.movie} />
                       </div>
 
                       {/* Member votes */}

@@ -1250,3 +1250,20 @@
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
+
+/* ========== REDUCED MOTION ==========
+   Honours the OS "reduce motion" setting (iOS, Android, macOS, Windows).
+   Animations jump to their final frame instead of being removed, so
+   `both`-filled entrances (opacity 0 → 1) still end visible, and inline
+   stagger delays are cancelled so nothing waits invisible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

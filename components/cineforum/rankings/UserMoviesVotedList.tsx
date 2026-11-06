@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Trophy, Film } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/cineforum/common/EmptyState";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import type { MovieRoundRankingDTO } from "@/lib/shared/types";
 
 type Props = { movieRoundRankings: MovieRoundRankingDTO[] };
@@ -31,7 +32,7 @@ export default function UserMoviesVotedList({ movieRoundRankings }: Props) {
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="font-medium text-foreground truncate">
-                  {mrr.movie}
+                  <MovieLink movieId={mrr.movie_id}>{mrr.movie}</MovieLink>
                 </span>
                 {mrr.round_winner && (
                   <Trophy className="w-4 h-4 text-yellow-500 shrink-0" />

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ProposalRankingMovieDTO } from "@/lib/shared/types/cineforum";
 import { useTranslation } from "react-i18next";
 import MoviePoster from "@/components/ui/MoviePoster";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 
 export type ProposalMovieCardMovie = {
   id: string;
@@ -35,6 +36,8 @@ type ProposalMovieCardProps = {
   tNamespace?: string;
   /** Show delete button (admin edit mode) */
   onRemove?: (id: string) => void;
+  /** Link the title to the movie page; only for saved movies, whose id is a `Movie.id`. */
+  linkToPage?: boolean;
 };
 
 export default function ProposalMovieCard({
@@ -44,6 +47,7 @@ export default function ProposalMovieCard({
   rankedMovie,
   tNamespace = "rankings",
   onRemove,
+  linkToPage = false,
 }: ProposalMovieCardProps) {
   const { t } = useTranslation(tNamespace);
 
@@ -90,7 +94,11 @@ export default function ProposalMovieCard({
               className="truncate font-semibold text-foreground"
               title={movieTitle}
             >
-              {movieTitle}
+              {linkToPage ? (
+                <MovieLink movieId={movie.id}>{movieTitle}</MovieLink>
+              ) : (
+                movieTitle
+              )}
             </p>
             {movieYear && (
               <p className="text-sm text-muted-foreground">{movieYear}</p>

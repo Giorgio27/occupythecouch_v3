@@ -78,6 +78,7 @@ export default async function handler(
     // Get most deviant movies (top 10)
     const voteDetails = votesWithConsensus.map((v) => ({
       movie: v.movie.title,
+      movie_id: v.movieId,
       round: v.round.name,
       user_rating: v.rating,
       movie_average: v.movieRoundRanking!.averageRating!,

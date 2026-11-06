@@ -5,6 +5,8 @@ import { MovieWinnerDTO } from "@/lib/shared/types/cineforum";
 import UserVotes from "./UserVotes";
 import ExternalRatings from "./ExternalRatings";
 import MoviePoster from "@/components/ui/MoviePoster";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
+import MoviePageButton from "@/components/cineforum/movies/MoviePageButton";
 
 interface OscarsMovieRowProps {
   movie: MovieWinnerDTO;
@@ -51,7 +53,11 @@ export default function OscarsMovieRow({
 
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold leading-tight truncate">
-            {movie.title}
+            {isClosed ? (
+              movie.title
+            ) : (
+              <MovieLink movieId={movie.id}>{movie.title}</MovieLink>
+            )}
             {movie.year && (
               <span className="text-muted-foreground font-normal ml-1">
                 ({movie.year})
@@ -115,6 +121,7 @@ export default function OscarsMovieRow({
         >
           <UserVotes votes={movie.roundVotes} />
           <ExternalRatings movie={movie} />
+          <MoviePageButton movieId={movie.id} title={movie.title} />
         </div>
       )}
     </div>

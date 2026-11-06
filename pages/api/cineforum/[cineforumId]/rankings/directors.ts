@@ -4,6 +4,7 @@ import { authOptions } from "../../../auth/[...nextauth]";
 import prisma from "@/lib/prisma";
 
 type DirectorMovie = {
+  movie_id: string;
   title: string;
   average_rating: number;
 };
@@ -92,6 +93,7 @@ export default async function handler(
       // Add movie to director's list
       directorsMap[director].count += 1;
       directorsMap[director].movies.push({
+        movie_id: ranking.movieId,
         title: ranking.movie.title,
         average_rating: ranking.averageRating || 0,
       });

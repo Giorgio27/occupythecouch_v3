@@ -1,0 +1,67 @@
+{
+  "page": {
+    "loading": "Caricamento film...",
+    "errorTitle": "Impossibile caricare il film",
+    "errorSubtitle": "Riprova tra un momento.",
+    "back": "Tutti i film"
+  },
+  "hero": {
+    "minutes": "{{count}} min",
+    "directedBy": "Regia di",
+    "cast": "Cast",
+    "countries": "Paesi",
+    "imdb": "IMDb",
+    "homepage": "Sito ufficiale",
+    "showMore": "Mostra tutto",
+    "showLess": "Mostra meno"
+  },
+  "verdict": {
+    "title": "Il verdetto",
+    "subtitle": "Piattaforme da /10 a /5. Diff = piattaforma meno club: positivo se la piattaforma lo ha votato più alto."
+  },
+  "appearances": {
+    "title": "Proposte",
+    "subtitle_one": "Proposto {{count}} volta in questo club",
+    "subtitle_other": "Proposto {{count}} volte in questo club",
+    "proposedBy": "Proposto da {{owner}}",
+    "won": "Vinto",
+    "lost": "Perso",
+    "open": "Votazione aperta",
+    "lostTo": "Battuto da {{title}}",
+    "rank": "{{rank}}° su {{total}}",
+    "voters_one": "{{count}} votante",
+    "voters_other": "{{count}} votanti",
+    "ballots": "Come l'ha classificato ogni membro",
+    "unranked": "Non classificato",
+    "ballotsHidden": "I voti individuali di questa proposta sono nascosti."
+  },
+  "oscars": {
+    "title": "Oscar",
+    "subtitle": "I voti 0–5 dei membri dopo la visione",
+    "average": "Media",
+    "roundPosition": "Posizione nel round",
+    "overallRank": "Classifica storica",
+    "consensus": "Dispersione",
+    "consensusTooltip": "Deviazione standard dei voti: bassa = unanimità, alta = film divisivo. Servono almeno {{min}} voti.",
+    "rankValue": "{{rank}} / {{total}}",
+    "roundWinner": "Vincitore del round",
+    "proposedBy": "Proposto da {{owner}}",
+    "you": "Tu",
+    "noVotes": "Nessun voto registrato.",
+    "pendingTitle": "Votazione Oscar in corso · {{round}}",
+    "pendingCount_one": "Finora l'ha votato {{count}} membro.",
+    "pendingCount_other": "Finora l'hanno votato {{count}} membri.",
+    "pendingMine": "Il tuo voto: {{rating}}.",
+    "pendingNotMine": "Non l'hai ancora votato.",
+    "pendingHidden": "I voti dei membri compariranno qui alla chiusura del round."
+  },
+  "sameDirector": {
+    "title": "Altri film di {{director}}",
+    "subtitle": "Altri film di questo regista proposti nel club",
+    "notWatched": "Non visto"
+  },
+  "link": {
+    "open": "Scheda film",
+    "openLabel": "Apri la scheda di {{title}}"
+  }
+}

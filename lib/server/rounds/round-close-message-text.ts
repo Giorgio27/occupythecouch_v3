@@ -1,5 +1,7 @@
 import type { RoundCloseNotificationData } from "@/lib/server/rounds/round-close-notification-data";
 import { escapeMarkdown } from "@/lib/server/external/telegram";
+import { absoluteAppUrl } from "@/lib/server/app-url";
+import { movieDetailPath } from "@/lib/shared/routes";
 
 const TOP_N = 4;
 
@@ -45,7 +47,22 @@ export function buildRoundResultsMessage(
     )} (${entry.voteCount} ${votesLabel(entry.voteCount, isEn)})`;
   });
 
-  return title + lines.join("\n") + pagelloneSection;
+  return title + lines.join("\n") + winnerLinks(data, isEn) + pagelloneSection;
+}
+
+/**
+ * Links to the movie page of each round winner (several on a tie), so the
+ * chat can jump from the results to the full ratings. Empty when the app
+ * URL is not configured.
+ */
+function winnerLinks(data: RoundCloseNotificationData, isEn: boolean): string {
+  const label = isEn ? "Movie page" : "Scheda film";
+  const links = data.ranking
+    .filter((entry) => entry.rank === 1)
+    .map((entry) => absoluteAppUrl(movieDetailPath(data.cineforumId, entry.movieId)))
+    .filter((url): url is string => url !== null)
+    .map((url) => `🎞️ ${label}: ${url}`);
+  return links.length > 0 ? `\n\n${links.join("\n")}` : "";
 }
 
 /**

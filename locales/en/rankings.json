@@ -241,5 +241,11 @@
     "filmsCount": "{{count}} movies",
     "emptyTitle": "No genres yet",
     "emptySubtitle": "Genres will appear here once you have watched and rated some movies."
+  },
+  "comparisonTable": {
+    "site": "Site",
+    "vote": "Rating",
+    "diff": "Diff",
+    "us": "Us"
   }
 }

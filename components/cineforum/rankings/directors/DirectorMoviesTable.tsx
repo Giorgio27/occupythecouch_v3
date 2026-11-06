@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import type { DirectorRankingDTO } from "@/lib/shared/types";
 
 type DirectorMoviesTableProps = {
@@ -27,13 +28,16 @@ export default function DirectorMoviesTable({
       <div className="divide-y divide-border">
         {sorted.map((movie, idx) => (
           <div
-            key={idx}
+            key={`${movie.movie_id}-${idx}`}
             className="flex items-center px-4 py-3 sm:py-4 hover:bg-secondary/30 transition-colors"
           >
             <div className="flex-1">
-              <span className="text-sm sm:text-base text-foreground font-medium">
+              <MovieLink
+                movieId={movie.movie_id}
+                className="text-sm sm:text-base text-foreground font-medium hover:text-primary hover:underline underline-offset-2"
+              >
                 {movie.title}
-              </span>
+              </MovieLink>
             </div>
             <div className="w-20 sm:w-24 text-right">
               <span className="font-bold text-sm sm:text-base text-gradient tabular-nums">

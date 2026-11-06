@@ -413,6 +413,7 @@ export default function AdminProposalsPage({
                           rankedMovie={rankedMovie}
                           tNamespace="admin"
                           onRemove={isEditing ? removeMovie : undefined}
+                          linkToPage={!isEditing}
                         />
                       );
                     })}

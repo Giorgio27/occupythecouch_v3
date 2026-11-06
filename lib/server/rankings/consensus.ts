@@ -1,12 +1,15 @@
 import prisma from "@/lib/prisma";
+import {
+  CONSENSUS_MIN_VOTES,
+  populationStdDev,
+} from "@/lib/shared/ranking/consensus";
 import type { ConsensusMovieDTO } from "@/lib/shared/types";
 
 /**
  * Minimum number of member votes required for a movie to appear in the
- * consensus rankings. Below this a standard deviation is statistically
- * meaningless (a single dissenting vote would dominate the figure).
+ * consensus rankings. Shared with the client, which explains the threshold.
  */
-export const MIN_VOTES = 3;
+export const MIN_VOTES = CONSENSUS_MIN_VOTES;
 
 /**
  * Computes, per movie watched in a closed round of the cineforum, how much the
@@ -30,6 +33,7 @@ export async function getConsensusRankings(
     where: { round: { cineforumId, closed: true } },
     select: {
       id: true,
+      movieId: true,
       movie: { select: { title: true } },
       round: { select: { name: true } },
       user: { select: { name: true } },
@@ -49,13 +53,13 @@ export async function getConsensusRankings(
     if (n < MIN_VOTES) continue;
 
     const mean = ratings.reduce((s, x) => s + x, 0) / n;
-    const variance = ratings.reduce((s, x) => s + (x - mean) ** 2, 0) / n;
-    const stdDev = Math.sqrt(variance);
+    const stdDev = populationStdDev(ratings);
     const owner = r.user ?? r.team;
 
     body.push({
       id: r.id,
       movie: r.movie.title,
+      movie_id: r.movieId,
       round: r.round.name,
       owner: owner?.name ?? "Unknown",
       average_rating: parseFloat(mean.toFixed(2)),

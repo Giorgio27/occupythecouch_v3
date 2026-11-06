@@ -1,10 +1,10 @@
 import * as React from "react";
-import { GripVertical, Star, X, Clock, ChevronDown } from "lucide-react";
+import { GripVertical, Star, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { useTouchDrag } from "./useTouchDrag";
 import PositionPicker from "./PositionPicker";
+import MovieVotingCardMeta from "./MovieVotingCardMeta";
 import MoviePoster from "@/components/ui/MoviePoster";
 import type { ProposalMovieDTO } from "@/lib/shared/types";
 
@@ -131,40 +131,7 @@ export default function MovieVotingCard({
                 {movie.director}
               </div>
             )}
-            <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              {movie.runtime && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground/80">
-                  <Clock className="h-3 w-3" />
-                  <span>{movie.runtime}</span>
-                </div>
-              )}
-              {movie.imdbId && (
-                <a
-                  href={`https://www.imdb.com/title/${movie.imdbId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  title="View on IMDb"
-                >
-                  <Image
-                    src="/imdb-icon.webp"
-                    alt="IMDb"
-                    width={16}
-                    height={16}
-                    className="rounded-sm"
-                  />
-                </a>
-              )}
-              {(movie.rating || movie.imdbRating) && (
-                <div className="flex items-center gap-1 text-xs">
-                  <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                  <span className="text-muted-foreground font-medium">
-                    {movie.rating || movie.imdbRating}
-                  </span>
-                </div>
-              )}
-            </div>
+            <MovieVotingCardMeta movie={movie} />
           </div>
         </div>
 

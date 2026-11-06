@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 
 export type RoundCloseRankingEntry = {
+  movieId: string;
   title: string;
   proposedBy: string | null;
   averageRating: number;
@@ -40,7 +41,7 @@ export async function getRoundCloseNotificationData(
         select: {
           averageRating: true,
           roundWinner: true,
-          movie: { select: { title: true } },
+          movie: { select: { id: true, title: true } },
           user: { select: { name: true } },
           team: { select: { name: true } },
           _count: { select: { movieVotes: true } },
@@ -68,6 +69,7 @@ export async function getRoundCloseNotificationData(
     }
     previousRating = r.averageRating;
     return {
+      movieId: r.movie.id,
       title: r.movie.title,
       proposedBy: r.user?.name ?? r.team?.name ?? null,
       averageRating: r.averageRating,

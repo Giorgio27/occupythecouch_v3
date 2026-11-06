@@ -27,6 +27,8 @@ import oscarsIT from "@/locales/it/oscars.json";
 import oscarsEN from "@/locales/en/oscars.json";
 import tutorialIT from "@/locales/it/tutorial.json";
 import tutorialEN from "@/locales/en/tutorial.json";
+import movieIT from "@/locales/it/movie.json";
+import movieEN from "@/locales/en/movie.json";
 
 const resources = {
   it: {
@@ -42,6 +44,7 @@ const resources = {
     validation: validationIT,
     oscars: oscarsIT,
     tutorial: tutorialIT,
+    movie: movieIT,
   },
   en: {
     common: commonEN,
@@ -56,6 +59,7 @@ const resources = {
     validation: validationEN,
     oscars: oscarsEN,
     tutorial: tutorialEN,
+    movie: movieEN,
   },
 };
 

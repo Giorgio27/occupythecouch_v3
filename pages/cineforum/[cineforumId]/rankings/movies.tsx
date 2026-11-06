@@ -12,6 +12,7 @@ import {
   ComparisonTable,
 } from "@/components/cineforum/rankings";
 import { EmptyState } from "@/components/cineforum/common";
+import MoviePageButton from "@/components/cineforum/movies/MoviePageButton";
 import { InfiniteScroll } from "@/components/ui/infinite-scroll";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MovieRankingDTO, Supplier } from "@/lib/shared/types";
@@ -267,6 +268,7 @@ export default function MoviesRankingPage({
                             {ranking.owner}
                           </span>
                         </div>
+                        <MoviePageButton movieId={ranking.movie_id} title={ranking.movie} />
                       </div>
 
                       {/* User Votes */}
