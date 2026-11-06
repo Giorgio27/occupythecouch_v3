@@ -123,6 +123,7 @@ Pure data only: dates as ISO `string`, never `Date`; optional fields as `T | nul
 - Mobile-first (`sm:`/`lg:`), `tabular-nums` on numbers, `rounded-xl` cards/inputs, `rounded-lg` inner, `rounded-full` badges.
 - Reuse `StatCard`, `SectionHeader`, `EmptyState`, `ExpandableList(Item)`, `LoadingCard`, `InfoNote` from `@/components/cineforum/common`.
 - User-facing strings through `useTranslation("<namespace>")`; add keys to both `it` and `en`. Markup inside a translation goes through `<Trans>`, never `dangerouslySetInnerHTML`.
+- **Horizontal overflow zooms the whole page out on phones** (content shrinks to the left, blank strip on the right; recurring bug). Cause: `truncate`/`whitespace-nowrap` text inside a grid or flex item that can't shrink. Mobile grids always get an explicit `grid-cols-1` (a bare `grid` sizes its column to the widest nowrap text), and every item holding truncated text gets `min-w-0`. Test with the longest real title (e.g. "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb").
 - Most users are on phones. Drag-and-drop and touch interactions (proposal ranking) have broken repeatedly: keep the existing mobile fallbacks and ask the user to test on a real phone.
 
 Patterns and examples: the `frontend-components` skill.

@@ -23,9 +23,9 @@ export default function MovieSameDirector({
         title={t("sameDirector.title", { director })}
         subtitle={t("sameDirector.subtitle")}
       />
-      <ul className="grid gap-2 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {movies.map((movie) => (
-          <li key={movie.id}>
+          <li key={movie.id} className="min-w-0">
             <MovieLink
               movieId={movie.id}
               className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-colors hover:border-primary/50"
