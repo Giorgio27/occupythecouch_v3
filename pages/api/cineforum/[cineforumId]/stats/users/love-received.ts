@@ -122,6 +122,7 @@ export default async function handler(
       string,
       {
         rating: number;
+        movieId: string;
         movieTitle: string;
         movieAverageVote: number;
         round: string;
@@ -134,6 +135,7 @@ export default async function handler(
         }
         userVotesMap[vote.userId].push({
           rating: vote.rating,
+          movieId: ranking.movieId,
           movieTitle: ranking.movie.title,
           movieAverageVote: ranking.averageRating,
           round: ranking.round.name,

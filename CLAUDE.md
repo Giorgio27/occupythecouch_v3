@@ -16,7 +16,7 @@ Schema changes are additive only; nothing may delete, reset or overwrite data. F
 
 ## Domain in one breath
 
-A **Cineforum** (club) runs **Rounds**. In a round, members or **Teams** make **Proposals** (a few candidate movies); members rank them (**ProposalVote**) and the **Schulze** method picks the winner. Members then rate each winner movie 0–5 (**MovieVote**, the "**Oscars**" vote). **Closing a round** freezes it into **MovieRoundRanking** + **UserRanking**, feeding all rankings/stats, and posts to Telegram. Movies are global; everything else is per cineforum. Details, files and invariants: the `cineforum-domain` skill.
+A **Cineforum** (club) runs **Rounds**. In a round, members or **Teams** make **Proposals** (a few candidate movies); members rank them (**ProposalVote**) and the **Schulze** method picks the winner. Members then rate each winner movie 0–5 in 0.25 steps (**MovieVote**, the "**Oscars**" vote). **Always display ratings (single votes and averages) with two decimals (`toFixed(2)`)**: one decimal turns 4.25 into 4.3, a recurring bug. **Closing a round** freezes it into **MovieRoundRanking** + **UserRanking**, feeding all rankings/stats, and posts to Telegram. Movies are global; everything else is per cineforum. Details, files and invariants: the `cineforum-domain` skill.
 
 ## Commands
 

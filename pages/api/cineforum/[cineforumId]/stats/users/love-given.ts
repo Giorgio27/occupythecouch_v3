@@ -94,6 +94,7 @@ export default async function handler(
         userVotes: number[];
         votes: {
           rating: number;
+          movieId: string;
           movieTitle: string;
           movieAverageVote: number;
           round: string;
@@ -106,6 +107,7 @@ export default async function handler(
       let movieOwner = movieVote.movieRoundRanking.userId;
       const voteDetail = {
         rating: movieVote.rating,
+        movieId: movieVote.movieId,
         movieTitle: movieVote.movieRoundRanking.movie.title,
         movieAverageVote: movieVote.movieRoundRanking.averageRating,
         round: movieVote.movieRoundRanking.round.name,

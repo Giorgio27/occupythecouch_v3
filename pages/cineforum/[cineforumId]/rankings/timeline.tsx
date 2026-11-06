@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import { fetchTimelineRankings } from "@/lib/client/cineforum/rankings";
 import type { TimelineYearDTO, TimelineMovieDTO } from "@/lib/shared/types";
 import {
@@ -101,7 +102,7 @@ function YearBar({
 
 function MoviePill({ movie }: { movie: TimelineMovieDTO }) {
   return (
-    <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 hover:shadow-md transition-all duration-200">
+    <MovieLink movieId={movie.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 hover:shadow-md transition-all duration-200">
       {movie.poster ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -130,7 +131,7 @@ function MoviePill({ movie }: { movie: TimelineMovieDTO }) {
           </span>
         </div>
       </div>
-    </div>
+    </MovieLink>
   );
 }
 

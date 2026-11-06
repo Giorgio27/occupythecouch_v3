@@ -269,6 +269,7 @@ export default function ProposalsHistoryPage({
                                       isLeading={isLeading}
                                       rankedMovie={rankedMovie}
                                       tNamespace="rankings"
+                                      linkToPage
                                     />
                                   );
                                 })}

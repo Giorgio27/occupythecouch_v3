@@ -20,6 +20,7 @@ function buildRegexPattern(raw: string): string {
 
 type RankingRow = {
   id: string;
+  movieId: string;
   averageRating: number | null;
   roundWinner: boolean;
   movie: {
@@ -138,6 +139,7 @@ export async function getMovieRankings(
       id: ranking.id,
       average_rating: ranking.averageRating,
       movie: ranking.movie.title,
+      movie_id: ranking.movieId,
       movie_votes: ranking.movieVotes.map((vote) => ({
         id: vote.id,
         rating: vote.rating,

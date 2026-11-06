@@ -15,6 +15,8 @@ export type MovieRankingDTO = {
   id: string;
   average_rating: number | null;
   movie: string;
+  /** `Movie.id`, for linking to the movie page. */
+  movie_id: string;
   movie_votes: MovieVoteDTO[];
   owner: string;
   round: string;
@@ -32,6 +34,8 @@ export type MovieRankingDTO = {
 export type MovieRoundRankingDTO = {
   average_rating: number | null;
   movie: string;
+  /** `Movie.id`, for linking to the movie page. */
+  movie_id: string;
   round_winner: boolean;
   round: string;
   tmdb_vote: number | null;
@@ -83,6 +87,8 @@ export const SUPPLIERS: Supplier[] = [
 // User Statistics types
 export type UserVoteDetailDTO = {
   movie: string;
+  /** `Movie.id`, for linking to the movie page. */
+  movie_id: string;
   round: string;
   user_rating: number;
   movie_average: number;
@@ -115,6 +121,7 @@ export type LoveGivenDTO = {
   count: number;
   votes: {
     rating: number;
+    movieId: string;
     movieTitle: string;
     movieAverageVote: number;
     round: string;
@@ -128,6 +135,7 @@ export type LoveReceivedDTO = {
   count: number;
   votes: {
     rating: number;
+    movieId: string;
     movieTitle: string;
     movieAverageVote: number;
     round: string;
@@ -349,6 +357,8 @@ export type ConsensusMovieDTO = {
   /** MovieRoundRanking id (one entry per movie-in-round, like MovieRankingDTO). */
   id: string;
   movie: string;
+  /** `Movie.id`, for linking to the movie page. */
+  movie_id: string;
   round: string;
   /** Proposer (user or team) name. */
   owner: string;

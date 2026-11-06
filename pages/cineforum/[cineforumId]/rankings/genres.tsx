@@ -14,6 +14,7 @@ import { getCineforumLayoutProps } from "@/lib/server/cineforum-layout-props";
 import CineforumLayout from "@/components/CineforumLayout";
 import { LoadingCard, StatCard, EmptyState } from "@/components/cineforum/common";
 import MoviePoster from "@/components/ui/MoviePoster";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import { fetchGenreStats } from "@/lib/client/cineforum";
 import type { GenreStatDTO, GenreMovieDTO } from "@/lib/shared/types";
 
@@ -34,7 +35,7 @@ function ratingColor(rating: number | null): string {
 
 function MoviePill({ movie }: { movie: GenreMovieDTO }) {
   return (
-    <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 hover:shadow-md transition-all duration-200">
+    <MovieLink movieId={movie.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 hover:shadow-md transition-all duration-200">
       <MoviePoster
         imageMedium={movie.imageMedium}
         poster={movie.poster}
@@ -69,7 +70,7 @@ function MoviePill({ movie }: { movie: GenreMovieDTO }) {
           {movie.rating !== null ? movie.rating.toFixed(2) : "—"}
         </span>
       </div>
-    </div>
+    </MovieLink>
   );
 }
 

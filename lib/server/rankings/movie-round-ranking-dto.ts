@@ -5,6 +5,7 @@ type UrmRow = {
     averageRating: number | null;
     roundWinner: boolean;
     movie: {
+      id: string;
       title: string;
       voteAverage: number | null;
       imdbRating: number | null;
@@ -30,6 +31,7 @@ export function toMovieRoundRankingDTO(urm: UrmRow): MovieRoundRankingDTO {
   return {
     average_rating: mrr.averageRating,
     movie: mrr.movie.title,
+    movie_id: mrr.movie.id,
     round_winner: mrr.roundWinner,
     round: mrr.round.name,
     tmdb_vote: supplierVote(mrr.movie.voteAverage),

@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { SectionHeader } from "@/components/cineforum/common";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import type { LoveGivenDTO, UserProfileStatsDTO } from "@/lib/shared/types";
 
 type Props = {
@@ -418,7 +419,9 @@ export default function LoveGivenTable({ loveGiven, profileStats }: Props) {
                                         {vote.round}
                                       </td>
                                       <td className="px-3 py-2 text-foreground">
-                                        {vote.movieTitle}
+                                        <MovieLink movieId={vote.movieId}>
+                                          {vote.movieTitle}
+                                        </MovieLink>
                                       </td>
                                       <td className="px-3 py-2 text-right font-bold text-primary tabular-nums">
                                         {vote.rating.toFixed(2)}

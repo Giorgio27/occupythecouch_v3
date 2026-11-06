@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown, Minus, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type ComparisonRow = {
   label: string;
@@ -25,6 +26,8 @@ function parseDifference(
 }
 
 export default function ComparisonTable({ title, rows }: ComparisonTableProps) {
+  const { t } = useTranslation("rankings");
+
   return (
     <div className="space-y-3">
       <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
@@ -36,9 +39,13 @@ export default function ComparisonTable({ title, rows }: ComparisonTableProps) {
         {/* Header */}
         <div className="bg-secondary/50 px-4 py-3 border-b border-border">
           <div className="flex items-center text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            <div className="flex-1">Sito</div>
-            <div className="w-20 sm:w-24 text-right">Voto</div>
-            <div className="w-20 sm:w-24 text-right">Diff</div>
+            <div className="flex-1">{t("comparisonTable.site")}</div>
+            <div className="w-20 sm:w-24 text-right">
+              {t("comparisonTable.vote")}
+            </div>
+            <div className="w-20 sm:w-24 text-right">
+              {t("comparisonTable.diff")}
+            </div>
           </div>
         </div>
 
@@ -65,7 +72,9 @@ export default function ComparisonTable({ title, rows }: ComparisonTableProps) {
                     {row.label}
                   </span>
                   {isFirst && (
-                    <span className="cine-badge text-xs py-0.5 px-2">Noi</span>
+                    <span className="cine-badge text-xs py-0.5 px-2">
+                      {t("comparisonTable.us")}
+                    </span>
                   )}
                 </div>
 

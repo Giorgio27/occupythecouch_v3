@@ -1,8 +1,6 @@
 import {
   CheckCircle,
   Clock,
-  ExternalLink,
-  Film,
   Calendar,
   User,
   Tag,
@@ -12,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import type { MovieStatsDTO } from "@/lib/shared/types";
 import MoviePoster from "@/components/ui/MoviePoster";
 import { ExpandableListItem } from "@/components/cineforum/common";
+import MovieListCardLinks from "./MovieListCardLinks";
 
 type MovieListCardProps = {
   movie: MovieStatsDTO;
@@ -124,19 +123,11 @@ export default function MovieListCard({
             </p>
           )}
 
-          {/* IMDB link */}
-          {movie.imdbId && (
-            <a
-              href={`https://www.imdb.com/title/${movie.imdbId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-yellow-500/10 px-3 py-1.5 text-sm font-medium text-yellow-600 transition-colors hover:bg-yellow-500/20 dark:text-yellow-400"
-            >
-              <Film className="h-4 w-4" />
-              {t("moviesList.detailImdb")}
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          )}
+          <MovieListCardLinks
+            movieId={movie.id}
+            title={movie.title}
+            imdbId={movie.imdbId}
+          />
         </div>
       </div>
     </ExpandableListItem>

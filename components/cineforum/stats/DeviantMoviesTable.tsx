@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/cineforum/common";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import type { UserVoteDetailDTO } from "@/lib/shared/types";
 
 type Props = {
@@ -45,7 +46,7 @@ export default function DeviantMoviesTable({ movies }: Props) {
                 className="border-b border-border transition-colors last:border-0 hover:bg-secondary/50"
               >
                 <td className="px-4 py-3.5 text-sm font-medium text-foreground">
-                  {movie.movie}
+                  <MovieLink movieId={movie.movie_id}>{movie.movie}</MovieLink>
                 </td>
                 <td className="px-4 py-3.5 text-sm text-muted-foreground">
                   <Badge variant="outline" className="text-xs">

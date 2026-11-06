@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { User, CalendarDays } from "lucide-react";
 import ComparisonTable from "@/components/cineforum/rankings/ComparisonTable";
+import MoviePageButton from "@/components/cineforum/movies/MoviePageButton";
 import type { UserRankedMovieDTO } from "@/lib/shared/types";
 import i18n from "@/lib/i18n";
 
@@ -50,6 +51,7 @@ export default function RankedMovieDetail({ movie }: Props) {
             {formatDate(movie.roundDate, notAvailable)}
           </span>
         </div>
+        <MoviePageButton movieId={movie.movieId} title={movie.movie} />
       </div>
 
       <ComparisonTable

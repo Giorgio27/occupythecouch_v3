@@ -1,0 +1,67 @@
+{
+  "page": {
+    "loading": "Loading movie...",
+    "errorTitle": "Couldn't load this movie",
+    "errorSubtitle": "Try again in a moment.",
+    "back": "All movies"
+  },
+  "hero": {
+    "minutes": "{{count}} min",
+    "directedBy": "Directed by",
+    "cast": "Cast",
+    "countries": "Countries",
+    "imdb": "IMDb",
+    "homepage": "Official site",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "verdict": {
+    "title": "The verdict",
+    "subtitle": "Platforms converted from /10 to /5. Diff = platform minus club: positive when the platform rated it higher."
+  },
+  "appearances": {
+    "title": "Proposals",
+    "subtitle_one": "Proposed {{count}} time in this club",
+    "subtitle_other": "Proposed {{count}} times in this club",
+    "proposedBy": "Proposed by {{owner}}",
+    "won": "Won",
+    "lost": "Lost",
+    "open": "Voting open",
+    "lostTo": "Lost to {{title}}",
+    "rank": "Ranked {{rank}} of {{total}}",
+    "voters_one": "{{count}} voter",
+    "voters_other": "{{count}} voters",
+    "ballots": "How each member ranked it",
+    "unranked": "Unranked",
+    "ballotsHidden": "Individual ballots are hidden for this proposal."
+  },
+  "oscars": {
+    "title": "Oscars",
+    "subtitle": "The members' 0–5 ratings after watching it",
+    "average": "Average",
+    "roundPosition": "Round position",
+    "overallRank": "All-time rank",
+    "consensus": "Spread",
+    "consensusTooltip": "Standard deviation of the ratings: low = unanimous, high = divisive. Needs at least {{min}} votes.",
+    "rankValue": "{{rank}} / {{total}}",
+    "roundWinner": "Round winner",
+    "proposedBy": "Proposed by {{owner}}",
+    "you": "You",
+    "noVotes": "No ratings were recorded.",
+    "pendingTitle": "Oscars vote in progress · {{round}}",
+    "pendingCount_one": "{{count}} member has rated it so far.",
+    "pendingCount_other": "{{count}} members have rated it so far.",
+    "pendingMine": "Your rating: {{rating}}.",
+    "pendingNotMine": "You haven't rated it yet.",
+    "pendingHidden": "The members' ratings appear here when the round closes."
+  },
+  "sameDirector": {
+    "title": "More by {{director}}",
+    "subtitle": "Other films by this director proposed in the club",
+    "notWatched": "Not watched"
+  },
+  "link": {
+    "open": "Movie page",
+    "openLabel": "Open the page of {{title}}"
+  }
+}

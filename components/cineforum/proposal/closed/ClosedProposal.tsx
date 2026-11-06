@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Trophy, Film, Sparkles, Clock } from "lucide-react";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import ProposalOwnerBadge from "@/components/cineforum/proposal/shared/ProposalOwnerBadge";
 
 export default function ClosedProposal({
@@ -52,7 +53,11 @@ export default function ClosedProposal({
             </div>
             <div className="text-2xl sm:text-3xl font-black tracking-tight text-balance leading-tight">
               <span className="text-foreground hover-glow transition-all duration-300">
-                {winnerTitle}
+                {last.winner ? (
+                  <MovieLink movieId={last.winner.id}>{winnerTitle}</MovieLink>
+                ) : (
+                  winnerTitle
+                )}
               </span>
             </div>
           </div>

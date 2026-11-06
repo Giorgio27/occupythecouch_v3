@@ -23,6 +23,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { SectionHeader } from "@/components/cineforum/common";
+import MovieLink from "@/components/cineforum/movies/MovieLink";
 import { fetchCommonMovieVotes } from "@/lib/client/cineforum/stats";
 import type { SimilarUserDTO, CommonMovieVoteDTO } from "@/lib/shared/types";
 
@@ -264,7 +265,7 @@ function DetailPanel({
                 className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors"
               >
                 <td className="px-3 py-2 text-foreground font-medium">
-                  {v.movieTitle}
+                  <MovieLink movieId={v.movieId}>{v.movieTitle}</MovieLink>
                 </td>
                 <td className="px-3 py-2 text-right font-bold tabular-nums text-primary">
                   {v.targetRating.toFixed(2)}

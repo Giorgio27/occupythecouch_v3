@@ -241,5 +241,11 @@
     "filmsCount": "{{count}} film",
     "emptyTitle": "Ancora nessun genere",
     "emptySubtitle": "I generi appariranno qui una volta che avrete visto e votato qualche film."
+  },
+  "comparisonTable": {
+    "site": "Sito",
+    "vote": "Voto",
+    "diff": "Diff",
+    "us": "Noi"
   }
 }
