@@ -114,5 +114,58 @@
     "winnerTitle": "Round winner: {{round}}",
     "comparisonTitle": "Site Comparison",
     "notAvailable": "N/A"
+  },
+  "radar": {
+    "title": "Hexagons",
+    "subtitle": "Strengths, eras and origins of the picks: compare with the club or another member",
+    "compareWith": "Compare with…",
+    "club": "Club average",
+    "noData": "N/A",
+    "hours": "{{value}} h",
+    "days": "{{value}} d",
+    "movies_one": "{{value}} movie",
+    "movies_other": "{{value}} movies",
+    "topCountries": "Most proposed countries",
+    "profileTitle": "Profile",
+    "profileSubtitle": "Percentile among active members (100 = the best)",
+    "erasTitle": "Eras",
+    "erasSubtitle": "Share of proposed movies by release year",
+    "regionsTitle": "Continents",
+    "regionsSubtitle": "Share of proposed movies by production area",
+    "profile": {
+      "talent": "Talent scout",
+      "cinephile": "Cinephile",
+      "presence": "Presence",
+      "speed": "Speed",
+      "harmony": "Harmony",
+      "generosity": "Generosity"
+    },
+    "profileHelp": {
+      "talent": "how much the club likes the movies you propose (Oscars average weighted by number of proposals)",
+      "cinephile": "how much critics (Metacritic and Rotten Tomatoes) like your winning movies",
+      "presence": "share of the proposals you voted out of those you could have voted",
+      "speed": "how soon you vote on a proposal after it's created",
+      "harmony": "how close your Oscars votes are to the club average on each movie",
+      "generosity": "how far your Oscars average is above the club's"
+    },
+    "eras": {
+      "pre1960": "≤1959",
+      "y1960_79": "1960–79",
+      "y1980_99": "1980–99",
+      "y2000_09": "2000–09",
+      "y2010_19": "2010–19",
+      "y2020_plus": "2020+"
+    },
+    "regions": {
+      "north_america": "N. America",
+      "western_europe": "W. Europe",
+      "eastern_europe": "E. Europe",
+      "east_asia": "East Asia",
+      "rest_of_asia": "Rest of Asia",
+      "global_south": "Global South"
+    },
+    "howTitle": "How to read them",
+    "howProfile": "Profile: each axis is the member's percentile among active members, i.e. the share of members doing worse. The club is the dashed shape at 50 (the median member). Hover the chart for the real value.",
+    "howTaste": "Eras and Continents: share of proposed movies (winners or not) in closed rounds, each movie counted once. A co-production is split across its countries' areas. Global South = Latin America, Africa and Oceania; E. Europe includes Russia and the Caucasus; Rest of Asia includes the Middle East, India and Southeast Asia. The scale is square-root so small shares stay visible: the shape shows the order, the tooltip the real value."
   }
 }

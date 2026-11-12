@@ -114,5 +114,58 @@
     "winnerTitle": "Vincitore del ciclo: {{round}}",
     "comparisonTitle": "Confronto Siti",
     "notAvailable": "N/D"
+  },
+  "radar": {
+    "title": "Esagoni",
+    "subtitle": "Dove è forte, cosa propone e da dove: confrontalo con il club o con un altro membro",
+    "compareWith": "Confronta con…",
+    "club": "Media del club",
+    "noData": "N/D",
+    "hours": "{{value}} h",
+    "days": "{{value}} g",
+    "movies_one": "{{value}} film",
+    "movies_other": "{{value}} film",
+    "topCountries": "Paesi più proposti",
+    "profileTitle": "Profilo",
+    "profileSubtitle": "Percentile tra i membri attivi (100 = il migliore)",
+    "erasTitle": "Epoche",
+    "erasSubtitle": "Quota dei film proposti per anno di uscita",
+    "regionsTitle": "Continenti",
+    "regionsSubtitle": "Quota dei film proposti per area di produzione",
+    "profile": {
+      "talent": "Talent scout",
+      "cinephile": "Cinefilo",
+      "presence": "Presenza",
+      "speed": "Velocità",
+      "harmony": "Sintonia",
+      "generosity": "Generosità"
+    },
+    "profileHelp": {
+      "talent": "quanto il club apprezza i film che proponi (media Oscar pesata sul numero di proposte)",
+      "cinephile": "quanto la critica (Metacritic e Rotten Tomatoes) apprezza i tuoi film vincitori",
+      "presence": "quota delle proposte che hai votato rispetto a quelle che avresti potuto votare",
+      "speed": "quanto presto voti una proposta dopo che è stata creata",
+      "harmony": "quanto i tuoi voti Oscar sono vicini alla media del club su ogni film",
+      "generosity": "quanto la tua media voti Oscar è sopra quella del club"
+    },
+    "eras": {
+      "pre1960": "≤1959",
+      "y1960_79": "1960–79",
+      "y1980_99": "1980–99",
+      "y2000_09": "2000–09",
+      "y2010_19": "2010–19",
+      "y2020_plus": "2020+"
+    },
+    "regions": {
+      "north_america": "Nord America",
+      "western_europe": "Europa occ.",
+      "eastern_europe": "Europa est",
+      "east_asia": "Asia orient.",
+      "rest_of_asia": "Resto d'Asia",
+      "global_south": "Sud del mondo"
+    },
+    "howTitle": "Come si leggono",
+    "howProfile": "Profilo: ogni asse è il percentile del membro tra quelli attivi, cioè la quota di membri che fa peggio di lui. Il club è il tracciato tratteggiato a 50 (il membro mediano). Passa sul grafico per vedere il valore reale.",
+    "howTaste": "Epoche e Continenti: quota dei film proposti (anche quelli non vincitori) nei round chiusi, contando ogni film una volta. Una coproduzione si divide tra le aree dei suoi paesi. Sud del mondo = America Latina, Africa e Oceania; Europa est include Russia e Caucaso; Resto d'Asia include Medio Oriente, India e Sud-est asiatico. La scala è a radice quadrata, così anche le quote piccole si vedono: la forma mostra l'ordine, il valore reale è nel tooltip."
   }
 }

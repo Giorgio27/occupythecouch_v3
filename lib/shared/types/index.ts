@@ -6,3 +6,4 @@ export * from "./countries";
 export * from "./movies";
 export * from "./movieDetail";
 export * from "./movieOscars";
+export * from "./radar";

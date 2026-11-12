@@ -12,6 +12,7 @@ import {
   fetchUserRankedMovies,
 } from "@/lib/client/cineforum";
 import { useCineforumUserSelector } from "@/lib/client/hooks/useCineforumUserSelector";
+import { useUserRadar } from "@/lib/client/hooks/useUserRadar";
 import LoadingCard from "@/components/cineforum/common/LoadingCard";
 import EmptyState from "@/components/cineforum/common/EmptyState";
 import UserRankingTrendChart from "@/components/cineforum/rankings/UserRankingTrendChart";
@@ -26,6 +27,7 @@ import DeviantMoviesTable from "@/components/cineforum/stats/DeviantMoviesTable"
 import VotingProfileCard from "@/components/cineforum/stats/VotingProfileCard";
 import UserRankedMoviesTable from "@/components/cineforum/stats/UserRankedMoviesTable";
 import UserSelectorPanel from "@/components/cineforum/stats/UserSelectorPanel";
+import { UserRadarSection } from "@/components/cineforum/stats/radar";
 import type {
   UserProfileStatsDTO,
   RatingDistributionDTO,
@@ -47,6 +49,7 @@ export default function UserStatsPage({
   const { t } = useTranslation("stats");
   const { users, selectedUserId, setSelectedUserId, loading } =
     useCineforumUserSelector(cineforumId);
+  const { radar, loading: radarLoading } = useUserRadar(cineforumId);
 
   const [profileStats, setProfileStats] = useState<UserProfileStatsDTO | null>(
     null,
@@ -206,6 +209,18 @@ export default function UserStatsPage({
             profileStats={profileStats}
             users={users}
             selectedUserId={selectedUserId!}
+          />
+        ) : null}
+
+        {/* PES-style hexagons */}
+        {radarLoading ? (
+          <div className="mb-8">
+            <LoadingCard text={t("users.loading")} />
+          </div>
+        ) : radar && selectedUserId ? (
+          <UserRadarSection
+            radar={radar}
+            selectedUserId={selectedUserId}
           />
         ) : null}
 
