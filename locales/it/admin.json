@@ -114,7 +114,12 @@
       "pairwiseHintFinal": "Il margine è il vantaggio di un film sull'altro negli scontri uno contro uno. Non manca nessun voto: questi sono i margini definitivi.",
       "pairwiseMargin": "+{{count}}",
       "pairwiseAtRisk": "+{{count}} ribaltabile"
-    }
+    },
+    "resendTelegram": "Rimanda su Telegram",
+    "resendConfirm": "Il messaggio della nuova proposta verrà inviato di nuovo nel gruppo Telegram del cineforum.",
+    "resendSending": "Invio...",
+    "resendSent": "Inviato su Telegram",
+    "resendError": "Invio non riuscito: controlla le impostazioni Telegram nelle notifiche."
   },
   "teams": {
     "pageTitle": "Gestione Team",

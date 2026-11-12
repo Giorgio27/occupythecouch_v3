@@ -496,6 +496,7 @@ export default function AdminProposalsPage({
                 </div>
               ) : (
                 <ProposalActionBar
+                  cineforumId={cineforumId}
                   proposal={proposal}
                   loading={loading}
                   onEdit={startEditing}

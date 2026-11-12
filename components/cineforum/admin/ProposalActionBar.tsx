@@ -7,8 +7,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { ProposalDetailDTO } from "@/lib/shared/types/cineforum";
+import ResendProposalNotificationButton from "./ResendProposalNotificationButton";
 
 type Props = {
+  cineforumId: string;
   proposal: ProposalDetailDTO;
   loading: boolean;
   onEdit: () => void;
@@ -17,8 +19,9 @@ type Props = {
   onToggleResults: () => void;
 };
 
-/** Action buttons row for the admin proposal panel (edit, close, reopen, toggle results). */
+/** Action buttons row for the admin proposal panel (edit, close, reopen, toggle results, resend Telegram). */
 export default function ProposalActionBar({
+  cineforumId,
   proposal,
   loading,
   onEdit,
@@ -114,6 +117,15 @@ export default function ProposalActionBar({
             </TooltipTrigger>
             <TooltipContent>{t("proposals.toggleResults")}</TooltipContent>
           </Tooltip>
+        )}
+
+        {/* Resend the "new proposal" Telegram message: only useful while voting is open */}
+        {!proposal.closed && (
+          <ResendProposalNotificationButton
+            cineforumId={cineforumId}
+            proposalId={proposal.id}
+            disabled={loading}
+          />
         )}
       </div>
     </TooltipProvider>

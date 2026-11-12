@@ -1,10 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
-import {
-  tmdbFindAndDetails,
-  omdbEnrichMovie,
-  telegramNotify,
-} from "@/lib/server/external";
+import { tmdbFindAndDetails, omdbEnrichMovie } from "@/lib/server/external";
+import { notifyProposalCreated } from "@/lib/server/proposals/proposal-created-notification";
 
 export default async function handler(
   req: NextApiRequest,
@@ -89,52 +86,26 @@ export default async function handler(
       ? { ownerTeamId: candidate.id }
       : { ownerUserId: candidate.id };
 
-  const ownerNameQuery =
-    candidate.type === "Team"
-      ? prisma.team.findUnique({
-          where: { id: candidate.id },
-          select: { name: true },
-        })
-      : prisma.user.findUnique({
-          where: { id: candidate.id },
-          select: { name: true },
-        });
+  const proposalRow = await prisma.proposal.create({
+    data: {
+      cineforumId,
+      roundId: lastOpenRound?.id ?? (await ensureDefaultRound(cineforumId)).id,
+      title,
+      description,
+      date: new Date(date),
+      ...ownerField,
+      movies: { createMany: { data: connectMovies, skipDuplicates: true } },
+    },
+    select: { id: true },
+  });
 
-  const [proposalRow, cineforum, ownerRecord] = await Promise.all([
-    prisma.proposal.create({
-      data: {
-        cineforumId,
-        roundId:
-          lastOpenRound?.id ?? (await ensureDefaultRound(cineforumId)).id,
-        title,
-        description,
-        date: new Date(date),
-        ...ownerField,
-        movies: { createMany: { data: connectMovies, skipDuplicates: true } },
-      },
-      select: { id: true, title: true },
-    }),
-    prisma.cineforum.findUnique({
-      where: { id: cineforumId },
-      select: { telegramBotToken: true, telegramChatId: true, locale: true },
-    }),
-    ownerNameQuery,
-  ]);
-
-  const isEn = cineforum?.locale === "en";
-  const ownerName = ownerRecord?.name ?? "";
-  const siteUrl = `${process.env.NEXTAUTH_URL ?? ""}/cineforum/${cineforumId}/proposal`;
-  const formattedDate = new Date(date).toLocaleDateString(
-    isEn ? "en-GB" : "it-IT",
-  );
-  const text = isEn
-    ? `Hello everyone!\nThe proposal for ${formattedDate} is:\n\nBy ${ownerName}\n${title}\n\n${description}\n\nVote here: ${siteUrl}`
-    : `Ciao a tutti!\nLa proposta per il ${formattedDate} è:\n\nDi ${ownerName}\n${title}\n\n${description}\n\nVota qui: ${siteUrl}`;
-  telegramNotify(
-    text,
-    cineforum?.telegramBotToken ?? null,
-    cineforum?.telegramChatId ?? null,
-  ).catch(() => {});
+  // Awaited: Vercel may freeze the function once the response is sent, which
+  // would drop an in-flight request. A Telegram failure never fails the request.
+  try {
+    await notifyProposalCreated(cineforumId, proposalRow.id);
+  } catch (err: unknown) {
+    console.error("[proposals] telegram notify failed:", err);
+  }
 
   return res.status(201).json({ ok: true, id: proposalRow.id });
 }

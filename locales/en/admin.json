@@ -114,7 +114,12 @@
       "pairwiseHintFinal": "The margin is how far one movie leads another one-on-one. No vote is missing: these margins are final.",
       "pairwiseMargin": "+{{count}}",
       "pairwiseAtRisk": "+{{count}} can flip"
-    }
+    },
+    "resendTelegram": "Resend on Telegram",
+    "resendConfirm": "The new proposal message will be sent again to the cineforum Telegram group.",
+    "resendSending": "Sending...",
+    "resendSent": "Sent on Telegram",
+    "resendError": "Sending failed: check the Telegram settings in notifications."
   },
   "teams": {
     "pageTitle": "Teams Admin",

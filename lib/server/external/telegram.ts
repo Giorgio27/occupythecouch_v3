@@ -18,17 +18,19 @@ export function escapeMarkdown(text: string): string {
  *
  * In non-production environments the function is a no-op unless explicit
  * credentials are provided via arguments.
+ *
+ * @returns true when every chunk was accepted by Telegram; false when
+ * credentials are missing or any chunk failed (failures are logged).
  */
 export async function telegramNotify(
   text: string,
   token: string | null,
   chatId: string | null,
-): Promise<void> {
+): Promise<boolean> {
   const resolvedToken = token;
   const resolvedChatId = chatId;
 
-  if (!resolvedToken || !resolvedChatId) return;
-  if (!token) return;
+  if (!resolvedToken || !resolvedChatId) return false;
 
   const chunks: string[] = [];
   let remaining = text;
@@ -41,6 +43,7 @@ export async function telegramNotify(
   }
   chunks.push(remaining);
 
+  let allSent = true;
   for (const chunk of chunks) {
     const response = await fetch(
       `https://api.telegram.org/bot${resolvedToken}/sendMessage`,
@@ -58,14 +61,18 @@ export async function telegramNotify(
       return null;
     });
 
-    if (response) {
-      const body: unknown = await response.json().catch(() => null);
-      if (!response.ok) {
-        console.error(
-          `[telegram] sendMessage failed (${response.status}):`,
-          JSON.stringify(body),
-        );
-      }
+    if (!response) {
+      allSent = false;
+      continue;
+    }
+    const body: unknown = await response.json().catch(() => null);
+    if (!response.ok) {
+      allSent = false;
+      console.error(
+        `[telegram] sendMessage failed (${response.status}):`,
+        JSON.stringify(body),
+      );
     }
   }
+  return allSent;
 }
